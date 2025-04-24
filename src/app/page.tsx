@@ -7,9 +7,18 @@ export default function Home() {
     <main className={styles.main}>
       <div className={styles.container}>
         <h1 className={styles.title}>
-          Create <span className={styles.pinkSpan}>T3</span> App
+          Create <span className={styles.pinkSpan}>T3</span> App with Apollo
         </h1>
+
         <div className={styles.cardRow}>
+          <Link className={styles.card} href="/graphql-demo">
+            <h3 className={styles.cardTitle}>GraphQL Demo →</h3>
+            <div className={styles.cardText}>
+              Try out the Apollo Client and Server with a simple message board
+              example.
+            </div>
+          </Link>
+
           <Link
             className={styles.card}
             href="https://create.t3.gg/en/usage/first-steps"
