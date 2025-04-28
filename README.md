@@ -7,7 +7,7 @@ Welcome! Feel free to use this starter project to get you going on your takehome
 Getting setup:
 
 - First clone the project into your own github account. This will allow us to have access to it when you are done.
-- Then clone it locally to your development environment.
+- Then clone your copy to your local development environment.
 - `npm i`
 
 Now you are free to develop features. Please use a feature branch for each so we can more easily follow what you have done.
