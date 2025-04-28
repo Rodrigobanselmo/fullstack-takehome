@@ -10,6 +10,10 @@ Getting setup:
 - Then clone your copy to your local development environment.
 - `npm i`
 
+To run the application locally:
+
+- `npm run dev`
+
 Now you are free to develop features. Please use a feature branch for each so we can more easily follow what you have done.
 
 ## Notes on the database
@@ -21,6 +25,3 @@ We have configured Prisma ORM to use a sqlite database located in `prisma/dev.db
 
 If you need to you can always reset the databased with `npx prisma reset`
 
-## Running the application locally
-
-`npm run dev`
