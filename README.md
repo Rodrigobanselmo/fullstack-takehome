@@ -1,29 +1,26 @@
-# Create T3 App
+# Fullstack Takehome Exercise Starter Project
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Welcome! Feel free to use this starter project to get you going on your takehome exercise.
 
-## What's next? How do I make an app with this?
+## Installation
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Getting setup:
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- First clone the project into your own github account. This will allow us to have access to it when you are done.
+- Then clone it locally to your development environment.
+- `npm i`
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Now you are free to develop features. Please use a feature branch for each so we can more easily follow what you have done.
 
-## Learn More
+## Notes on the database
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+We have configured Prisma ORM to use a sqlite database located in `prisma/dev.db`. If you want to modify the schema, use these steps:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- update `prisma/schema.prisma`
+- run `npx prisma migrate dev` to create the migration
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+If you need to you can always reset the databased with `npx prisma reset`
 
-## How do I deploy this?
+## Running the application locally
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+`npm run dev`
