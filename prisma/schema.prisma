@@ -19,3 +19,11 @@ model Post {
 
     @@index([name])
 }
+
+model Message {
+    id        String   @id @default(uuid())
+    text      String
+    createdAt DateTime @default(now())
+
+    @@index([createdAt])
+}
