@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
@@ -42,6 +43,7 @@
     "eslint-config-next": "^15.2.3",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.27.0"
   },
