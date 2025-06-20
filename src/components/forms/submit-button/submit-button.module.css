@@ -1,0 +1,29 @@
+.submitButton {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, var(--color-main) 0%, var(--color-main-hover) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-top: 0.5rem;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px var(--color-main-20);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

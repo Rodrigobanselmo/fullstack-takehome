@@ -1,46 +1,94 @@
-import Link from "next/link";
+"use client";
 
+import { useState } from "react";
+import { gql, useMutation } from "@apollo/client";
+import { useRouter } from "next/navigation";
 import styles from "./index.module.css";
+import InputField from "../components/forms/input-field/input-field";
+import SubmitButton from "../components/forms/submit-button/submit-button";
+import FormError from "../components/alerts/form-error";
+import {
+  UserRole,
+  type LoginMutation,
+  type LoginMutationVariables,
+} from "../../generated/gql/graphql";
+import { ROUTES } from "~/constants/routes";
 
-export default function Home() {
+const LOGIN_MUTATION = gql`
+  mutation Login($input: LoginInput!) {
+    login(input: $input) {
+      id
+      username
+      role
+    }
+  }
+`;
+
+export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const [login, { loading, error }] = useMutation<
+    LoginMutation,
+    LoginMutationVariables
+  >(LOGIN_MUTATION, { onCompleted: handleLoginSuccess });
+
+  function handleLoginSuccess(data: LoginMutation) {
+    const isContractor = data.login.role === UserRole.Contractor;
+    const dashboardRoute = isContractor
+      ? ROUTES.DASHBOARD.CONTRACTOR
+      : ROUTES.DASHBOARD.HOMEOWNER;
+
+    router.push(dashboardRoute);
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    await login({
+      variables: {
+        input: {
+          username: username,
+          plainTextPassword: password,
+        },
+      },
+    });
+  };
+
   return (
-    <main className={styles.main}>
+    <div className={styles.main}>
       <div className={styles.container}>
-        <h1 className={styles.title}>
-          Handoff Full-Stack Takehome Exercise Starter Project
-        </h1>
-
-        <h3 className={styles.subtitle}>
-          Welcome! Feel free to use the project to get started, or start from
-          scratch with your own choice of tools.
-        </h3>
-
-        <div className={styles.cardRow}>
-          <Link className={styles.card} href="https://www.notion.so/handoffai/Take-Home-Challenge-Full-Stack-Engineer-WIP-191fc39a5fa781abadf6d0bdcf071a26/graphql-demo">
-            <h3 className={styles.cardTitle}>Instructions →</h3>
-            <div className={styles.cardText}>
-              View the instructions for the takehome exercise.
-            </div>
-          </Link>
-        </div>
-        <div className={styles.cardRow}>
-          <Link className={styles.card} href="/graphql-demo">
-            <h3 className={styles.cardTitle}>GraphQL Demo →</h3>
-            <div className={styles.cardText}>
-              Try out the Apollo Client and Server with a simple message board
-              example.
-            </div>
-          </Link>
-        </div>
-        <div className={styles.cardRow}>
-          <Link className={styles.card} href="https://github.com/1build/fullstack-takehome">
-            <h3 className={styles.cardTitle}>Link to the starter project -></h3>
-            <div className={styles.cardText}>
-              https://github.com/1build/fullstack-takehome
-            </div>
-          </Link>
-        </div>
+        <h2 className={styles.title}>Sign in to your account</h2>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <InputField
+            label="Username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            required
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setUsername(e.target.value)
+            }
+          />
+          <InputField
+            label="Password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPassword(e.target.value)
+            }
+          />
+          <FormError error={error?.message} />
+          <SubmitButton isLoading={loading}>Sign in</SubmitButton>
+        </form>
       </div>
-    </main>
+    </div>
   );
 }
