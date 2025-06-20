@@ -1,19 +1,14 @@
-import { gql } from "graphql-tag";
+import { gql } from 'graphql-tag';
+import { authTypeDefs } from './auth/auth.schema';
 
-// Define your GraphQL schema
-export const typeDefs = gql`
-  type Message {
-    id: ID!
-    text: String!
-    createdAt: String!
-  }
-
+const baseTypeDefs = gql`
   type Query {
-    hello: String!
-    messages: [Message!]!
+    _empty: String
   }
-
+  
   type Mutation {
-    addMessage(text: String!): Message!
+    _empty: String
   }
 `;
+
+export const typeDefs = [baseTypeDefs, authTypeDefs];
