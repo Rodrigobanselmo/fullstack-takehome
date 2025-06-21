@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "./index.module.css";
 import InputField from "../components/forms/input-field/input-field";
 import SubmitButton from "../components/forms/submit-button/submit-button";
-import FormError from "../components/alerts/form-error";
+import FormError from "../components/forms/form-error/form-error";
 import {
   UserRole,
   type LoginMutation,

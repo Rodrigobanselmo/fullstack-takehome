@@ -54,13 +54,23 @@ a {
   --color-secondary-50: rgba(148, 102, 27, 0.5);
   --color-secondary-80: rgba(148, 102, 27, 0.8);
 
-  --color-background: var(--color-light);
+  --color-paper: #fafafa; 
+  --color-background: #ffffff;
   --color-text-primary: var(--color-dark);
   --color-text-secondary: var(--color-gray);
   --color-accent: var(--color-main);
   --color-warning: var(--color-secondary);
   --color-border: var(--color-gray-20);
   --color-shadow: var(--color-dark-10);
-
   --color-error: #d32f2f;
+  
+  /* Job Status Colors */
+  --color-status-planning: var(--color-gray);
+  --color-status-planning-bg: var(--color-gray-10);
+  --color-status-in-progress: #1976d2;
+  --color-status-in-progress-bg: rgba(25, 118, 210, 0.1);
+  --color-status-completed: #24a25e;
+  --color-status-completed-bg: rgba(36, 162, 94, 0.1);
+  --color-status-canceled: #ff9800;
+  --color-status-canceled-bg: rgba(255, 152, 0, 0.1);
 }

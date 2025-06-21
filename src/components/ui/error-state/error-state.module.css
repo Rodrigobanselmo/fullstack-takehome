@@ -1,0 +1,8 @@
+.errorState {
+  background: var(--color-error);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  margin: 1rem 0;
+} 

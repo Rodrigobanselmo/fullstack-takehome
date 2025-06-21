@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag';
 import { authTypeDefs } from './auth/auth.schema';
+import { jobTypeDefs } from './job/job.schema';
 
 const baseTypeDefs = gql`
   type Query {
@@ -11,4 +12,4 @@ const baseTypeDefs = gql`
   }
 `;
 
-export const typeDefs = [baseTypeDefs, authTypeDefs];
+export const typeDefs = [baseTypeDefs, authTypeDefs, jobTypeDefs];
