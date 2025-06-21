@@ -37,8 +37,8 @@ export default function LoginPage() {
   function handleLoginSuccess(data: LoginMutation) {
     const isContractor = data.login.role === UserRole.Contractor;
     const dashboardRoute = isContractor
-      ? ROUTES.DASHBOARD.CONTRACTOR
-      : ROUTES.DASHBOARD.HOMEOWNER;
+      ? ROUTES.DASHBOARD.CONTRACTOR.ROOT
+      : ROUTES.DASHBOARD.HOMEOWNER.ROOT;
 
     router.push(dashboardRoute);
   }

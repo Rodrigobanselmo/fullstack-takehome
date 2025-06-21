@@ -17,13 +17,13 @@ a {
 
 :root {
   --color-light: #cdc2b7;
-  --color-main: #24a25e;
+  --color-primary: #24a25e;
+  --color-secondary: #94661b;
   --color-dark: #322a28;
   --color-gray: #95a6b5;
-  --color-secondary: #94661b;
 
   --color-light-hover: #c4b8ad;
-  --color-main-hover: #1f8a4f;
+  --color-primary-hover: #1f8a4f;
   --color-dark-hover: #2a221f;
   --color-gray-hover: #8a9baa;
   --color-secondary-hover: #855a17;
@@ -33,11 +33,11 @@ a {
   --color-light-50: rgba(205, 194, 183, 0.5);
   --color-light-80: rgba(205, 194, 183, 0.8);
 
-  --color-main-10: rgba(36, 162, 94, 0.1);
-  --color-main-20: rgba(36, 162, 94, 0.2);
-  --color-main-30: rgba(36, 162, 94, 0.3);
-  --color-main-50: rgba(36, 162, 94, 0.5);
-  --color-main-80: rgba(36, 162, 94, 0.8);
+  --color-primary-10: rgba(36, 162, 94, 0.1);
+  --color-primary-20: rgba(36, 162, 94, 0.2);
+  --color-primary-30: rgba(36, 162, 94, 0.3);
+  --color-primary-50: rgba(36, 162, 94, 0.5);
+  --color-primary-80: rgba(36, 162, 94, 0.8);
 
   --color-dark-10: rgba(50, 42, 40, 0.1);
   --color-dark-20: rgba(50, 42, 40, 0.2);
@@ -58,7 +58,7 @@ a {
   --color-background: #ffffff;
   --color-text-primary: var(--color-dark);
   --color-text-secondary: var(--color-gray);
-  --color-accent: var(--color-main);
+  --color-accent: var(--color-primary);
   --color-warning: var(--color-secondary);
   --color-border: var(--color-gray-20);
   --color-shadow: var(--color-dark-10);

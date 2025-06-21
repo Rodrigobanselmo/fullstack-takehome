@@ -1,7 +1,16 @@
 export const ROUTES = {
-  LOGIN: "/",
+  LOGIN: {
+    ROOT: "/",
+  },
   DASHBOARD: {
-    CONTRACTOR: "/dashboard/contractor",
-    HOMEOWNER: "/dashboard/homeowner",
+    CONTRACTOR: {
+      ROOT: "/dashboard/contractor",
+      JOBS: {
+        ADD: "/dashboard/contractor/jobs/add",
+      },
+    },
+    HOMEOWNER: {
+      ROOT: "/dashboard/homeowner",
+    },
   },
 };
