@@ -14,7 +14,7 @@
 .jobCard:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px var(--color-shadow);
-  border-color: var(--color-main-20);
+  border-color: var(--color-primary-20);
 }
 
 .jobHeader {
@@ -56,7 +56,7 @@
 .jobCost {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-main);
+  color: var(--color-primary);
   margin-top: 0.5rem;
 }
 
