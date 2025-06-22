@@ -1,3 +1,5 @@
+"use client";
+
 import { gql, useQuery } from "@apollo/client";
 import type { JobsQuery } from "generated/gql/graphql";
 

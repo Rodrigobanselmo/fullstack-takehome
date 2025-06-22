@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { ROUTES } from "~/constants/routes";
+import { paths } from "~/config/paths";
 
 export default function Page() {
-  redirect(ROUTES.LOGIN.ROOT);
+  redirect(paths.login.getHref());
 }

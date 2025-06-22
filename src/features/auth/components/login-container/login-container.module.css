@@ -27,10 +27,4 @@
   margin: 0 0 2rem 0;
   color: var(--color-text-primary);
   letter-spacing: -0.025em;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+} 

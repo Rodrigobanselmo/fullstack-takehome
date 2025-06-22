@@ -1,47 +1,29 @@
 "use client";
 
-import { gql, useQuery } from "@apollo/client";
-import type { JobsQuery } from "generated/gql/graphql";
 import { useRouter } from "next/navigation";
-import JobCard from "~/components/features/jobs/components/job-card/job-card";
-import JobsGrid from "~/components/features/jobs/components/jobs-grid/jobs-grid";
+import ContentLayout from "~/components/layouts/content-layout/content-layout";
 import Button from "~/components/ui/button/button";
 import EmptyState from "~/components/ui/empty-state/empty-state";
 import ErrorState from "~/components/ui/error-state/error-state";
 import LoadingState from "~/components/ui/loading-state/loading-state";
-import PageHeader from "~/components/ui/page-header/page-header";
-import { ROUTES } from "~/constants/routes";
-import styles from "./page.module.css";
-
-const JOBS_QUERY = gql`
-  query Jobs {
-    jobs {
-      id
-      description
-      location
-      status
-      cost
-      homeowner {
-        username
-      }
-    }
-  }
-`;
+import { paths } from "~/config/paths";
+import { useQueryContractorJobs } from "~/features/jobs/api/use-query-contractor-jobs";
+import JobCard from "~/features/jobs/components/job-card/job-card";
+import JobsGrid from "~/features/jobs/components/jobs-grid/jobs-grid";
 
 export default function ContractorDashboardPage() {
   const router = useRouter();
-  const { data, loading, error } = useQuery<JobsQuery>(JOBS_QUERY);
+  const { data, loading, error } = useQueryContractorJobs();
 
   const handleAddJob = () => {
-    router.push(ROUTES.DASHBOARD.CONTRACTOR.JOBS.ADD);
+    router.push(paths.dashboard.contractor.jobs.add.getHref());
   };
 
   return (
-    <div className={styles.main}>
-      <PageHeader title="My Jobs">
-        <Button onClick={handleAddJob}>+ Add Job</Button>
-      </PageHeader>
-
+    <ContentLayout
+      title="My Jobs"
+      actions={<Button onClick={handleAddJob}>+ Add Job</Button>}
+    >
       {loading && <LoadingState message="Loading your jobs..." />}
 
       {error && (
@@ -70,6 +52,6 @@ export default function ContractorDashboardPage() {
           ))}
         </JobsGrid>
       )}
-    </div>
+    </ContentLayout>
   );
 }

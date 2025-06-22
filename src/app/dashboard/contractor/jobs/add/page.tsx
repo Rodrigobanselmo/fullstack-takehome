@@ -1,20 +1,20 @@
 "use client";
 
 import { gql, useMutation } from "@apollo/client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import PageHeader from "~/components/ui/page-header/page-header";
-import styles from "./page.module.css";
-import { ROUTES } from "~/constants/routes";
-import SelectField from "~/components/forms/select-field/select-field";
-import TextField from "~/components/forms/text-field/text-field";
-import SubmitButton from "~/components/forms/submit-button/submit-button";
-import FormError from "~/components/forms/form-error/form-error";
 import type {
   CreateJobMutation,
   CreateJobMutationVariables,
   JobStatus,
 } from "generated/gql/graphql";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import FormError from "~/components/ui/forms/form-error/form-error";
+import SelectField from "~/components/ui/forms/select-field/select-field";
+import SubmitButton from "~/components/ui/forms/submit-button/submit-button";
+import TextField from "~/components/ui/forms/text-field/text-field";
+import PageHeader from "~/components/ui/page-header/page-header";
+import { paths } from "~/config/paths";
+import styles from "./page.module.css";
 
 const CREATE_JOB_MUTATION = gql`
   mutation CreateJob($input: CreateJobInput!) {
@@ -54,7 +54,7 @@ export default function AddJobPage() {
     CreateJobMutationVariables
   >(CREATE_JOB_MUTATION, {
     onCompleted: () => {
-      router.push(ROUTES.DASHBOARD.CONTRACTOR.ROOT);
+      router.push(paths.dashboard.contractor.getHref());
     },
     onError: (error) => {
       setFormError(error.message);
@@ -62,7 +62,7 @@ export default function AddJobPage() {
   });
 
   const handleBack = () => {
-    router.push(ROUTES.DASHBOARD.CONTRACTOR.ROOT);
+    router.push(paths.dashboard.contractor.getHref());
   };
 
   const handleInputChange =
