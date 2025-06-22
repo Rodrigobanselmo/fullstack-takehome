@@ -5,16 +5,23 @@ import {
   passwordHasher,
 } from "~/server/utils/password-hasher";
 import { type PrismaClient } from "../../generated/prisma";
+import { getUserFromCookie, type UserSession } from "~/lib/auth";
 
 export interface GraphQLContext {
   prisma: PrismaClient;
   passwordHasher: PasswordHasher;
   req: NextApiRequest;
+  user: UserSession | null;
 }
 
-export function createContext(req: NextApiRequest): GraphQLContext {
+export async function createContext(
+  req: NextApiRequest,
+): Promise<GraphQLContext> {
+  const user = await getUserFromCookie();
+
   return {
     req,
+    user,
     prisma: prisma,
     passwordHasher: passwordHasher,
   };

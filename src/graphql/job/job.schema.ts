@@ -9,6 +9,7 @@ export const jobTypeDefs = gql`
   }
 
   type User {
+    id: ID!
     username: String!
   }
 
@@ -33,15 +34,25 @@ export const jobTypeDefs = gql`
     location: String!
     status: JobStatus
     cost: Float!
-    contractorId: String!
+    homeownerId: String
+  }
+
+  input UpdateJobInput {
+    description: String!
+    location: String!
+    status: JobStatus
+    cost: Float!
     homeownerId: String
   }
 
   type Query {
     jobs: [Job!]!
+    job(id: ID!): Job
+    homeowners: [User!]!
   }
 
   type Mutation {
     createJob(input: CreateJobInput!): Job!
+    updateJob(id: ID!, input: UpdateJobInput!): Job!
   }
 `;

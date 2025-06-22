@@ -1,8 +1,7 @@
-import { ApolloServerErrorCode } from "@apollo/server/errors";
 import type { LoginInput, LoginOutput, UserRole } from "generated/gql/graphql";
-import { GraphQLError } from "graphql";
+import { clearUserCookie, setUserCookie } from "~/lib/auth";
 import type { GraphQLContext } from "../context";
-import { setUserCookie, clearUserCookie } from "~/lib/auth";
+import { invalidCredentialsError } from "./auth.errors";
 
 export const authResolvers = {
   Mutation: {
@@ -18,9 +17,7 @@ export const authResolvers = {
       });
 
       if (!user) {
-        throw new GraphQLError("Invalid username or password.", {
-          extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
-        });
+        throw invalidCredentialsError();
       }
 
       const isPasswordCorrect = await context.passwordHasher.compare(
@@ -29,9 +26,7 @@ export const authResolvers = {
       );
 
       if (!isPasswordCorrect) {
-        throw new GraphQLError("Invalid username or password.", {
-          extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT },
-        });
+        throw invalidCredentialsError();
       }
 
       const userSession = {

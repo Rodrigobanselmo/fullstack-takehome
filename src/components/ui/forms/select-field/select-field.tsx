@@ -9,6 +9,8 @@ interface SelectFieldProps {
   required?: boolean;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
+  disabled?: boolean;
+  clearable?: boolean;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -19,6 +21,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
   required = false,
   options,
   placeholder,
+  disabled = false,
+  clearable = false,
 }) => (
   <div className={styles.inputGroup}>
     <label htmlFor={name} className={styles.inputLabel}>
@@ -31,9 +35,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
       className={styles.input}
       value={value}
       onChange={onChange}
+      disabled={disabled}
     >
       {placeholder && (
-        <option value="" disabled>
+        <option value="" disabled={!clearable}>
           {placeholder}
         </option>
       )}

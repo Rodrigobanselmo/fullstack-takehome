@@ -7,16 +7,20 @@ interface ContentLayoutProps {
   children: React.ReactNode;
   title: string;
   actions?: React.ReactNode;
+  onBack?: () => void;
 }
 
 export default function ContentLayout({
   children,
   title,
   actions,
+  onBack,
 }: ContentLayoutProps) {
   return (
     <div className={styles.main}>
-      <PageHeader title={title}>{actions}</PageHeader>
+      <PageHeader title={title} onBack={onBack}>
+        {actions}
+      </PageHeader>
       {children}
     </div>
   );

@@ -1,6 +1,6 @@
-import { UserRole } from "generated/gql/graphql";
 import { redirect } from "next/navigation";
 import { getUserFromCookie } from "~/lib/auth";
+import { canViewContractorDashboard } from "~/lib/authorization";
 
 export default async function ContractorDashboardLayout({
   children,
@@ -9,8 +9,7 @@ export default async function ContractorDashboardLayout({
 }) {
   const user = await getUserFromCookie();
 
-  const isContractor = user && user.role === UserRole.Contractor;
-  if (!isContractor) {
+  if (!user || !canViewContractorDashboard(user.role)) {
     redirect("/");
   }
 
