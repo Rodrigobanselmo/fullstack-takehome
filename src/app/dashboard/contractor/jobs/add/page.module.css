@@ -2,15 +2,45 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem;
-  background: var(--color-background);
-  min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
 .content {
   flex: 1;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--color-paper);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-border);
+  margin-top: 1rem;
 }
 
 .backButton {
@@ -25,5 +55,5 @@
 }
 
 .backButton:hover {
-  background-color: var(--color-background-secondary);
+  background-color: var(--color-paper);
 } 
