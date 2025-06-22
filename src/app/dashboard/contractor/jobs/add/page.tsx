@@ -6,7 +6,6 @@ import { paths } from "~/config/paths";
 import { useCreateJobMutation } from "~/features/jobs/api/use-create-job-mutation";
 import JobForm from "~/features/jobs/components/job-form/job-form";
 import { type CreateJobFormData } from "~/features/jobs/schemas/create-job-schema";
-import styles from "./page.module.css";
 
 export default function AddJobPage() {
   const router = useRouter();
@@ -35,9 +34,7 @@ export default function AddJobPage() {
 
   return (
     <ContentLayout title="Add New Job" onBack={handleBack}>
-      <div className={styles.content}>
-        <JobForm loading={loading} onSubmit={handleSubmit} />
-      </div>
+      <JobForm loading={loading} onSubmit={handleSubmit} />
     </ContentLayout>
   );
 }

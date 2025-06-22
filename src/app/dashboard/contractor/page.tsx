@@ -19,6 +19,10 @@ export default function ContractorDashboardPage() {
     router.push(paths.dashboard.contractor.jobs.add.getHref());
   };
 
+  const handleJobClick = (jobId: string) => {
+    router.push(paths.dashboard.contractor.jobs.edit.getHref(jobId));
+  };
+
   return (
     <ContentLayout
       title="My Jobs"
@@ -48,6 +52,7 @@ export default function ContractorDashboardPage() {
               status={job.status}
               cost={job.cost}
               username={job.homeowner?.username}
+              onClick={() => handleJobClick(job.id)}
             />
           ))}
         </JobsGrid>

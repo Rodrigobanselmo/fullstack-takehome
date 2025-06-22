@@ -32,7 +32,7 @@ const JobCard: React.FC<JobCardProps> = ({
       <div className={styles.jobDetails}>
         <div className={styles.jobMeta}>
           <span className={styles.jobMetaIcon}>📍</span>
-          <span>{location}</span>
+          <span className={styles.jobLocation}>{location}</span>
         </div>
 
         {username && (

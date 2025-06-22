@@ -1,0 +1,76 @@
+"use client";
+
+import { useParams, useRouter } from "next/navigation";
+import ContentLayout from "~/components/layouts/content-layout/content-layout";
+import ErrorState from "~/components/ui/error-state/error-state";
+import LoadingState from "~/components/ui/loading-state/loading-state";
+import { paths } from "~/config/paths";
+import { useQueryJob } from "~/features/jobs/api/use-query-job";
+import { useUpdateJobMutation } from "~/features/jobs/api/use-update-job-mutation";
+import JobForm from "~/features/jobs/components/job-form/job-form";
+import { type CreateJobFormData } from "~/features/jobs/schemas/create-job-schema";
+
+export default function EditJobPage() {
+  const params = useParams();
+  const router = useRouter();
+  const jobId = params.id as string;
+
+  const { data, loading: loadingJob, error } = useQueryJob(jobId);
+  const [updateJob, { loading: updating }] = useUpdateJobMutation();
+
+  const handleBack = () => {
+    router.push(paths.dashboard.contractor.getHref());
+  };
+
+  const handleSubmit = async (formData: CreateJobFormData) => {
+    await updateJob({
+      variables: {
+        id: jobId,
+        input: {
+          description: formData.description.trim(),
+          location: formData.location.trim(),
+          status: formData.status,
+          cost: parseFloat(formData.cost),
+          homeownerId: formData.homeownerId || undefined,
+        },
+      },
+      onCompleted: () => {
+        router.push(paths.dashboard.contractor.getHref());
+      },
+    });
+  };
+
+  if (loadingJob) {
+    return (
+      <ContentLayout title="Edit Job" onBack={handleBack}>
+        <LoadingState message="Loading job details..." />
+      </ContentLayout>
+    );
+  }
+
+  if (error || !data?.job) {
+    return (
+      <ContentLayout title="Edit Job" onBack={handleBack}>
+        <ErrorState message="Job not found or you don't have permission to edit it." />
+      </ContentLayout>
+    );
+  }
+
+  return (
+    <ContentLayout title={data.job.description} onBack={handleBack}>
+      <JobForm
+        initialData={{
+          description: data.job.description,
+          location: data.job.location,
+          status: data.job.status,
+          cost: data.job.cost.toString(),
+          homeownerId: data.job.homeownerId || undefined,
+        }}
+        loading={updating}
+        onSubmit={handleSubmit}
+        submitButtonText="Update Job"
+        loadingText="Updating Job..."
+      />
+    </ContentLayout>
+  );
+}

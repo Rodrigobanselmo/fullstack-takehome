@@ -117,11 +117,11 @@ export const jobResolvers = {
       return prisma.job.update({
         where: { id },
         data: {
-          cost: input.cost,
           description: input.description,
           location: input.location,
           status: input.status as JobStatus,
-          homeownerId: input.homeownerId,
+          cost: input.cost,
+          homeownerId: input.homeownerId || null,
         },
       });
     },

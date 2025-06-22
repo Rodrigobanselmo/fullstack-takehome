@@ -9,6 +9,9 @@ export const paths = {
         add: {
           getHref: () => "/dashboard/contractor/jobs/add",
         },
+        edit: {
+          getHref: (id: string) => `/dashboard/contractor/jobs/${id}/edit`,
+        },
       },
     },
     homeowner: {

@@ -17,6 +17,8 @@ export interface JobFormProps {
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateJobFormData) => Promise<void>;
+  submitButtonText?: string;
+  loadingText?: string;
 }
 
 const initialJobData = {
@@ -32,6 +34,8 @@ export default function JobForm({
   loading = false,
   error = "",
   onSubmit,
+  submitButtonText = "Create Job",
+  loadingText = "Creating Job...",
 }: JobFormProps) {
   const [formData, setFormData] = useState<CreateJobFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
@@ -125,7 +129,7 @@ export default function JobForm({
       <FormError error={formError} />
       <div className={styles.formActions}>
         <SubmitButton isLoading={loading} disabled={loading}>
-          {loading ? "Creating Job..." : "Create Job"}
+          {loading ? loadingText : submitButtonText}
         </SubmitButton>
       </div>
     </form>
