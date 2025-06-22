@@ -10,7 +10,7 @@ import {
   type UserRole,
 } from "../../../generated/gql/graphql";
 import FormError from "../../components/forms/form-error/form-error";
-import InputField from "../../components/forms/input-field/input-field";
+import TextField from "../../components/forms/text-field/text-field";
 import SubmitButton from "../../components/forms/submit-button/submit-button";
 import styles from "./page.module.css";
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div className={styles.container}>
         <h2 className={styles.title}>Sign in to your account</h2>
         <form className={styles.form} onSubmit={handleSubmit}>
-          <InputField
+          <TextField
             label="Username"
             name="username"
             type="text"
@@ -71,7 +71,7 @@ export default function LoginPage() {
               setUsername(e.target.value)
             }
           />
-          <InputField
+          <TextField
             label="Password"
             name="password"
             type="password"

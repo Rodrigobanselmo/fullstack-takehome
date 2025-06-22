@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./input-field.module.css";
+import styles from "./text-field.module.css";
 
 interface InputFieldProps {
   label: string;
@@ -12,7 +12,7 @@ interface InputFieldProps {
   required?: boolean;
 }
 
-const InputField: React.FC<InputFieldProps> = ({
+const TextField: React.FC<InputFieldProps> = ({
   label,
   type = "text",
   value,
@@ -40,4 +40,4 @@ const InputField: React.FC<InputFieldProps> = ({
   </div>
 );
 
-export default InputField;
+export default TextField;
