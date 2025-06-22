@@ -54,6 +54,13 @@ a {
   --color-secondary-50: rgba(148, 102, 27, 0.5);
   --color-secondary-80: rgba(148, 102, 27, 0.8);
 
+  --color-danger: #d32f2f;
+  --color-danger-hover: #b72121;
+  --color-danger-10: rgba(211, 47, 47, 0.1);
+  --color-danger-20: rgba(211, 47, 47, 0.2);
+  --color-danger-50: rgba(211, 47, 47, 0.5);
+  --color-danger-80: rgba(211, 47, 47, 0.8);
+
   --color-paper: #fafafa; 
   --color-background: #ffffff;
   --color-text-primary: var(--color-dark);

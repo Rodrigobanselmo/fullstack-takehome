@@ -1,16 +1,17 @@
 import { JobStatus } from "generated/gql/graphql";
 import { useState } from "react";
-import FormError from "../../../../components/ui/forms/form-error/form-error";
-import SelectField from "../../../../components/ui/forms/select-field/select-field";
-import SubmitButton from "../../../../components/ui/forms/submit-button/submit-button";
-import TextField from "../../../../components/ui/forms/text-field/text-field";
-import { JOB_STATUS_OPTIONS } from "../../constants/job-status-map";
+import Button from "~/components/ui/button/button";
 import { useQueryHomeowners } from "../../api/use-query-homeowners";
+import { JOB_STATUS_OPTIONS } from "../../constants/job-status-map";
 import {
   createJobSchema,
   type CreateJobFormData,
 } from "../../schemas/create-job-schema";
 import styles from "./job-form.module.css";
+import TextField from "~/components/ui/forms/text-field/text-field";
+import SelectField from "~/components/ui/forms/select-field/select-field";
+import FormError from "~/components/ui/forms/form-error/form-error";
+import FormActions from "~/components/ui/forms/form-actions/form-actions";
 
 export interface JobFormProps {
   initialData?: CreateJobFormData;
@@ -19,6 +20,7 @@ export interface JobFormProps {
   onSubmit: (data: CreateJobFormData) => Promise<void>;
   submitButtonText?: string;
   loadingText?: string;
+  onCancel?: () => void;
 }
 
 const initialJobData = {
@@ -36,6 +38,7 @@ export default function JobForm({
   onSubmit,
   submitButtonText = "Create Job",
   loadingText = "Creating Job...",
+  onCancel,
 }: JobFormProps) {
   const [formData, setFormData] = useState<CreateJobFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
@@ -70,6 +73,22 @@ export default function JobForm({
     }
   };
 
+  const handlePrimaryAction = () => {
+    setFormError("");
+    const validationResult = createJobSchema.safeParse(formData);
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      setFormError(firstError?.message ?? "Validation failed");
+      return;
+    }
+
+    onSubmit(validationResult.data).catch((error) => {
+      setFormError(
+        error instanceof Error ? error.message : "Failed to create job",
+      );
+    });
+  };
+
   const homeownerOptions =
     data?.homeowners?.map((homeowner) => ({
       value: homeowner.id,
@@ -79,7 +98,6 @@ export default function JobForm({
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formSection}>
-        <h2 className={styles.sectionTitle}>Job Details</h2>
         <TextField
           label="Description"
           name="description"
@@ -127,11 +145,29 @@ export default function JobForm({
         />
       </div>
       <FormError error={formError} />
-      <div className={styles.formActions}>
-        <SubmitButton isLoading={loading} disabled={loading}>
-          {loading ? loadingText : submitButtonText}
-        </SubmitButton>
-      </div>
+      <FormActions
+        primaryAction={{
+          text: loading ? loadingText : submitButtonText,
+          onClick: handlePrimaryAction,
+          variant: "fill",
+          color: "primary",
+          size: "lg",
+          minWidth: "150px",
+          disabled: loading,
+        }}
+        secondaryAction={
+          onCancel
+            ? {
+                text: "Cancel",
+                onClick: onCancel,
+                variant: "outline",
+                color: "danger",
+                size: "lg",
+                minWidth: "150px",
+              }
+            : undefined
+        }
+      />
     </form>
   );
 }

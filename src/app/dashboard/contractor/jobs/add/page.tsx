@@ -11,7 +11,7 @@ export default function AddJobPage() {
   const router = useRouter();
   const [createJob, { loading }] = useCreateJobMutation();
 
-  const handleBack = () => {
+  const handleCancel = () => {
     router.push(paths.dashboard.contractor.getHref());
   };
 
@@ -33,8 +33,12 @@ export default function AddJobPage() {
   };
 
   return (
-    <ContentLayout title="Add New Job" onBack={handleBack}>
-      <JobForm loading={loading} onSubmit={handleSubmit} />
+    <ContentLayout maxWidth="600px" title="Add New Job">
+      <JobForm
+        loading={loading}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+      />
     </ContentLayout>
   );
 }

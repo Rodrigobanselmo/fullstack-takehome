@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Button from "~/components/ui/button/button";
 import FormError from "~/components/ui/forms/form-error/form-error";
-import SubmitButton from "~/components/ui/forms/submit-button/submit-button";
 import TextField from "~/components/ui/forms/text-field/text-field";
 import { useLoginMutation } from "../../api/use-login-mutation";
 import styles from "./login-form.module.css";
@@ -53,7 +53,16 @@ export function LoginForm() {
         }
       />
       <FormError error={error?.message} />
-      <SubmitButton isLoading={loading}>Sign in</SubmitButton>
+
+      <Button
+        type="submit"
+        size="lg"
+        variant="fill"
+        disabled={loading}
+        className={styles.submitButton}
+      >
+        {loading ? "Signing in..." : "Sign in"}
+      </Button>
     </form>
   );
 }

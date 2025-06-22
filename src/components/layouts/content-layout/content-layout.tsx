@@ -8,6 +8,7 @@ interface ContentLayoutProps {
   title: string;
   actions?: React.ReactNode;
   onBack?: () => void;
+  maxWidth?: string;
 }
 
 export default function ContentLayout({
@@ -15,9 +16,10 @@ export default function ContentLayout({
   title,
   actions,
   onBack,
+  maxWidth = "1800px",
 }: ContentLayoutProps) {
   return (
-    <div className={styles.main}>
+    <div className={styles.main} style={{ maxWidth }}>
       <PageHeader title={title} onBack={onBack}>
         {actions}
       </PageHeader>

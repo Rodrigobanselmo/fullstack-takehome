@@ -1,10 +1,11 @@
 import { type ButtonHTMLAttributes } from "react";
 import styles from "./button.module.css";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "fill" | "outline";
-  color?: "primary" | "grey";
+  color?: "primary" | "grey" | "danger";
   size?: "sm" | "md" | "lg";
+  minWidth?: string;
 }
 
 export default function Button({
@@ -13,11 +14,13 @@ export default function Button({
   color = "primary",
   size = "md",
   className = "",
+  minWidth = "auto",
   ...props
 }: ButtonProps) {
   return (
     <button
       className={`${styles.button} ${styles[variant]} ${styles[color]} ${styles[size]} ${className}`}
+      style={{ minWidth }}
       {...props}
     >
       {children}
