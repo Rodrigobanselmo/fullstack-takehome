@@ -1,6 +1,6 @@
 export const ROUTES = {
   LOGIN: {
-    ROOT: "/",
+    ROOT: "/login",
   },
   DASHBOARD: {
     CONTRACTOR: {

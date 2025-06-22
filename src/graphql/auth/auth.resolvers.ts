@@ -2,6 +2,7 @@ import { ApolloServerErrorCode } from "@apollo/server/errors";
 import type { LoginInput, LoginOutput, UserRole } from "generated/gql/graphql";
 import { GraphQLError } from "graphql";
 import type { GraphQLContext } from "../context";
+import { setUserCookie, clearUserCookie } from "~/lib/auth";
 
 export const authResolvers = {
   Mutation: {
@@ -33,11 +34,23 @@ export const authResolvers = {
         });
       }
 
-      return {
+      const userSession = {
         id: user.id,
         username: user.username,
         role: user.role as UserRole,
       };
+
+      // Set user cookie
+      await setUserCookie(userSession);
+
+      return userSession;
+    },
+
+    logout: async (): Promise<{ success: boolean }> => {
+      // Clear user cookie
+      await clearUserCookie();
+
+      return { success: true };
     },
   },
 };

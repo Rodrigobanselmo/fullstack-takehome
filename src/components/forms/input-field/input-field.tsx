@@ -40,4 +40,4 @@ const InputField: React.FC<InputFieldProps> = ({
   </div>
 );
 
-export default InputField; 
+export default InputField;

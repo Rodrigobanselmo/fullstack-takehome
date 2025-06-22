@@ -1,4 +1,4 @@
-import { gql } from 'graphql-tag';
+import { gql } from "graphql-tag";
 
 export const authTypeDefs = gql`
   enum UserRole {
@@ -12,6 +12,10 @@ export const authTypeDefs = gql`
     role: UserRole!
   }
 
+  type LogoutOutput {
+    success: Boolean!
+  }
+
   input LoginInput {
     username: String!
     plainTextPassword: String!
@@ -19,5 +23,6 @@ export const authTypeDefs = gql`
 
   type Mutation {
     login(input: LoginInput!): LoginOutput!
+    logout: LogoutOutput!
   }
 `;
