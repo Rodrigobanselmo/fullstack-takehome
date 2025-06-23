@@ -3,10 +3,11 @@ import {
   type UpdateJobInput,
 } from "generated/gql/graphql";
 import { type JobStatus, UserRole } from "generated/prisma";
-import { canCreateJob, canViewJobs } from "~/lib/authorization";
+import { canCreateJob, canViewJobs, canDeleteJob } from "~/lib/authorization";
 import { prisma } from "~/server/database/prisma";
 import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
+import { JobNotFoundError } from "./job.errors";
 
 export const jobResolvers = {
   Query: {
@@ -17,6 +18,9 @@ export const jobResolvers = {
       }
 
       return prisma.job.findMany({
+        where: {
+          deletedAt: null,
+        },
         include: {
           homeowner: {
             select: {
@@ -77,8 +81,6 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
-      console.log(input);
-
       return prisma.job.create({
         data: {
           cost: input.cost,
@@ -100,18 +102,16 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
-      // Check if the job exists and belongs to the current contractor
       const existingJob = await prisma.job.findFirst({
         where: {
           id,
           contractorId: context.user!.id,
+          deletedAt: null,
         },
       });
 
       if (!existingJob) {
-        throw new Error(
-          "Job not found or you don't have permission to edit it",
-        );
+        throw JobNotFoundError();
       }
 
       return prisma.job.update({
@@ -122,6 +122,35 @@ export const jobResolvers = {
           status: input.status as JobStatus,
           cost: input.cost,
           homeownerId: input.homeownerId || null,
+        },
+      });
+    },
+    deleteJob: async (
+      _: unknown,
+      { id }: { id: string },
+      context: GraphQLContext,
+    ) => {
+      const isUnauthorized = !canDeleteJob(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+
+      const existingJob = await prisma.job.findFirst({
+        where: {
+          id,
+          contractorId: context.user!.id,
+          deletedAt: null,
+        },
+      });
+
+      if (!existingJob) {
+        throw JobNotFoundError();
+      }
+
+      return prisma.job.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
         },
       });
     },

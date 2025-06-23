@@ -54,5 +54,6 @@ export const jobTypeDefs = gql`
   type Mutation {
     createJob(input: CreateJobInput!): Job!
     updateJob(id: ID!, input: UpdateJobInput!): Job!
+    deleteJob(id: ID!): Job!
   }
 `;

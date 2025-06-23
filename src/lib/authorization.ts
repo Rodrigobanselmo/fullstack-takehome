@@ -18,3 +18,7 @@ export const canViewContractorDashboard = (role: UserRole) => {
 export const canViewHomeownerDashboard = (user: UserSession | null) => {
   return user?.role === UserRole.Homeowner;
 };
+
+export const canDeleteJob = (user: UserSession | null) => {
+  return user?.role === UserRole.Contractor;
+};

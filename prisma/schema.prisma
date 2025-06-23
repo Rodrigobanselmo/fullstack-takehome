@@ -20,6 +20,10 @@ model Job {
     contractorId String    @map("contractor_id")
     homeownerId  String?   @map("homeowner_id")
 
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
     contractor User      @relation("ContractorJobs", fields: [contractorId], references: [id])
     homeowner  User?     @relation("HomeownerJobs", fields: [homeownerId], references: [id])
     messages   Message[]
@@ -49,6 +53,9 @@ model User {
     contractorJobs Job[]     @relation("ContractorJobs")
     homeownerJobs  Job[]     @relation("HomeownerJobs")
     messages       Message[] @relation("UserMessages")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
     @@map("users")
 }

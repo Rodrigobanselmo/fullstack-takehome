@@ -153,7 +153,7 @@ export default function JobForm({
           color: "primary",
           size: "lg",
           minWidth: "150px",
-          disabled: loading,
+          loading: loading,
         }}
         secondaryAction={
           onCancel
@@ -161,7 +161,7 @@ export default function JobForm({
                 text: "Cancel",
                 onClick: onCancel,
                 variant: "outline",
-                color: "danger",
+                color: "grey",
                 size: "lg",
                 minWidth: "150px",
               }

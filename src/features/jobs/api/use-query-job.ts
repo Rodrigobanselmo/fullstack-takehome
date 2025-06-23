@@ -13,6 +13,7 @@ const JOB_QUERY = gql`
       cost
       homeowner {
         username
+        id
       }
     }
   }

@@ -1,8 +1,14 @@
 import Button, { type ButtonProps } from "~/components/ui/button/button";
 import styles from "./form-actions.module.css";
 
-export interface FormAction extends ButtonProps {
+export interface FormAction {
   text: string;
+  onClick: () => void;
+  color?: "primary" | "danger" | "grey";
+  variant?: "fill" | "outline";
+  size?: "sm" | "md" | "lg";
+  minWidth?: string;
+  disabled?: boolean;
   loading?: boolean;
   loadingText?: string;
 }
@@ -22,7 +28,6 @@ export default function FormActions({
     <div className={`${styles.formActions} ${className || ""}`}>
       {secondaryAction && (
         <Button
-          {...secondaryAction}
           variant={secondaryAction.variant || "outline"}
           color={secondaryAction.color || "grey"}
           size={secondaryAction.size || "lg"}
@@ -37,7 +42,6 @@ export default function FormActions({
       )}
       {primaryAction && (
         <Button
-          {...primaryAction}
           variant={primaryAction.variant || "fill"}
           color={primaryAction.color || "primary"}
           size={primaryAction.size || "lg"}

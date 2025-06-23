@@ -1,7 +1,7 @@
 import type { LoginInput, LoginOutput, UserRole } from "generated/gql/graphql";
 import { clearUserCookie, setUserCookie } from "~/lib/auth";
 import type { GraphQLContext } from "../context";
-import { invalidCredentialsError } from "./auth.errors";
+import { invalidCredentialsError } from "../auth/auth.errors";
 
 export const authResolvers = {
   Mutation: {
