@@ -4,22 +4,20 @@ import JobStatus from "../job-status/job-status";
 import type { JobStatus as JobStatusEnum } from "generated/gql/graphql";
 
 interface JobCardProps {
-  id: string;
   description: string;
   location: string;
   status: JobStatusEnum;
   cost: number;
-  username?: string;
+  name?: string;
   onClick?: () => void;
 }
 
 const JobCard: React.FC<JobCardProps> = ({
-  id,
   description,
   location,
   status,
   cost,
-  username,
+  name,
   onClick,
 }) => {
   return (
@@ -35,12 +33,10 @@ const JobCard: React.FC<JobCardProps> = ({
           <span className={styles.jobLocation}>{location}</span>
         </div>
 
-        {username && (
-          <div className={styles.jobMeta}>
-            <span className={styles.jobMetaIcon}>👤</span>
-            <span>{username}</span>
-          </div>
-        )}
+        <div className={styles.jobMeta}>
+          <span className={styles.jobMetaIcon}>👤</span>
+          <span>{name}</span>
+        </div>
 
         <div className={styles.jobCost}>${cost.toLocaleString()}</div>
       </div>

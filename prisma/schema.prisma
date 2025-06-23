@@ -18,14 +18,14 @@ model Job {
     status       JobStatus @default(PLANNING)
     cost         Decimal
     contractorId String    @map("contractor_id")
-    homeownerId  String?   @map("homeowner_id")
+    homeownerId  String    @map("homeowner_id")
 
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
     contractor User      @relation("ContractorJobs", fields: [contractorId], references: [id])
-    homeowner  User?     @relation("HomeownerJobs", fields: [homeownerId], references: [id])
+    homeowner  User      @relation("HomeownerJobs", fields: [homeownerId], references: [id])
     messages   Message[]
 
     @@map("jobs")
@@ -47,6 +47,7 @@ model Message {
 
 model User {
     id             String    @id @default(cuid())
+    name           String
     username       String    @unique
     password       String
     role           UserRole

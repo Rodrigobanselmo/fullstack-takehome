@@ -23,7 +23,7 @@ export default function AddJobPage() {
           location: data.location.trim(),
           status: data.status,
           cost: parseFloat(data.cost),
-          homeownerId: data.homeownerId || undefined,
+          homeownerId: data.homeownerId,
         },
       },
       onCompleted: () => {

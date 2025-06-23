@@ -1,4 +1,3 @@
-import type { JobsQuery } from "generated/gql/graphql";
 import styles from "./jobs-grid.module.css";
 
 interface JobsGridProps {

@@ -34,7 +34,7 @@ export default function EditJobPage() {
           location: formData.location.trim(),
           status: formData.status,
           cost: parseFloat(formData.cost),
-          homeownerId: formData.homeownerId || undefined,
+          homeownerId: formData.homeownerId,
         },
       },
       onCompleted: () => {
@@ -97,7 +97,7 @@ export default function EditJobPage() {
           location: data.job.location,
           status: data.job.status,
           cost: data.job.cost.toString(),
-          homeownerId: data.job.homeowner?.id || undefined,
+          homeownerId: data.job.homeowner.id,
         }}
         loading={updating}
         onSubmit={handleSubmit}

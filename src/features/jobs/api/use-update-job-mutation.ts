@@ -8,14 +8,7 @@ import type {
 
 const UPDATE_JOB_MUTATION = gql`
   mutation UpdateJob($id: ID!, $input: UpdateJobInput!) {
-    updateJob(id: $id, input: $input) {
-      id
-      description
-      location
-      status
-      cost
-      homeownerId
-    }
+    updateJob(id: $id, input: $input)
   }
 `;
 

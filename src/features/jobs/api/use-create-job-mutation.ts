@@ -8,14 +8,7 @@ import type {
 
 const CREATE_JOB_MUTATION = gql`
   mutation CreateJob($input: CreateJobInput!) {
-    createJob(input: $input) {
-      id
-      description
-      location
-      status
-      cost
-      homeownerId
-    }
+    createJob(input: $input)
   }
 `;
 

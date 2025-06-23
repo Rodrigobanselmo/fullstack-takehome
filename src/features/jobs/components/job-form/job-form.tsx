@@ -1,6 +1,9 @@
 import { JobStatus } from "generated/gql/graphql";
 import { useState } from "react";
-import Button from "~/components/ui/button/button";
+import FormActions from "~/components/ui/forms/form-actions/form-actions";
+import FormError from "~/components/ui/forms/form-error/form-error";
+import SelectField from "~/components/ui/forms/select-field/select-field";
+import TextField from "~/components/ui/forms/text-field/text-field";
 import { useQueryHomeowners } from "../../api/use-query-homeowners";
 import { JOB_STATUS_OPTIONS } from "../../constants/job-status-map";
 import {
@@ -8,10 +11,6 @@ import {
   type CreateJobFormData,
 } from "../../schemas/create-job-schema";
 import styles from "./job-form.module.css";
-import TextField from "~/components/ui/forms/text-field/text-field";
-import SelectField from "~/components/ui/forms/select-field/select-field";
-import FormError from "~/components/ui/forms/form-error/form-error";
-import FormActions from "~/components/ui/forms/form-actions/form-actions";
 
 export interface JobFormProps {
   initialData?: CreateJobFormData;
@@ -76,7 +75,7 @@ export default function JobForm({
   const homeownerOptions =
     data?.homeowners?.map((homeowner) => ({
       value: homeowner.id,
-      label: homeowner.username,
+      label: homeowner.name,
     })) ?? [];
 
   return (
@@ -117,13 +116,13 @@ export default function JobForm({
           required={true}
         />
         <SelectField
-          label="Homeowner (Optional)"
+          label="Homeowner"
           name="homeownerId"
           value={formData.homeownerId ?? ""}
           onChange={handleInputChange("homeownerId")}
           options={homeownerOptions}
           placeholder="Select a homeowner..."
-          required={false}
+          required={true}
           disabled={homeownersLoading}
           clearable={true}
         />

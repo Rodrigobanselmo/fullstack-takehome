@@ -1,5 +1,10 @@
 // prisma/seed.ts
-import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
+import {
+  JobStatus,
+  PrismaClient,
+  UserRole,
+  type User,
+} from "../generated/prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -8,44 +13,52 @@ async function main() {
   console.log(`Start seeding ...`);
 
   const saltRounds = 10;
+  const guestPassword = "password123";
+  const hashedPassword = await bcrypt.hash(guestPassword, saltRounds);
 
-  const contractorPassword = "password123";
-  const hashedContractorPassword = await bcrypt.hash(
-    contractorPassword,
-    saltRounds,
-  );
   const contractorUser = await prisma.user.upsert({
-    where: { username: "contractor" },
+    where: { username: "guest.contractor" },
     update: {},
     create: {
-      username: "contractor",
-      password: hashedContractorPassword,
+      username: "guest.contractor",
+      password: hashedPassword,
       role: UserRole.CONTRACTOR,
+      name: "Contractor Guest",
     },
   });
+
   console.log(
     `Created/updated contractor user: ${contractorUser.username} with ID: ${contractorUser.id}`,
   );
 
-  const homeownerPassword = "password123";
-  const hashedHomeownerPassword = await bcrypt.hash(
-    homeownerPassword,
-    saltRounds,
-  );
-  const homeownerUser = await prisma.user.upsert({
-    where: { username: "homeowner" },
-    update: {},
-    create: {
-      username: "homeowner",
-      password: hashedHomeownerPassword,
-      role: UserRole.HOMEOWNER,
-    },
-  });
-  console.log(
-    `Created/updated homeowner user: ${homeownerUser.username} with ID: ${homeownerUser.id}`,
-  );
+  // Additional homeowners
+  const moreHomeowners = [
+    { username: "guest.homeowner", name: "Guest Homeowner" },
+    { username: "guest.homeowner2", name: "Guest Homeowner 2" },
+    { username: "guest.homeowner3", name: "Guest Homeowner 3" },
+    { username: "guest.homeowner4", name: "Guest Homeowner 4" },
+  ];
 
-  // Create jobs with each status from the job schema
+  const homeownerUsers: User[] = [];
+  for (const { username, name } of moreHomeowners) {
+    const hashedPassword = await bcrypt.hash("guest", saltRounds);
+    const user = await prisma.user.upsert({
+      where: { username },
+      update: {},
+      create: {
+        username,
+        password: hashedPassword,
+        role: UserRole.HOMEOWNER,
+        name,
+      },
+    });
+    homeownerUsers.push(user);
+
+    console.log(
+      `Created/updated homeowner user: ${user.username} with ID: ${user.id}`,
+    );
+  }
+
   const jobs = [
     {
       id: "seed-job-planning",
@@ -53,6 +66,7 @@ async function main() {
       location: "123 Main St, Anytown, USA",
       status: JobStatus.PLANNING,
       cost: 25000.0,
+      homeownerId: homeownerUsers[0]!.id,
     },
     {
       id: "seed-job-in-progress",
@@ -60,6 +74,7 @@ async function main() {
       location: "456 Oak Ave, Somewhere, USA",
       status: JobStatus.IN_PROGRESS,
       cost: 15000.0,
+      homeownerId: homeownerUsers[1]!.id,
     },
     {
       id: "seed-job-completed",
@@ -67,6 +82,7 @@ async function main() {
       location: "789 Pine Rd, Elsewhere, USA",
       status: JobStatus.COMPLETED,
       cost: 8000.0,
+      homeownerId: homeownerUsers[2]!.id,
     },
     {
       id: "seed-job-canceled",
@@ -74,6 +90,7 @@ async function main() {
       location: "321 Elm St, Nowhere, USA",
       status: JobStatus.CANCELED,
       cost: 30000.0,
+      homeownerId: homeownerUsers[3]!.id,
     },
   ];
 
@@ -85,16 +102,12 @@ async function main() {
       create: {
         ...jobData,
         contractorId: contractorUser.id,
-        homeownerId: homeownerUser.id,
       },
     });
     createdJobs.push(job);
-    console.log(
-      `Created/updated job: ${job.description} with ID: ${job.id} and status: ${job.status}`,
-    );
+    console.log(`Created/updated job: ${job.description} with ID: ${job.id}`);
   }
 
-  // Create messages for the first job (planning status)
   const firstJob = createdJobs[0];
   if (firstJob) {
     await prisma.message.createMany({
@@ -107,7 +120,7 @@ async function main() {
         {
           text: "Thanks, contractor! Looking forward to it.",
           jobId: firstJob.id,
-          senderId: homeownerUser.id,
+          senderId: homeownerUsers[0]!.id,
         },
       ],
     });

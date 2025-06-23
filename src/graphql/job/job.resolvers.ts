@@ -18,13 +18,16 @@ export const jobResolvers = {
       }
 
       return prisma.job.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
         where: {
           deletedAt: null,
         },
         include: {
           homeowner: {
             select: {
-              username: true,
+              name: true,
               id: true,
             },
           },
@@ -41,17 +44,23 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
-      return prisma.job.findFirst({
+      const job = await prisma.job.findFirst({
         where: { id },
         include: {
           homeowner: {
             select: {
-              username: true,
+              name: true,
               id: true,
             },
           },
         },
       });
+
+      if (!job) {
+        throw JobNotFoundError();
+      }
+
+      return job;
     },
     homeowners: async (_: unknown, __: unknown, context: GraphQLContext) => {
       const isUnauthorized = !canViewJobs(context.user);
@@ -65,7 +74,7 @@ export const jobResolvers = {
         },
         select: {
           id: true,
-          username: true,
+          name: true,
         },
       });
     },
@@ -81,7 +90,7 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
-      return prisma.job.create({
+      const job = await prisma.job.create({
         data: {
           cost: input.cost,
           description: input.description,
@@ -91,6 +100,8 @@ export const jobResolvers = {
           homeownerId: input.homeownerId,
         },
       });
+
+      return job.id;
     },
     updateJob: async (
       _: unknown,
@@ -114,16 +125,18 @@ export const jobResolvers = {
         throw JobNotFoundError();
       }
 
-      return prisma.job.update({
+      await prisma.job.update({
         where: { id },
         data: {
           description: input.description,
           location: input.location,
           status: input.status as JobStatus,
           cost: input.cost,
-          homeownerId: input.homeownerId || null,
+          homeownerId: input.homeownerId,
         },
       });
+
+      return id;
     },
     deleteJob: async (
       _: unknown,
@@ -147,12 +160,14 @@ export const jobResolvers = {
         throw JobNotFoundError();
       }
 
-      return prisma.job.update({
+      await prisma.job.update({
         where: { id },
         data: {
           deletedAt: new Date(),
         },
       });
+
+      return id;
     },
   },
 };

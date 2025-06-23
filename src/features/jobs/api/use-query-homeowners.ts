@@ -7,7 +7,7 @@ const HOMEOWNERS_QUERY = gql`
   query Homeowners {
     homeowners {
       id
-      username
+      name
     }
   }
 `;

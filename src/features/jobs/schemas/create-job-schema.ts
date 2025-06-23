@@ -21,7 +21,7 @@ export const createJobSchema = z.object({
     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
       message: "Cost must be a positive number",
     }),
-  homeownerId: z.string().optional(),
+  homeownerId: z.string(),
 });
 
 export type CreateJobFormData = z.infer<typeof createJobSchema>;

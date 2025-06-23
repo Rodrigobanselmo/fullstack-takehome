@@ -8,14 +8,7 @@ import type {
 
 const DELETE_JOB_MUTATION = gql`
   mutation DeleteJob($id: ID!) {
-    deleteJob(id: $id) {
-      id
-      description
-      location
-      status
-      cost
-      homeownerId
-    }
+    deleteJob(id: $id)
   }
 `;
 

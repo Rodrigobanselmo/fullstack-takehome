@@ -12,8 +12,8 @@ const JOB_QUERY = gql`
       status
       cost
       homeowner {
-        username
         id
+        name
       }
     }
   }

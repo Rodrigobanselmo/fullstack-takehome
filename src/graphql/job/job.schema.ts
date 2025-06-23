@@ -10,7 +10,7 @@ export const jobTypeDefs = gql`
 
   type User {
     id: ID!
-    username: String!
+    name: String!
   }
 
   enum UserRole {
@@ -25,8 +25,7 @@ export const jobTypeDefs = gql`
     status: JobStatus!
     cost: Float!
     contractorId: String!
-    homeownerId: String
-    homeowner: User
+    homeowner: User!
   }
 
   input CreateJobInput {
@@ -34,7 +33,7 @@ export const jobTypeDefs = gql`
     location: String!
     status: JobStatus
     cost: Float!
-    homeownerId: String
+    homeownerId: String!
   }
 
   input UpdateJobInput {
@@ -42,18 +41,18 @@ export const jobTypeDefs = gql`
     location: String!
     status: JobStatus
     cost: Float!
-    homeownerId: String
+    homeownerId: String!
   }
 
   type Query {
     jobs: [Job!]!
-    job(id: ID!): Job
+    job(id: ID!): Job!
     homeowners: [User!]!
   }
 
   type Mutation {
-    createJob(input: CreateJobInput!): Job!
-    updateJob(id: ID!, input: UpdateJobInput!): Job!
-    deleteJob(id: ID!): Job!
+    createJob(input: CreateJobInput!): ID!
+    updateJob(id: ID!, input: UpdateJobInput!): ID!
+    deleteJob(id: ID!): ID!
   }
 `;

@@ -46,12 +46,11 @@ export default function ContractorDashboardPage() {
           {data.jobs.map((job) => (
             <JobCard
               key={job.id}
-              id={job.id}
               description={job.description}
               location={job.location}
               status={job.status}
               cost={job.cost}
-              username={job.homeowner?.username}
+              name={job.homeowner.name}
               onClick={() => handleJobClick(job.id)}
             />
           ))}
