@@ -73,22 +73,6 @@ export default function JobForm({
     }
   };
 
-  const handlePrimaryAction = () => {
-    setFormError("");
-    const validationResult = createJobSchema.safeParse(formData);
-    if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
-      setFormError(firstError?.message ?? "Validation failed");
-      return;
-    }
-
-    onSubmit(validationResult.data).catch((error) => {
-      setFormError(
-        error instanceof Error ? error.message : "Failed to create job",
-      );
-    });
-  };
-
   const homeownerOptions =
     data?.homeowners?.map((homeowner) => ({
       value: homeowner.id,
@@ -148,7 +132,6 @@ export default function JobForm({
       <FormActions
         primaryAction={{
           text: loading ? loadingText : submitButtonText,
-          onClick: handlePrimaryAction,
           variant: "fill",
           color: "primary",
           size: "lg",

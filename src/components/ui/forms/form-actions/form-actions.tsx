@@ -1,4 +1,4 @@
-import Button, { type ButtonProps } from "~/components/ui/button/button";
+import Button from "~/components/ui/button/button";
 import styles from "./form-actions.module.css";
 
 export interface FormAction {
@@ -14,7 +14,7 @@ export interface FormAction {
 }
 
 export interface FormActionsProps {
-  primaryAction?: FormAction;
+  primaryAction?: Omit<FormAction, "onClick">;
   secondaryAction?: FormAction;
   className?: string;
 }
@@ -45,7 +45,7 @@ export default function FormActions({
           variant={primaryAction.variant || "fill"}
           color={primaryAction.color || "primary"}
           size={primaryAction.size || "lg"}
-          onClick={primaryAction.onClick}
+          type="submit"
           minWidth={primaryAction.minWidth || "150px"}
           disabled={primaryAction.disabled}
         >
