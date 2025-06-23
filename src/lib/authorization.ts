@@ -1,7 +1,7 @@
 import { UserRole } from "generated/gql/graphql";
 import type { UserSession } from "./auth";
 
-export const canCreateJob = (user: UserSession | null) => {
+export const canManageJob = (user: UserSession | null) => {
   return user?.role === UserRole.Contractor;
 };
 
@@ -17,8 +17,4 @@ export const canViewContractorDashboard = (role: UserRole) => {
 
 export const canViewHomeownerDashboard = (user: UserSession | null) => {
   return user?.role === UserRole.Homeowner;
-};
-
-export const canDeleteJob = (user: UserSession | null) => {
-  return user?.role === UserRole.Contractor;
 };

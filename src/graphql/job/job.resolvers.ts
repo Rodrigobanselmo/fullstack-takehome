@@ -3,7 +3,7 @@ import {
   type UpdateJobInput,
 } from "generated/gql/graphql";
 import { type JobStatus, UserRole } from "generated/prisma";
-import { canCreateJob, canViewJobs, canDeleteJob } from "~/lib/authorization";
+import { canManageJob, canViewJobs } from "~/lib/authorization";
 import { prisma } from "~/server/database/prisma";
 import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
@@ -76,7 +76,7 @@ export const jobResolvers = {
       { input }: { input: CreateJobInput },
       context: GraphQLContext,
     ) => {
-      const isUnauthorized = !canCreateJob(context.user);
+      const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
@@ -97,7 +97,7 @@ export const jobResolvers = {
       { id, input }: { id: string; input: UpdateJobInput },
       context: GraphQLContext,
     ) => {
-      const isUnauthorized = !canCreateJob(context.user);
+      const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
@@ -130,7 +130,7 @@ export const jobResolvers = {
       { id }: { id: string },
       context: GraphQLContext,
     ) => {
-      const isUnauthorized = !canDeleteJob(context.user);
+      const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
