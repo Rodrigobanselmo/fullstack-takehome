@@ -45,7 +45,11 @@ export default function JobForm({
 
   const handleInputChange =
     (name: string) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
       setFormData((prev: CreateJobFormData) => ({
         ...prev,
         [name]: e.target.value,
@@ -88,6 +92,8 @@ export default function JobForm({
           onChange={handleInputChange("description")}
           placeholder="Enter job description..."
           required={true}
+          multiline={true}
+          maxLines={3}
         />
         <TextField
           label="Location"

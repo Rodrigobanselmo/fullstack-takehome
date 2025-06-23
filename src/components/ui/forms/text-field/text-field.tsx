@@ -5,11 +5,15 @@ interface InputFieldProps {
   label: string;
   type?: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
   placeholder?: string;
   name: string;
   autoComplete?: string;
   required?: boolean;
+  multiline?: boolean;
+  maxLines?: number;
 }
 
 const TextField: React.FC<InputFieldProps> = ({
@@ -21,22 +25,39 @@ const TextField: React.FC<InputFieldProps> = ({
   name,
   autoComplete,
   required = false,
+  multiline = false,
+  maxLines,
 }) => (
   <div className={styles.inputGroup}>
     <label htmlFor={name} className={styles.inputLabel}>
       {label}
     </label>
-    <input
-      id={name}
-      name={name}
-      type={type}
-      autoComplete={autoComplete}
-      required={required}
-      className={styles.input}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-    />
+    {multiline ? (
+      <textarea
+        id={name}
+        name={name}
+        autoComplete={autoComplete}
+        required={required}
+        className={styles.input}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        rows={maxLines}
+        style={{ resize: "vertical", minHeight: "3rem" }}
+      />
+    ) : (
+      <input
+        id={name}
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        required={required}
+        className={styles.input}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+      />
+    )}
   </div>
 );
 
