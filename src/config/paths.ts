@@ -26,8 +26,9 @@ export const paths = {
     },
     chat: {
       getHref: () => "/dashboard/chat",
-      user: {
-        getHref: (id: string) => `/dashboard/chat/user/${id}`,
+      conversation: {
+        getHref: (conversationId: string) =>
+          `/dashboard/chat/${conversationId}`,
       },
     },
   },

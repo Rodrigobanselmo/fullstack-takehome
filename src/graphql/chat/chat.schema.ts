@@ -45,6 +45,7 @@ export const chatTypeDefs = gql`
 
   type Query {
     conversations: [Conversation!]!
+    conversation(id: ID!): Conversation
     messages(conversationId: ID!, first: Int, after: String): MessageConnection!
   }
 

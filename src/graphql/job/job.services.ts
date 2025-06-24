@@ -62,6 +62,7 @@ export async function createJobWithConversation({
       },
     });
 
+    console.log(await tx.conversation.findMany());
     const existingConversation = await tx.conversation.count({
       where: { contractorId, homeownerId },
     });

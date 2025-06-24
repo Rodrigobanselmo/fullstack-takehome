@@ -11,6 +11,7 @@ import {
   findMessagesService,
   findAndValidateConversationService,
   findConversationsService,
+  findConversationByIdService,
 } from "./chat.services";
 
 export const chatResolvers = {
@@ -49,6 +50,21 @@ export const chatResolvers = {
       return findMessagesService({
         conversationId,
         pagination: { first, after },
+      });
+    },
+
+    conversation: async (
+      _: unknown,
+      { id }: { id: string },
+      context: GraphQLContext,
+    ) => {
+      const isUnauthorized = !canViewJobs(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+      return findConversationByIdService({
+        conversationId: id,
+        userId: context.user!.id,
       });
     },
   },

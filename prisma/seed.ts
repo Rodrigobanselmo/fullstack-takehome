@@ -103,6 +103,21 @@ async function main() {
         contractorId: contractorUser.id,
       },
     });
+
+    await prisma.conversation.upsert({
+      where: {
+        contractorId_homeownerId: {
+          contractorId: contractorUser.id,
+          homeownerId: jobData.homeownerId,
+        },
+      },
+      update: {},
+      create: {
+        contractorId: contractorUser.id,
+        homeownerId: jobData.homeownerId,
+      },
+    });
+
     createdJobs.push(job);
     console.log(`Created/updated job: ${job.description} with ID: ${job.id}`);
   }

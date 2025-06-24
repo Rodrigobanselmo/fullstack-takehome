@@ -3,6 +3,7 @@ import NavbarLayout from "~/components/layouts/navbar-layout/navbar-layout";
 import LogoutButton from "~/components/ui/logout-button/logout-button";
 import { getUserFromCookie } from "~/lib/auth";
 import styles from "./layout.module.css";
+import { UserProvider } from "~/context/user-context";
 
 export default async function DashboardLayout({
   children,
@@ -16,22 +17,26 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className={styles.dashboard}>
-      <header className={styles.header}>
-        <div className={styles.headerContainer}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Dashboard</h1>
-            <p className={`${styles.subtitle} ${styles.subtitleMobileHidden}`}>
-              Welcome, {user.username} ({user.role.toLowerCase()})
-            </p>
+    <UserProvider user={user}>
+      <div className={styles.dashboard}>
+        <header className={styles.header}>
+          <div className={styles.headerContainer}>
+            <div className={styles.headerContent}>
+              <h1 className={styles.title}>Dashboard</h1>
+              <p
+                className={`${styles.subtitle} ${styles.subtitleMobileHidden}`}
+              >
+                Welcome, {user.username} ({user.role.toLowerCase()})
+              </p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+              <NavbarLayout />
+              <LogoutButton />
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <NavbarLayout user={user} />
-            <LogoutButton />
-          </div>
-        </div>
-      </header>
-      <main className={styles.main}>{children}</main>
-    </div>
+        </header>
+        <main className={styles.main}>{children}</main>
+      </div>
+    </UserProvider>
   );
 }

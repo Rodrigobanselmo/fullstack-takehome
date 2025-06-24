@@ -98,3 +98,36 @@ export async function findConversationsService({ userId }: { userId: string }) {
     },
   });
 }
+
+export async function findConversationByIdService({
+  conversationId,
+  userId,
+}: {
+  conversationId: string;
+  userId: string;
+}) {
+  const conversation = await prisma.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [{ contractorId: userId }, { homeownerId: userId }],
+    },
+    include: {
+      contractor: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      homeowner: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+  if (!conversation) {
+    throw ConversationNotFoundError();
+  }
+  return conversation;
+}
