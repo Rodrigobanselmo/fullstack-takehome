@@ -5,6 +5,7 @@ export const userTypeDefs = gql`
     id: ID!
     name: String!
   }
+
   type Query {
     homeowners: [User!]!
   }

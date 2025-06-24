@@ -7,13 +7,23 @@ import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
 import { InvalidFirstArgumentError } from "./chat.errors";
 import {
-  createMessage,
-  fetchPaginatedMessagesFromDB,
-  findAndValidateUserConversation,
+  createMessageService,
+  findMessagesService,
+  findAndValidateConversationService,
+  findConversationsService,
 } from "./chat.services";
 
 export const chatResolvers = {
   Query: {
+    conversations: async (_: unknown, __: unknown, context: GraphQLContext) => {
+      const isUnauthorized = !canViewJobs(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+
+      return findConversationsService({ userId: context.user!.id });
+    },
+
     messages: async (
       _: unknown,
       { conversationId, first, after }: QueryMessagesArgs,
@@ -31,11 +41,14 @@ export const chatResolvers = {
         throw InvalidFirstArgumentError();
       }
 
-      await findAndValidateUserConversation(conversationId, context.user!.id);
+      await findAndValidateConversationService({
+        conversationId,
+        userId: context.user!.id,
+      });
 
-      return fetchPaginatedMessagesFromDB(conversationId, {
-        first,
-        after,
+      return findMessagesService({
+        conversationId,
+        pagination: { first, after },
       });
     },
   },
@@ -50,16 +63,16 @@ export const chatResolvers = {
         throw UnauthorizedError();
       }
 
-      await findAndValidateUserConversation(
-        input.conversationId,
-        context.user!.id,
-      );
+      await findAndValidateConversationService({
+        conversationId: input.conversationId,
+        userId: context.user!.id,
+      });
 
-      const message = await createMessage(
-        input.conversationId,
-        input.text,
-        context.user!.id,
-      );
+      const message = await createMessageService({
+        conversationId: input.conversationId,
+        text: input.text,
+        senderId: context.user!.id,
+      });
 
       return message.id;
     },

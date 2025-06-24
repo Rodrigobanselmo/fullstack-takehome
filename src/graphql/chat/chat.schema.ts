@@ -30,16 +30,25 @@ export const chatTypeDefs = gql`
     pageInfo: PageInfo!
   }
 
+  type Conversation {
+    id: ID!
+    contractor: User!
+    homeowner: User!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   input SendMessageInput {
     conversationId: ID!
     text: String!
   }
 
   type Query {
+    conversations: [Conversation!]!
     messages(conversationId: ID!, first: Int, after: String): MessageConnection!
   }
 
   type Mutation {
-    sendMessage(input: SendMessageInput!): Message!
+    sendMessage(input: SendMessageInput!): ID!
   }
 `;

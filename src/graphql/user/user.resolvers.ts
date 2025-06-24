@@ -1,8 +1,7 @@
-import { UserRole } from "generated/prisma";
 import { canListHomeowners } from "~/lib/authorization";
-import { prisma } from "~/server/database/prisma";
 import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
+import { getHomeowners } from "./user.services";
 
 export const userResolvers = {
   Query: {
@@ -11,16 +10,7 @@ export const userResolvers = {
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
-
-      return prisma.user.findMany({
-        where: {
-          role: UserRole.HOMEOWNER,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      });
+      return getHomeowners();
     },
   },
 };
