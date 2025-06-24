@@ -1,6 +1,7 @@
 import {
   type CreateJobInput,
   type UpdateJobInput,
+  type QueryJobArgs,
 } from "generated/gql/graphql";
 import { type JobStatus } from "generated/prisma";
 import { canManageJob, canViewJobs } from "~/lib/authorization";
@@ -44,11 +45,7 @@ export const jobResolvers = {
         },
       });
     },
-    job: async (
-      _: unknown,
-      { id }: { id: string },
-      context: GraphQLContext,
-    ) => {
+    job: async (_: unknown, { id }: QueryJobArgs, context: GraphQLContext) => {
       const isUnauthorized = !canViewJobs(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();

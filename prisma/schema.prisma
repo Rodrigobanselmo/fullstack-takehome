@@ -24,40 +24,62 @@ model Job {
     updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
     deletedAt DateTime? @map("deleted_at")
 
-    contractor User      @relation("ContractorJobs", fields: [contractorId], references: [id])
-    homeowner  User      @relation("HomeownerJobs", fields: [homeownerId], references: [id])
-    messages   Message[]
+    contractor User @relation("ContractorJobs", fields: [contractorId], references: [id])
+    homeowner  User @relation("HomeownerJobs", fields: [homeownerId], references: [id])
 
     @@map("jobs")
 }
 
-model Message {
+model Conversation {
     id        String   @id @default(cuid())
-    text      String
     createdAt DateTime @default(now()) @map("created_at")
-    jobId     String   @map("job_id")
-    senderId  String   @map("sender_id")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
-    job    Job  @relation(fields: [jobId], references: [id])
-    sender User @relation("UserMessages", fields: [senderId], references: [id])
+    contractorId String @map("contractor_id")
+    contractor   User   @relation("ContractorConversations", fields: [contractorId], references: [id])
+
+    homeownerId String @map("homeowner_id")
+    homeowner   User   @relation("HomeownerConversations", fields: [homeownerId], references: [id])
+
+    messages Message[]
+
+    @@unique([contractorId, homeownerId])
+    @@index([contractorId])
+    @@index([homeownerId])
+    @@map("conversations")
+}
+
+model Message {
+    id             String   @id @default(cuid())
+    text           String
+    createdAt      DateTime @default(now()) @map("created_at")
+    senderId       String   @map("sender_id")
+    conversationId String   @map("conversation_id")
+
+    sender       User         @relation("UserMessages", fields: [senderId], references: [id])
+    conversation Conversation @relation(fields: [conversationId], references: [id])
 
     @@index([createdAt])
+    @@index([conversationId])
     @@map("messages")
 }
 
 model User {
-    id             String    @id @default(cuid())
-    name           String
-    username       String    @unique
-    password       String
-    role           UserRole
-    contractorJobs Job[]     @relation("ContractorJobs")
-    homeownerJobs  Job[]     @relation("HomeownerJobs")
-    messages       Message[] @relation("UserMessages")
-
+    id        String   @id @default(cuid())
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+    name      String
+    username  String   @unique
+    password  String
+    role      UserRole
 
+    messages                Message[]      @relation("UserMessages")
+    contractorJobs          Job[]          @relation("ContractorJobs")
+    homeownerJobs           Job[]          @relation("HomeownerJobs")
+    contractorConversations Conversation[] @relation("ContractorConversations")
+    homeownerConversations  Conversation[] @relation("HomeownerConversations")
+
+    @@index([username])
     @@map("users")
 }
 

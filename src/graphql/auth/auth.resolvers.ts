@@ -35,14 +35,12 @@ export const authResolvers = {
         role: user.role as UserRole,
       };
 
-      // Set user cookie
       await setUserCookie(userSession);
 
       return userSession;
     },
 
     logout: async (): Promise<{ success: boolean }> => {
-      // Clear user cookie
       await clearUserCookie();
 
       return { success: true };

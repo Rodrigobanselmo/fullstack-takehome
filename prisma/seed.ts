@@ -107,25 +107,6 @@ async function main() {
     console.log(`Created/updated job: ${job.description} with ID: ${job.id}`);
   }
 
-  const firstJob = createdJobs[0];
-  if (firstJob) {
-    await prisma.message.createMany({
-      data: [
-        {
-          text: "Hello homeowner, welcome to the project!",
-          jobId: firstJob.id,
-          senderId: contractorUser.id,
-        },
-        {
-          text: "Thanks, contractor! Looking forward to it.",
-          jobId: firstJob.id,
-          senderId: homeownerUsers[0]!.id,
-        },
-      ],
-    });
-
-    console.log(`Created messages for job ID: ${firstJob.id}`);
-  }
   console.log(`Seeding finished.`);
 }
 
