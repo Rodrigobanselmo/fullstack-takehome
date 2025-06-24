@@ -36,9 +36,9 @@ export function LoginForm() {
         required
         placeholder="Enter your username"
         value={username}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setUsername(e.target.value)
-        }
+        onChange={(
+          e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ) => setUsername(e.target.value)}
       />
       <TextField
         label="Password"
@@ -48,9 +48,9 @@ export function LoginForm() {
         required
         placeholder="Enter your password"
         value={password}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPassword(e.target.value)
-        }
+        onChange={(
+          e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ) => setPassword(e.target.value)}
       />
       <FormError error={error?.message} />
 

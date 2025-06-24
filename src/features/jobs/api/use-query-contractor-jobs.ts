@@ -1,10 +1,10 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import type { JobsQuery } from "generated/gql/graphql";
+import type { ContractorJobsQuery } from "generated/gql/graphql";
 
 const JOBS_QUERY = gql`
-  query Jobs {
+  query ContractorJobs {
     jobs {
       id
       description
@@ -19,5 +19,5 @@ const JOBS_QUERY = gql`
 `;
 
 export function useQueryContractorJobs() {
-  return useQuery<JobsQuery>(JOBS_QUERY);
+  return useQuery<ContractorJobsQuery>(JOBS_QUERY);
 }

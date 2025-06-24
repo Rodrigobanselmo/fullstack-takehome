@@ -61,6 +61,29 @@
   border-color: var(--color-gray-hover);
 }
 
+.secondary {
+  background: var(--color-secondary);
+  color: white;
+  border-color: var(--color-secondary);
+}
+
+.secondary:hover {
+  background: var(--color-secondary-hover);
+  border-color: var(--color-secondary-hover);
+}
+
+.outline.secondary {
+  background: transparent;
+  color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.outline.secondary:hover {
+  background: var(--color-secondary-10);
+  color: var(--color-secondary-hover);
+  border-color: var(--color-secondary-hover);
+}
+
 .danger {
   background: var(--color-danger);
   color: white;

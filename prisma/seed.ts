@@ -13,7 +13,7 @@ async function main() {
   console.log(`Start seeding ...`);
 
   const saltRounds = 10;
-  const guestPassword = "password123";
+  const guestPassword = "guest";
   const hashedPassword = await bcrypt.hash(guestPassword, saltRounds);
 
   const contractorUser = await prisma.user.upsert({
@@ -41,7 +41,6 @@ async function main() {
 
   const homeownerUsers: User[] = [];
   for (const { username, name } of moreHomeowners) {
-    const hashedPassword = await bcrypt.hash("guest", saltRounds);
     const user = await prisma.user.upsert({
       where: { username },
       update: {},

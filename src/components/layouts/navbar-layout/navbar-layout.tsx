@@ -3,19 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./navbar-layout.module.css";
+import { paths } from "~/config/paths";
+import type { UserSession } from "~/lib/auth";
+import { getAuthenticatedRoute } from "~/lib/navigation";
+import { UserRole } from "generated/gql/graphql";
 
-const navItems = [
-  { label: "My Jobs", href: "/dashboard/contractor" },
-  { label: "Chat", href: "/dashboard/chat" },
+const navItems = (user: UserSession) => [
+  {
+    label: user.role === UserRole.Contractor ? "My Jobs" : "My Projects",
+    href: getAuthenticatedRoute(user.role),
+  },
+  { label: "Chat", href: paths.dashboard.chat.getHref() },
 ];
 
-export default function NavbarLayout() {
+export default function NavbarLayout({ user }: { user: UserSession }) {
   const pathname = usePathname();
 
   return (
     <nav className={styles.navbarNav}>
-      {navItems.map(({ label, href }) => {
-        const isActive = pathname === href;
+      {navItems(user).map(({ label, href }) => {
+        const isActive = pathname.startsWith(href);
         return (
           <Link
             key={href}

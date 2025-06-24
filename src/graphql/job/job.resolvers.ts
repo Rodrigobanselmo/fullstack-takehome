@@ -2,7 +2,7 @@ import {
   type CreateJobInput,
   type UpdateJobInput,
 } from "generated/gql/graphql";
-import { type JobStatus, UserRole } from "generated/prisma";
+import { type JobStatus } from "generated/prisma";
 import { canManageJob, canViewJobs } from "~/lib/authorization";
 import { prisma } from "~/server/database/prisma";
 import type { GraphQLContext } from "../context";
@@ -23,8 +23,18 @@ export const jobResolvers = {
         },
         where: {
           deletedAt: null,
+          OR: [
+            { contractorId: context.user!.id },
+            { homeownerId: context.user!.id },
+          ],
         },
         include: {
+          contractor: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
           homeowner: {
             select: {
               name: true,
@@ -45,8 +55,21 @@ export const jobResolvers = {
       }
 
       const job = await prisma.job.findFirst({
-        where: { id },
+        where: {
+          id,
+          deletedAt: null,
+          OR: [
+            { contractorId: context.user!.id },
+            { homeownerId: context.user!.id },
+          ],
+        },
         include: {
+          contractor: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
           homeowner: {
             select: {
               name: true,
@@ -61,22 +84,6 @@ export const jobResolvers = {
       }
 
       return job;
-    },
-    homeowners: async (_: unknown, __: unknown, context: GraphQLContext) => {
-      const isUnauthorized = !canViewJobs(context.user);
-      if (isUnauthorized) {
-        throw UnauthorizedError();
-      }
-
-      return prisma.user.findMany({
-        where: {
-          role: UserRole.HOMEOWNER,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      });
     },
   },
   Mutation: {

@@ -6,7 +6,7 @@ import Button from "~/components/ui/button/button";
 import ErrorState from "~/components/ui/error-state/error-state";
 import LoadingState from "~/components/ui/loading-state/loading-state";
 import { paths } from "~/config/paths";
-import { useQueryJob } from "~/features/jobs/api/use-query-job";
+import { useQueryContractorJob } from "~/features/jobs/api/use-query-contractor-job";
 import { useUpdateJobMutation } from "~/features/jobs/api/use-update-job-mutation";
 import { useDeleteJobMutation } from "~/features/jobs/api/use-delete-job-mutation";
 import JobForm from "~/features/jobs/components/job-form/job-form";
@@ -17,12 +17,12 @@ export default function EditJobPage() {
   const router = useRouter();
   const jobId = params.id as string;
 
-  const { data, loading: loadingJob, error } = useQueryJob(jobId);
+  const { data, loading: loadingJob, error } = useQueryContractorJob(jobId);
   const [updateJob, { loading: updating }] = useUpdateJobMutation();
   const [deleteJob, { loading: deleting }] = useDeleteJobMutation();
 
   const handleBack = () => {
-    router.push(paths.dashboard.contractor.getHref());
+    router.push(paths.dashboard.contractor.jobs.view.getHref(jobId));
   };
 
   const handleSubmit = async (formData: CreateJobFormData) => {
@@ -38,7 +38,7 @@ export default function EditJobPage() {
         },
       },
       onCompleted: () => {
-        router.push(paths.dashboard.contractor.getHref());
+        router.push(paths.dashboard.contractor.jobs.view.getHref(jobId));
       },
     });
   };

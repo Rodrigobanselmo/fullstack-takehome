@@ -13,18 +13,13 @@ export const jobTypeDefs = gql`
     name: String!
   }
 
-  enum UserRole {
-    CONTRACTOR
-    HOMEOWNER
-  }
-
   type Job {
     id: ID!
     description: String!
     location: String!
     status: JobStatus!
     cost: Float!
-    contractorId: String!
+    contractor: User!
     homeowner: User!
   }
 
@@ -47,7 +42,6 @@ export const jobTypeDefs = gql`
   type Query {
     jobs: [Job!]!
     job(id: ID!): Job!
-    homeowners: [User!]!
   }
 
   type Mutation {

@@ -11,6 +11,10 @@ export const canViewJobs = (user: UserSession | null) => {
   );
 };
 
+export const canListHomeowners = (user: UserSession | null) => {
+  return user?.role === UserRole.Contractor;
+};
+
 export const canViewContractorDashboard = (role: UserRole) => {
   return role === UserRole.Contractor;
 };

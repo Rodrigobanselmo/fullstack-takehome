@@ -20,7 +20,7 @@ export default function ContractorDashboardPage() {
   };
 
   const handleJobClick = (jobId: string) => {
-    router.push(paths.dashboard.contractor.jobs.edit.getHref(jobId));
+    router.push(paths.dashboard.contractor.jobs.view.getHref(jobId));
   };
 
   return (

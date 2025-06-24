@@ -26,7 +26,7 @@ export default async function DashboardLayout({
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <NavbarLayout />
+            <NavbarLayout user={user} />
             <LogoutButton />
           </div>
         </div>

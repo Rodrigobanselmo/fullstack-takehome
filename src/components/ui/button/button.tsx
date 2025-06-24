@@ -3,7 +3,7 @@ import styles from "./button.module.css";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "fill" | "outline";
-  color?: "primary" | "grey" | "danger";
+  color?: "primary" | "secondary" | "grey" | "danger";
   size?: "sm" | "md" | "lg";
   minWidth?: string;
 }

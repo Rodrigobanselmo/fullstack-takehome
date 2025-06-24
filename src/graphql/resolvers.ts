@@ -1,5 +1,6 @@
 import { authResolvers } from "./auth/auth.resolvers";
 import { jobResolvers } from "./job/job.resolvers";
+import { userResolvers } from "./user/user.resolvers";
 
 export const resolvers = {
   Mutation: {
@@ -8,5 +9,6 @@ export const resolvers = {
   },
   Query: {
     ...jobResolvers.Query,
+    ...userResolvers.Query,
   },
 };
