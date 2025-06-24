@@ -1,62 +1,42 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useUser } from "~/context/user-context";
-import { useQueryMessages } from "~/features/chat/api/use-query-messages";
-import { useSendMessageMutation } from "~/features/chat/api/use-send-message-mutation";
+import { useConversationPage } from "~/features/chat/hooks/use-conversation-page";
 import ChatContainer from "~/features/chat/components/chat-container/chat-container";
-import { useQueryConversation } from "~/features/chat/api/use-query-conversation";
+import ChatError from "~/features/chat/components/chat-error/chat-error";
+import ChatLoading from "~/features/chat/components/chat-loading/chat-loading";
 
 export default function ConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const user = useUser();
-  const currentUserId = user.id;
-
   const {
-    data: conversationData,
-    loading: conversationLoading,
-    error: conversationError,
-  } = useQueryConversation(conversationId);
+    userName,
+    messages,
+    loading,
+    error,
+    onSendMessage,
+    onLoadMore,
+    hasNextPage,
+    currentUserId,
+    messagesFetching,
+  } = useConversationPage(conversationId);
 
-  const {
-    data: messagesData,
-    loading: messagesLoading,
-    error: messagesError,
-    refetch: refetchMessages,
-  } = useQueryMessages(conversationId);
+  if (error) {
+    return <ChatError name={userName} />;
+  }
 
-  const [sendMessage] = useSendMessageMutation();
-
-  const handleSendMessage = async (text: string) => {
-    if (!conversationId) return;
-    await sendMessage({
-      variables: {
-        input: {
-          conversationId,
-          text,
-        },
-      },
-    });
-
-    void refetchMessages();
-  };
-
-  const conversation = conversationData?.conversation;
-
-  const userName = conversation
-    ? conversation.contractor.id === currentUserId
-      ? conversation.homeowner.name
-      : conversation.contractor.name
-    : "Conversation";
+  if (loading || !messages) {
+    return <ChatLoading />;
+  }
 
   return (
     <ChatContainer
-      messages={messagesData?.messages.edges.map((e) => e.node) || []}
+      name={userName}
+      messages={messages.edges.map((e) => e.node)}
+      hasNextPage={hasNextPage}
       currentUserId={currentUserId}
-      userName={userName}
-      onSendMessage={handleSendMessage}
-      loading={messagesLoading || conversationLoading}
-      error={!!messagesError || !!conversationError}
+      onSendMessage={onSendMessage}
+      loading={messagesFetching}
+      onLoadMore={onLoadMore}
     />
   );
 }
