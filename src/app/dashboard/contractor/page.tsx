@@ -10,10 +10,14 @@ import { paths } from "~/config/paths";
 import { useQueryContractorJobs } from "~/features/jobs/api/use-query-contractor-jobs";
 import JobCard from "~/features/jobs/components/job-card/job-card";
 import JobsGrid from "~/features/jobs/components/jobs-grid/jobs-grid";
+import JobStatusFilter from "~/features/jobs/components/job-status-filter/job-status-filter";
+import { useJobStatusFilter } from "~/features/jobs/hooks/use-job-status-filter";
+import type { JobStatus } from "generated/gql/graphql";
 
 export default function ContractorDashboardPage() {
   const router = useRouter();
-  const { data, loading, error } = useQueryContractorJobs();
+  const { selectedStatus, updateStatus } = useJobStatusFilter();
+  const { data, loading, error } = useQueryContractorJobs(selectedStatus);
 
   const handleAddJob = () => {
     router.push(paths.dashboard.contractor.jobs.add.getHref());
@@ -23,12 +27,21 @@ export default function ContractorDashboardPage() {
     router.push(paths.dashboard.contractor.jobs.view.getHref(jobId));
   };
 
+  const handleStatusChange = (status: JobStatus | null) => {
+    updateStatus(status);
+  };
+
   return (
     <ContentLayout
       title="My Jobs"
       actions={<Button onClick={handleAddJob}>+ Add Job</Button>}
     >
-      {loading && <LoadingState message="Loading your jobs..." />}
+      <JobStatusFilter
+        selectedStatus={selectedStatus}
+        onStatusChange={handleStatusChange}
+      />
+
+      {loading && !data && <LoadingState message="Loading your jobs..." />}
 
       {error && (
         <ErrorState message="Unable to load jobs. Please try again later." />
@@ -36,8 +49,8 @@ export default function ContractorDashboardPage() {
 
       {data && data.jobs.length === 0 && (
         <EmptyState
-          title="No jobs yet"
-          message="You haven't added any jobs yet. Add a job to get started."
+          title={`No ${selectedStatus.toLowerCase()} jobs`}
+          message={`You don't have any ${selectedStatus.toLowerCase()} jobs.`}
         />
       )}
 

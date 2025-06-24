@@ -2,6 +2,7 @@ import {
   type CreateJobInput,
   type UpdateJobInput,
   type QueryJobArgs,
+  type QueryJobsArgs,
 } from "generated/gql/graphql";
 import { canManageJob, canViewJobs } from "~/lib/authorization";
 import type { GraphQLContext } from "../context";
@@ -16,13 +17,17 @@ import {
 
 export const jobResolvers = {
   Query: {
-    jobs: async (_: unknown, __: unknown, context: GraphQLContext) => {
+    jobs: async (
+      _: unknown,
+      { status }: QueryJobsArgs,
+      context: GraphQLContext,
+    ) => {
       const isUnauthorized = !canViewJobs(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
 
-      return getUserJobs({ userId: context.user!.id });
+      return getUserJobs({ userId: context.user!.id, status });
     },
     job: async (_: unknown, { id }: QueryJobArgs, context: GraphQLContext) => {
       const isUnauthorized = !canViewJobs(context.user);

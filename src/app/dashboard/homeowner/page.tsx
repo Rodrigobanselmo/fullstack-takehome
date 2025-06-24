@@ -9,17 +9,30 @@ import { paths } from "~/config/paths";
 import { useQueryHomeownerJobs } from "~/features/jobs/api/use-query-homeowner-jobs";
 import JobCard from "~/features/jobs/components/job-card/job-card";
 import JobsGrid from "~/features/jobs/components/jobs-grid/jobs-grid";
+import JobStatusFilter from "~/features/jobs/components/job-status-filter/job-status-filter";
+import { useJobStatusFilter } from "~/features/jobs/hooks/use-job-status-filter";
+import type { JobStatus } from "generated/gql/graphql";
 
 export default function HomeownerDashboardPage() {
   const router = useRouter();
-  const { data, loading, error } = useQueryHomeownerJobs();
+  const { selectedStatus, updateStatus } = useJobStatusFilter();
+  const { data, loading, error } = useQueryHomeownerJobs(selectedStatus);
 
   const handleJobClick = (jobId: string) => {
     router.push(paths.dashboard.homeowner.view.getHref(jobId));
   };
 
+  const handleStatusChange = (status: JobStatus | null) => {
+    updateStatus(status);
+  };
+
   return (
     <ContentLayout title="My Projects">
+      <JobStatusFilter
+        selectedStatus={selectedStatus}
+        onStatusChange={handleStatusChange}
+      />
+
       {loading && <LoadingState message="Loading your projects..." />}
 
       {error && (
@@ -28,8 +41,8 @@ export default function HomeownerDashboardPage() {
 
       {data && data.jobs.length === 0 && (
         <EmptyState
-          title="No projects yet"
-          message="You haven't added any projects yet."
+          title={`No ${selectedStatus.toLowerCase()} projects`}
+          message={`You don't have any ${selectedStatus.toLowerCase()} projects.`}
         />
       )}
 

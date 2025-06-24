@@ -43,11 +43,10 @@ export default function ViewJobPage() {
         status={data.job.status}
         cost={data.job.cost}
         name={data.job.homeowner.name}
+        homeownerId={data.job.homeowner.id}
+        contractorId={data.job.contractor.id}
         onEdit={() =>
           router.push(paths.dashboard.contractor.jobs.edit.getHref(jobId))
-        }
-        onChat={() =>
-          router.push(paths.dashboard.chat.user.getHref(data.job.homeowner.id))
         }
       />
     </ContentLayout>

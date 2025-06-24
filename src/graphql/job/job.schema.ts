@@ -40,7 +40,7 @@ export const jobTypeDefs = gql`
   }
 
   type Query {
-    jobs: [Job!]!
+    jobs(status: JobStatus): [Job!]!
     job(id: ID!): Job!
   }
 

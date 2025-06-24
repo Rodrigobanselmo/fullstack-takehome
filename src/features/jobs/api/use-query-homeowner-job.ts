@@ -18,6 +18,9 @@ const HOMEOWNER_JOB_QUERY = gql`
         id
         name
       }
+      homeowner {
+        id
+      }
     }
   }
 `;

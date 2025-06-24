@@ -18,6 +18,9 @@ const CONTRACTOR_JOB_QUERY = gql`
         id
         name
       }
+      contractor {
+        id
+      }
     }
   }
 `;

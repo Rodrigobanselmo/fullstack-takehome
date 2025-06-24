@@ -47,9 +47,8 @@ export default function ViewProjectPage() {
         status={data.job.status}
         cost={data.job.cost}
         name={data.job.contractor.name}
-        onChat={() =>
-          router.push(paths.dashboard.chat.user.getHref(data.job.contractor.id))
-        }
+        homeownerId={data.job.homeowner.id}
+        contractorId={data.job.contractor.id}
       />
     </ContentLayout>
   );

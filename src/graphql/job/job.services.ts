@@ -4,14 +4,22 @@ import { type JobStatus } from "generated/prisma";
 import {
   type CreateJobInput,
   type UpdateJobInput,
+  type JobStatus as GraphQLJobStatus,
 } from "generated/gql/graphql";
 
-export async function getUserJobs({ userId }: { userId: string }) {
+export async function getUserJobs({
+  userId,
+  status,
+}: {
+  userId: string;
+  status?: GraphQLJobStatus | null;
+}) {
   return prisma.job.findMany({
     orderBy: { createdAt: "desc" },
     where: {
       deletedAt: null,
       OR: [{ contractorId: userId }, { homeownerId: userId }],
+      ...(status && { status: status as JobStatus }),
     },
     include: {
       contractor: { select: { name: true, id: true } },
@@ -62,7 +70,6 @@ export async function createJobWithConversation({
       },
     });
 
-    console.log(await tx.conversation.findMany());
     const existingConversation = await tx.conversation.count({
       where: { contractorId, homeownerId },
     });
