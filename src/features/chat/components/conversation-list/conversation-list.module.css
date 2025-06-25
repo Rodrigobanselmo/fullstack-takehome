@@ -1,20 +1,24 @@
 .container {
   width: 300px;
-  border-right: 1px solid #e5e7eb;
-  background-color: white;
+  border-right: 1px solid var(--color-border);
+  background-color: var(--color-background);
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .header {
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -25,50 +29,29 @@
 
 .conversation {
   padding: 16px 20px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .conversation:hover {
-  background-color: #f9fafb;
+  background-color: var(--color-gray-10);
 }
 
 .conversation.active {
-  background-color: #eff6ff;
-  border-right: 3px solid #3b82f6;
+  background-color: var(--color-primary-10);
+  border-right: 3px solid var(--color-primary);
 }
 
 .name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-text-primary);
   margin-bottom: 4px;
 }
 
 .role {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: capitalize;
 }
 
-.empty {
-  padding: 32px 20px;
-  text-align: center;
-  color: #6b7280;
-}
-
-.emptyIcon {
-  font-size: 32px;
-  margin-bottom: 12px;
-  opacity: 0.5;
-}
-
-.emptyTitle {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.emptyMessage {
-  font-size: 14px;
-} 

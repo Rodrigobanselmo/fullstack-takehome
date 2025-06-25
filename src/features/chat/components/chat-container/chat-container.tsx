@@ -1,60 +1,53 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import type { Message } from "generated/gql/graphql";
+import { useChatScroll } from "~/features/chat/hooks/use-chat-scroll";
+import ChatHeader from "../chat-header/chat-header";
+import ChatMessagesList from "../chat-messages-list/chat-messages-list";
 import MessageInput from "../message-input/message-input";
 import styles from "./chat-container.module.css";
-import type { Message } from "generated/gql/graphql";
-import ChatLoading from "../chat-loading/chat-loading";
-import ChatHeader from "../chat-header/chat-header";
-import ChatError from "../chat-error/chat-error";
-import ChatMessagesList from "../chat-messages-list/chat-messages-list";
 
 interface ChatContainerProps {
   messages: Message[];
   currentUserId: string;
-  userName: string;
+  name: string;
   onSendMessage: (text: string) => void;
   loading?: boolean;
   error?: boolean;
+  hasNextPage?: boolean;
+  onLoadMore: () => void;
 }
 
 export default function ChatContainer({
+  name,
   messages,
   currentUserId,
-  userName,
   onSendMessage,
   loading,
-  error,
+  hasNextPage,
+  onLoadMore,
 }: ChatContainerProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { messagesEndRef, messagesContainerRef } = useChatScroll({
+    messages,
+    hasNextPage,
+    loading,
+    onLoadMore,
+  });
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  if (error) {
-    return <ChatError userName={userName} />;
-  }
-
-  const isInitialLoading = loading && messages.length === 0;
-  if (isInitialLoading) {
-    return <ChatLoading />;
-  }
+  const orderedMessages = [...messages].reverse();
 
   return (
     <div className={styles.container}>
-      <ChatHeader userName={userName} />
-
-      <div className={styles.messages}>
-        <ChatMessagesList messages={messages} currentUserId={currentUserId} />
+      <ChatHeader name={name} />
+      <div className={styles.messages} ref={messagesContainerRef}>
+        {loading && <div className={styles.loading}>Loading...</div>}
+        <ChatMessagesList
+          messages={orderedMessages}
+          currentUserId={currentUserId}
+        />
         <div ref={messagesEndRef} />
       </div>
-
-      <MessageInput onSendMessage={onSendMessage} disabled={loading} />
+      <MessageInput onSendMessage={onSendMessage} />
     </div>
   );
 }

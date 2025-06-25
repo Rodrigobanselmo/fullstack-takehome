@@ -3,13 +3,13 @@ import ChatIconContent from "../chat-icon-content/chat-icon-content";
 import styles from "./chat-error.module.css";
 
 interface ChatErrorProps {
-  userName: string;
+  name: string;
 }
 
-export default function ChatError({ userName }: ChatErrorProps) {
+export default function ChatError({ name }: ChatErrorProps) {
   return (
     <div className={styles.container}>
-      <ChatHeader userName={userName} />
+      <ChatHeader name={name} />
       <ChatIconContent
         icon="⚠️"
         title="Error loading messages"

@@ -2,6 +2,8 @@
 
 import type { Conversation } from "generated/gql/graphql";
 import styles from "./conversation-list.module.css";
+import ConversationListEmpty from "./components/conversation-list-empty/conversation-list-empty";
+import ConversationListLoading from "./components/conversation-list-loading/conversation-list-loading";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -32,34 +34,11 @@ export default function ConversationList({
   };
 
   if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>Conversations</h2>
-        </div>
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>⏳</div>
-          <div className={styles.emptyTitle}>Loading conversations...</div>
-        </div>
-      </div>
-    );
+    return <ConversationListLoading />;
   }
 
   if (conversations.length === 0) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>Conversations</h2>
-        </div>
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>💬</div>
-          <div className={styles.emptyTitle}>No conversations yet</div>
-          <div className={styles.emptyMessage}>
-            Start a conversation with someone to see it here.
-          </div>
-        </div>
-      </div>
-    );
+    return <ConversationListEmpty />;
   }
 
   return (

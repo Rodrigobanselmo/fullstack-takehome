@@ -9,9 +9,11 @@ const CONVERSATION_QUERY = gql`
     conversation(id: $id) {
       id
       contractor {
+        id
         name
       }
       homeowner {
+        id
         name
       }
     }
