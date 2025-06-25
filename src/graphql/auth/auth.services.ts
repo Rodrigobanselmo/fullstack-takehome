@@ -1,4 +1,9 @@
-import type { LoginInput, LoginOutput, UserRole } from "generated/gql/graphql";
+import type {
+  LoginInput,
+  LoginOutput,
+  LogoutOutput,
+  UserRole,
+} from "generated/gql/graphql";
 import { setUserCookie, clearUserCookie } from "~/lib/auth";
 import { prisma } from "~/server/database/prisma";
 import { passwordHasher } from "~/server/utils/password-hasher";
@@ -35,7 +40,7 @@ export async function loginService(input: LoginInput): Promise<LoginOutput> {
   return userSession;
 }
 
-export async function logoutService(): Promise<{ success: boolean }> {
+export async function logoutService(): Promise<LogoutOutput> {
   await clearUserCookie();
   return { success: true };
 }

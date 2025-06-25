@@ -5,6 +5,7 @@ import {
   type CreateJobInput,
   type UpdateJobInput,
   type JobStatus as GraphQLJobStatus,
+  type Job,
 } from "generated/gql/graphql";
 
 export async function getUserJobs({
@@ -13,8 +14,8 @@ export async function getUserJobs({
 }: {
   userId: string;
   status?: GraphQLJobStatus | null;
-}) {
-  return prisma.job.findMany({
+}): Promise<Job[]> {
+  const jobs = await prisma.job.findMany({
     orderBy: { createdAt: "desc" },
     where: {
       deletedAt: null,
@@ -22,10 +23,18 @@ export async function getUserJobs({
       ...(status && { status: status as JobStatus }),
     },
     include: {
-      contractor: { select: { name: true, id: true } },
-      homeowner: { select: { name: true, id: true } },
+      contractor: true,
+      homeowner: true,
     },
   });
+
+  const formattedJobs = jobs.map((job) => ({
+    ...job,
+    status: job.status as GraphQLJobStatus,
+    cost: job.cost.toNumber(),
+  }));
+
+  return formattedJobs;
 }
 
 export async function getUserJobById({
@@ -34,7 +43,7 @@ export async function getUserJobById({
 }: {
   userId: string;
   jobId: string;
-}) {
+}): Promise<Job> {
   const job = await prisma.job.findFirst({
     where: {
       id: jobId,
@@ -42,12 +51,17 @@ export async function getUserJobById({
       OR: [{ contractorId: userId }, { homeownerId: userId }],
     },
     include: {
-      contractor: { select: { name: true, id: true } },
-      homeowner: { select: { name: true, id: true } },
+      contractor: true,
+      homeowner: true,
     },
   });
   if (!job) throw JobNotFoundError();
-  return job;
+
+  return {
+    ...job,
+    status: job.status as GraphQLJobStatus,
+    cost: job.cost.toNumber(),
+  };
 }
 
 export async function createJobWithConversation({

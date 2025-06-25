@@ -8,11 +8,6 @@ export const jobTypeDefs = gql`
     CANCELED
   }
 
-  type User {
-    id: ID!
-    name: String!
-  }
-
   type Job {
     id: ID!
     description: String!

@@ -1,4 +1,8 @@
-import type { LoginInput, LoginOutput } from "generated/gql/graphql";
+import type {
+  LoginInput,
+  LoginOutput,
+  LogoutOutput,
+} from "generated/gql/graphql";
 import { loginService, logoutService } from "./auth.services";
 
 export const authResolvers = {
@@ -10,7 +14,7 @@ export const authResolvers = {
       return loginService(input);
     },
 
-    logout: async (): Promise<{ success: boolean }> => {
+    logout: async (): Promise<LogoutOutput> => {
       return logoutService();
     },
   },

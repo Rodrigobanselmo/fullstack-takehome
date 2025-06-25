@@ -3,6 +3,7 @@ import {
   type UpdateJobInput,
   type QueryJobArgs,
   type QueryJobsArgs,
+  type Job,
 } from "generated/gql/graphql";
 import { canManageJob, canViewJobs } from "~/lib/authorization";
 import type { GraphQLContext } from "../context";
@@ -21,7 +22,7 @@ export const jobResolvers = {
       _: unknown,
       { status }: QueryJobsArgs,
       context: GraphQLContext,
-    ) => {
+    ): Promise<Job[]> => {
       const isUnauthorized = !canViewJobs(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -43,7 +44,7 @@ export const jobResolvers = {
       _: unknown,
       { input }: { input: CreateJobInput },
       context: GraphQLContext,
-    ) => {
+    ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -58,7 +59,7 @@ export const jobResolvers = {
       _: unknown,
       { id, input }: { id: string; input: UpdateJobInput },
       context: GraphQLContext,
-    ) => {
+    ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -74,7 +75,7 @@ export const jobResolvers = {
       _: unknown,
       { id }: { id: string },
       context: GraphQLContext,
-    ) => {
+    ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();

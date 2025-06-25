@@ -1,5 +1,7 @@
 import { canSendMessage, canViewChat, canViewJobs } from "~/lib/authorization";
 import type {
+  Conversation,
+  MessageConnection,
   MutationSendMessageArgs,
   QueryConversationByParticipantsArgs,
   QueryMessagesArgs,
@@ -18,7 +20,11 @@ import {
 
 export const chatResolvers = {
   Query: {
-    conversations: async (_: unknown, __: unknown, context: GraphQLContext) => {
+    conversations: async (
+      _: unknown,
+      __: unknown,
+      context: GraphQLContext,
+    ): Promise<Conversation[]> => {
       const isUnauthorized = !canViewChat(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -31,7 +37,7 @@ export const chatResolvers = {
       _: unknown,
       { conversationId, first, after }: QueryMessagesArgs,
       context: GraphQLContext,
-    ) => {
+    ): Promise<MessageConnection> => {
       const isUnauthorized = !canViewJobs(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -59,7 +65,7 @@ export const chatResolvers = {
       _: unknown,
       { id }: { id: string },
       context: GraphQLContext,
-    ) => {
+    ): Promise<Conversation> => {
       const isUnauthorized = !canViewChat(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -74,7 +80,7 @@ export const chatResolvers = {
       _: unknown,
       args: QueryConversationByParticipantsArgs,
       context: GraphQLContext,
-    ) => {
+    ): Promise<Conversation> => {
       const isUnauthorized = !canViewChat(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -91,7 +97,7 @@ export const chatResolvers = {
       _: unknown,
       { input }: MutationSendMessageArgs,
       context: GraphQLContext,
-    ) => {
+    ): Promise<string> => {
       const isUnauthorized = !canSendMessage(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();

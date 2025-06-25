@@ -3,11 +3,6 @@ import { gql } from "graphql-tag";
 export const chatTypeDefs = gql`
   scalar DateTime
 
-  type User {
-    id: ID!
-    name: String!
-  }
-
   type Message {
     id: ID!
     text: String!

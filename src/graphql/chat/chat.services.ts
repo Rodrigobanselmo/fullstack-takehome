@@ -1,7 +1,11 @@
 import { formatToGQLConnection } from "~/lib/pagination";
 import { prisma } from "~/server/database/prisma";
 import { ConversationNotFoundError } from "./chat.errors";
-import type { Conversation } from "generated/gql/graphql";
+import type {
+  Conversation,
+  Message,
+  MessageConnection,
+} from "generated/gql/graphql";
 import type {
   FindAndValidateConversationArgs,
   FindMessagesArgs,
@@ -33,7 +37,7 @@ export async function findAndValidateConversationService({
 export async function findMessagesService({
   conversationId,
   pagination,
-}: FindMessagesArgs) {
+}: FindMessagesArgs): Promise<MessageConnection> {
   const limit = pagination.first ?? DEFAULT_PAGE_SIZE;
 
   const allFetchedMessages = await prisma.message.findMany({
@@ -61,7 +65,7 @@ export async function createMessageService({
   conversationId,
   text,
   senderId,
-}: CreateMessageArgs) {
+}: CreateMessageArgs): Promise<Message> {
   const message = await prisma.message.create({
     data: {
       conversationId,
@@ -126,25 +130,15 @@ export async function findConversationsService({
 export async function findConversationByIdService({
   conversationId,
   userId,
-}: FindConversationByIdArgs) {
+}: FindConversationByIdArgs): Promise<Conversation> {
   const conversation = await prisma.conversation.findFirst({
     where: {
       id: conversationId,
       OR: [{ contractorId: userId }, { homeownerId: userId }],
     },
     include: {
-      contractor: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      homeowner: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      contractor: true,
+      homeowner: true,
     },
   });
   if (!conversation) {
@@ -157,7 +151,7 @@ export async function findConversationByParticipantsService({
   contractorId,
   homeownerId,
   userId,
-}: FindConversationByParticipantsArgs) {
+}: FindConversationByParticipantsArgs): Promise<Conversation> {
   const conversation = await prisma.conversation.findFirst({
     where: {
       contractorId,
@@ -165,18 +159,8 @@ export async function findConversationByParticipantsService({
       OR: [{ contractorId: userId }, { homeownerId: userId }],
     },
     include: {
-      contractor: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      homeowner: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      contractor: true,
+      homeowner: true,
     },
   });
   if (!conversation) {

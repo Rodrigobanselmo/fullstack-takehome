@@ -1,10 +1,6 @@
 // prisma/seed.ts
-import {
-  JobStatus,
-  PrismaClient,
-  UserRole,
-  type User,
-} from "../generated/prisma/client";
+import type { User } from "generated/gql/graphql";
+import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
