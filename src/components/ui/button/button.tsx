@@ -2,7 +2,7 @@ import { type ButtonHTMLAttributes } from "react";
 import styles from "./button.module.css";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "fill" | "outline";
+  variant?: "fill" | "outline" | "ghost";
   color?: "primary" | "secondary" | "grey" | "danger";
   size?: "sm" | "md" | "lg";
   minWidth?: string;

@@ -61,12 +61,20 @@ a {
   --color-danger-50: rgba(211, 47, 47, 0.5);
   --color-danger-80: rgba(211, 47, 47, 0.8);
 
+  --color-info: #1976d2;
+  --color-info-hover: #1565c0;
+  --color-info-10: rgba(25, 117, 210, 0.1);
+  --color-info-20: rgba(25, 117, 210, 0.2);
+  --color-info-50: rgba(25, 117, 210, 0.5);
+  --color-info-80: rgba(25, 117, 210, 0.8);
+
   --color-paper: #fafafa; 
   --color-background: #ffffff;
   --color-text-primary: var(--color-dark);
   --color-text-secondary: var(--color-gray);
   --color-accent: var(--color-primary);
   --color-warning: var(--color-secondary);
+  --color-disabled: #9ca3af;
   --color-border: var(--color-gray-20);
   --color-shadow: var(--color-dark-10);
   --color-error: #d32f2f;
@@ -80,4 +88,6 @@ a {
   --color-status-completed-bg: rgba(36, 162, 94, 0.1);
   --color-status-canceled: #ff9800;
   --color-status-canceled-bg: rgba(255, 152, 0, 0.1);
+
+
 }

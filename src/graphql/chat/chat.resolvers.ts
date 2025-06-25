@@ -1,23 +1,25 @@
+import { canSendMessage, canViewChat, canViewJobs } from "~/lib/authorization";
 import type {
   MutationSendMessageArgs,
+  QueryConversationByParticipantsArgs,
   QueryMessagesArgs,
-} from "generated/gql/graphql"; // These types will be updated by your codegen
-import { canViewJobs } from "~/lib/authorization";
+} from "../../../generated/gql/graphql";
 import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
 import { InvalidFirstArgumentError } from "./chat.errors";
 import {
   createMessageService,
-  findMessagesService,
   findAndValidateConversationService,
-  findConversationsService,
   findConversationByIdService,
+  findConversationByParticipantsService,
+  findConversationsService,
+  findMessagesService,
 } from "./chat.services";
 
 export const chatResolvers = {
   Query: {
     conversations: async (_: unknown, __: unknown, context: GraphQLContext) => {
-      const isUnauthorized = !canViewJobs(context.user);
+      const isUnauthorized = !canViewChat(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
@@ -58,12 +60,28 @@ export const chatResolvers = {
       { id }: { id: string },
       context: GraphQLContext,
     ) => {
-      const isUnauthorized = !canViewJobs(context.user);
+      const isUnauthorized = !canViewChat(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
       return findConversationByIdService({
         conversationId: id,
+        userId: context.user!.id,
+      });
+    },
+
+    conversationByParticipants: async (
+      _: unknown,
+      args: QueryConversationByParticipantsArgs,
+      context: GraphQLContext,
+    ) => {
+      const isUnauthorized = !canViewChat(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+      return findConversationByParticipantsService({
+        contractorId: args.contractorId,
+        homeownerId: args.homeownerId,
         userId: context.user!.id,
       });
     },
@@ -74,7 +92,7 @@ export const chatResolvers = {
       { input }: MutationSendMessageArgs,
       context: GraphQLContext,
     ) => {
-      const isUnauthorized = !canViewJobs(context.user);
+      const isUnauthorized = !canSendMessage(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }

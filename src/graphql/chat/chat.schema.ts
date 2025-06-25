@@ -47,6 +47,10 @@ export const chatTypeDefs = gql`
     conversations: [Conversation!]!
     conversation(id: ID!): Conversation
     messages(conversationId: ID!, first: Int, after: String): MessageConnection!
+    conversationByParticipants(
+      contractorId: ID!
+      homeownerId: ID!
+    ): Conversation
   }
 
   type Mutation {

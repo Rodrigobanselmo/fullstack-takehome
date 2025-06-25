@@ -37,6 +37,7 @@ async function main() {
     { username: "guest.homeowner2", name: "Guest Homeowner 2" },
     { username: "guest.homeowner3", name: "Guest Homeowner 3" },
     { username: "guest.homeowner4", name: "Guest Homeowner 4" },
+    { username: "guest.homeowner5", name: "Guest Homeowner 5" },
   ];
 
   const homeownerUsers: User[] = [];

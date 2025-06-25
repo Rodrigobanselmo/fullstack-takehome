@@ -1,16 +1,23 @@
 import { formatToGQLConnection } from "~/lib/pagination";
 import { prisma } from "~/server/database/prisma";
 import { ConversationNotFoundError } from "./chat.errors";
+import type { Conversation } from "generated/gql/graphql";
+import type {
+  FindAndValidateConversationArgs,
+  FindMessagesArgs,
+  CreateMessageArgs,
+  FindConversationsArgs,
+  FindConversationByIdArgs,
+  FindConversationByParticipantsArgs,
+  RawConversationRow,
+} from "./chat.types";
 
 export const DEFAULT_PAGE_SIZE = 20;
 
 export async function findAndValidateConversationService({
   conversationId,
   userId,
-}: {
-  conversationId: string;
-  userId: string;
-}): Promise<void> {
+}: FindAndValidateConversationArgs): Promise<void> {
   const conversationExists = await prisma.conversation.count({
     where: {
       id: conversationId,
@@ -26,15 +33,12 @@ export async function findAndValidateConversationService({
 export async function findMessagesService({
   conversationId,
   pagination,
-}: {
-  conversationId: string;
-  pagination: { first?: number | null; after?: string | null };
-}) {
+}: FindMessagesArgs) {
   const limit = pagination.first ?? DEFAULT_PAGE_SIZE;
 
   const allFetchedMessages = await prisma.message.findMany({
     where: { conversationId },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    orderBy: { createdAt: "desc" },
     include: { sender: true },
     take: limit + 1,
     cursor: pagination.after ? { id: pagination.after } : undefined,
@@ -57,11 +61,7 @@ export async function createMessageService({
   conversationId,
   text,
   senderId,
-}: {
-  conversationId: string;
-  text: string;
-  senderId: string;
-}) {
+}: CreateMessageArgs) {
   const message = await prisma.message.create({
     data: {
       conversationId,
@@ -74,9 +74,62 @@ export async function createMessageService({
   return message;
 }
 
-export async function findConversationsService({ userId }: { userId: string }) {
-  return prisma.conversation.findMany({
+export async function findConversationsService({
+  userId,
+}: FindConversationsArgs): Promise<Conversation[]> {
+  const rawConversations = await prisma.$queryRaw<RawConversationRow[]>`
+    WITH UserConversations AS (
+        SELECT c.*
+        FROM conversations c
+        WHERE (c.contractor_id = ${userId} OR c.homeowner_id = ${userId})
+    ),
+    LatestMessageTimesForUserConversations AS (
+        SELECT
+            m.conversation_id,
+            MAX(m.created_at) AS latest_message_at
+        FROM messages m
+        INNER JOIN UserConversations uc ON m.conversation_id = uc.id
+        GROUP BY m.conversation_id
+    )
+    SELECT
+      uc.id,
+      uc.created_at AS created_at,
+      uc.updated_at AS updated_at,
+      u1.id AS contractor_id,
+      u1.name AS contractor_name,
+      u2.id AS homeowner_id,
+      u2.name AS homeowner_name
+    FROM UserConversations uc 
+    LEFT JOIN users u1 ON uc.contractor_id = u1.id
+    LEFT JOIN users u2 ON uc.homeowner_id = u2.id
+    LEFT JOIN LatestMessageTimesForUserConversations lmt ON uc.id = lmt.conversation_id
+    ORDER BY
+        lmt.latest_message_at DESC NULLS LAST,
+        uc.updated_at DESC;
+  `;
+
+  return rawConversations.map((row) => ({
+    id: row.id,
+    contractor: {
+      id: row.contractor_id,
+      name: row.contractor_name,
+    },
+    homeowner: {
+      id: row.homeowner_id,
+      name: row.homeowner_name,
+    },
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  }));
+}
+
+export async function findConversationByIdService({
+  conversationId,
+  userId,
+}: FindConversationByIdArgs) {
+  const conversation = await prisma.conversation.findFirst({
     where: {
+      id: conversationId,
       OR: [{ contractorId: userId }, { homeownerId: userId }],
     },
     include: {
@@ -93,22 +146,22 @@ export async function findConversationsService({ userId }: { userId: string }) {
         },
       },
     },
-    orderBy: {
-      updatedAt: "desc",
-    },
   });
+  if (!conversation) {
+    throw ConversationNotFoundError();
+  }
+  return conversation;
 }
 
-export async function findConversationByIdService({
-  conversationId,
+export async function findConversationByParticipantsService({
+  contractorId,
+  homeownerId,
   userId,
-}: {
-  conversationId: string;
-  userId: string;
-}) {
+}: FindConversationByParticipantsArgs) {
   const conversation = await prisma.conversation.findFirst({
     where: {
-      id: conversationId,
+      contractorId,
+      homeownerId,
       OR: [{ contractorId: userId }, { homeownerId: userId }],
     },
     include: {
