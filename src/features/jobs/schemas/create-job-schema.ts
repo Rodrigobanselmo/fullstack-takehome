@@ -17,9 +17,14 @@ export const createJobSchema = z.object({
   }),
   cost: z
     .string()
-    .min(1, "Cost is required")
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-      message: "Cost must be a positive number",
+    .refine((val) => !isNaN(parseFloat(val)), {
+      message: "Cost must be a number",
+    })
+    .refine((val) => parseFloat(val) >= 0, {
+      message: "Cost must be greater than or equal to 0",
+    })
+    .refine((val) => parseFloat(val) < 1000000000, {
+      message: "Cost must be less than $1,000,000,000",
     }),
   homeownerId: z.string(),
 });
