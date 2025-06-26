@@ -36,8 +36,14 @@ export async function findAndValidateConversationService({
 
 export async function findMessagesService({
   conversationId,
+  userId,
   pagination,
 }: FindMessagesArgs): Promise<MessageConnection> {
+  await findAndValidateConversationService({
+    conversationId: conversationId,
+    userId: userId,
+  });
+
   const limit = pagination.first ?? DEFAULT_PAGE_SIZE;
 
   const allFetchedMessages = await prisma.message.findMany({
@@ -66,6 +72,11 @@ export async function createMessageService({
   text,
   senderId,
 }: CreateMessageArgs): Promise<Message> {
+  await findAndValidateConversationService({
+    conversationId: conversationId,
+    userId: senderId,
+  });
+
   const message = await prisma.message.create({
     data: {
       conversationId,

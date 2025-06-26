@@ -10,14 +10,3 @@ export function ConversationNotFoundError() {
     },
   });
 }
-
-export function InvalidFirstArgumentError() {
-  return new GraphQLError("Argument 'first' must be a non-negative integer.", {
-    extensions: {
-      code: "INVALID_FIRST_ARGUMENT",
-      http: {
-        status: 400,
-      },
-    },
-  });
-}

@@ -1,26 +1,34 @@
 import {
-  type CreateJobInput,
-  type UpdateJobInput,
+  type Job,
+  type MutationCreateJobArgs,
+  type MutationDeleteJobArgs,
+  type MutationUpdateJobArgs,
   type QueryJobArgs,
   type QueryJobsArgs,
-  type Job,
 } from "generated/gql/graphql";
 import { canManageJob, canViewJobs } from "~/lib/authorization";
+import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
-import { UnauthorizedError } from "../errors";
+import { InvalidInputError, UnauthorizedError } from "../errors";
 import {
-  getUserJobs,
-  getUserJobById,
   createJobWithConversation,
-  updateJobById,
   deleteJobById,
+  getUserJobById,
+  getUserJobs,
+  updateJobById,
 } from "./job.services";
+import {
+  createJobInputSchema,
+  idSchema,
+  queryJobsArgsSchema,
+  updateJobInputSchema,
+} from "./job.validators";
 
 export const jobResolvers = {
   Query: {
     jobs: async (
       _: unknown,
-      { status }: QueryJobsArgs,
+      args: QueryJobsArgs,
       context: GraphQLContext,
     ): Promise<Job[]> => {
       const isUnauthorized = !canViewJobs(context.user);
@@ -28,13 +36,29 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
-      return getUserJobs({ userId: context.user!.id, status });
+      const validation = schemaValidation(queryJobsArgsSchema, args);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+
+      const { status } = validation.data;
+
+      return getUserJobs({
+        userId: context.user!.id,
+        filter: { status: status },
+      });
     },
-    job: async (_: unknown, { id }: QueryJobArgs, context: GraphQLContext) => {
+    job: async (_: unknown, args: QueryJobArgs, context: GraphQLContext) => {
       const isUnauthorized = !canViewJobs(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
+
+      const validation = schemaValidation(idSchema, args);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+      const { id } = validation.data;
 
       return getUserJobById({ userId: context.user!.id, jobId: id });
     },
@@ -42,7 +66,7 @@ export const jobResolvers = {
   Mutation: {
     createJob: async (
       _: unknown,
-      { input }: { input: CreateJobInput },
+      args: MutationCreateJobArgs,
       context: GraphQLContext,
     ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
@@ -50,20 +74,32 @@ export const jobResolvers = {
         throw UnauthorizedError();
       }
 
+      const validation = schemaValidation(createJobInputSchema, args.input);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+
       return createJobWithConversation({
         contractorId: context.user!.id,
-        input,
+        input: validation.data,
       });
     },
     updateJob: async (
       _: unknown,
-      { id, input }: { id: string; input: UpdateJobInput },
+      args: MutationUpdateJobArgs,
       context: GraphQLContext,
     ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
+
+      const inputValidation = schemaValidation(updateJobInputSchema, args);
+      if (inputValidation.success === false) {
+        throw InvalidInputError(inputValidation.error);
+      }
+
+      const { id, input } = inputValidation.data;
 
       return updateJobById({
         contractorId: context.user!.id,
@@ -73,13 +109,19 @@ export const jobResolvers = {
     },
     deleteJob: async (
       _: unknown,
-      { id }: { id: string },
+      args: MutationDeleteJobArgs,
       context: GraphQLContext,
     ): Promise<string> => {
       const isUnauthorized = !canManageJob(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
       }
+
+      const validation = schemaValidation(idSchema, args);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+      const { id } = validation.data;
 
       return deleteJobById({
         contractorId: context.user!.id,

@@ -8,3 +8,12 @@ export function UnauthorizedError() {
     },
   });
 }
+
+export function InvalidInputError(error: string) {
+  return new GraphQLError(error, {
+    extensions: {
+      code: "INVALID_INPUT",
+      http: { status: 400 },
+    },
+  });
+}

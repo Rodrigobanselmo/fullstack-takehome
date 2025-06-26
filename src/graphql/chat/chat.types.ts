@@ -5,6 +5,7 @@ export interface FindAndValidateConversationArgs {
 
 export interface FindMessagesArgs {
   conversationId: string;
+  userId: string;
   pagination: { first?: number | null; after?: string | null };
 }
 

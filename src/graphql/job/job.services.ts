@@ -1,26 +1,28 @@
-import { prisma } from "~/server/database/prisma";
-import { JobNotFoundError } from "./job.errors";
-import { type JobStatus } from "generated/prisma";
 import {
   type CreateJobInput,
-  type UpdateJobInput,
   type JobStatus as GraphQLJobStatus,
   type Job,
+  type UpdateJobInput,
 } from "generated/gql/graphql";
+import { type JobStatus } from "generated/prisma";
+import { prisma } from "~/server/database/prisma";
+import { JobNotFoundError } from "./job.errors";
 
 export async function getUserJobs({
   userId,
-  status,
+  filter,
 }: {
   userId: string;
-  status?: GraphQLJobStatus | null;
+  filter: {
+    status?: GraphQLJobStatus | null;
+  };
 }): Promise<Job[]> {
   const jobs = await prisma.job.findMany({
     orderBy: { createdAt: "desc" },
     where: {
       deletedAt: null,
       OR: [{ contractorId: userId }, { homeownerId: userId }],
-      ...(status && { status: status as JobStatus }),
+      ...(filter.status && { status: filter.status }),
     },
     include: {
       contractor: true,
