@@ -38,7 +38,13 @@ const JobCard: React.FC<JobCardProps> = ({
           <span>{name}</span>
         </div>
 
-        <div className={styles.jobCost}>${cost.toLocaleString()}</div>
+        <div className={styles.jobCost}>
+          <span className={styles.currencySymbol}>$</span>
+          {cost.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </div>
       </div>
     </div>
   );

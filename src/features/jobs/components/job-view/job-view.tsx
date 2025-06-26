@@ -56,8 +56,14 @@ export default function JobView({
         <span className={styles.value}>{JOB_STATUS_MAP[status]}</span>
       </div>
       <div className={styles.field}>
-        <span className={styles.label}>Cost ($)</span>
-        <span className={styles.value}>{cost}</span>
+        <span className={styles.label}>Cost</span>
+        <span className={styles.value}>
+          <span className={styles.currencySymbol}>$</span>
+          {cost.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </span>
       </div>
       <div className={styles.field}>
         <span className={styles.label}>Homeowner</span>
