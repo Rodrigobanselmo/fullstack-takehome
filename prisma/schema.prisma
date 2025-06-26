@@ -27,6 +27,11 @@ model Job {
     contractor User @relation("ContractorJobs", fields: [contractorId], references: [id])
     homeowner  User @relation("HomeownerJobs", fields: [homeownerId], references: [id])
 
+    @@index([contractorId])
+    @@index([homeownerId])
+    @@index([deletedAt])
+    @@index([status])
+    @@index([createdAt])
     @@map("jobs")
 }
 
@@ -46,6 +51,7 @@ model Conversation {
     @@unique([contractorId, homeownerId])
     @@index([contractorId])
     @@index([homeownerId])
+    @@index([createdAt])
     @@map("conversations")
 }
 
