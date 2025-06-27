@@ -45,7 +45,7 @@ export const jobResolvers = {
 
       return getUserJobs({
         userId: context.user!.id,
-        filter: { status: status },
+        status: status,
       });
     },
     job: async (_: unknown, args: QueryJobArgs, context: GraphQLContext) => {

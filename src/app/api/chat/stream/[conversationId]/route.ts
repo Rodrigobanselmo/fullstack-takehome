@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { captureException } from "~/lib/error-reporting";
 import { subscribe } from "~/server/utils/pubsub";
 import { getUserFromCookie } from "~/lib/auth";
-import { prisma } from "~/server/database/prisma";
+import { conversationRepository } from "~/server/repositories/conversation.repository";
 
 export async function GET(
   req: NextRequest,
@@ -16,14 +16,12 @@ export async function GET(
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const conversation = await prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [{ contractorId: user.id }, { homeownerId: user.id }],
-      },
-    });
+    const hasAccess = await conversationRepository.hasAccess(
+      conversationId,
+      user.id,
+    );
 
-    if (!conversation) {
+    if (!hasAccess) {
       return new Response("Forbidden", { status: 403 });
     }
 

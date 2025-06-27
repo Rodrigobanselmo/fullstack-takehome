@@ -1,8 +1,3 @@
-export interface FindAndValidateConversationArgs {
-  conversationId: string;
-  userId: string;
-}
-
 export interface FindMessagesArgs {
   conversationId: string;
   userId: string;
@@ -29,13 +24,3 @@ export interface FindConversationByParticipantsArgs {
   homeownerId: string;
   userId: string;
 }
-
-export type RawConversationRow = {
-  id: string;
-  contractor_id: string;
-  contractor_name: string;
-  homeowner_id: string;
-  homeowner_name: string;
-  created_at: string;
-  updated_at: string;
-};
