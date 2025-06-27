@@ -4,6 +4,7 @@ import { useQueryConversation } from "../api/use-query-conversation";
 import { useQueryMessages } from "../api/use-query-messages";
 import { useSendMessageMutation } from "../api/use-send-message-mutation";
 import { extractConversationUserName } from "../utils/extract-conversation-user-name";
+import { useChatStream } from "./use-chat-stream";
 
 export function useConversationPage(conversationId: string) {
   const { id: currentUserId } = useUser();
@@ -20,7 +21,6 @@ export function useConversationPage(conversationId: string) {
     isFetching: messagesFetching,
     error: messagesError,
     loadMore,
-    refetch: refetchMessages,
   } = useQueryMessages(conversationId);
 
   const [sendMessage] = useSendMessageMutation();
@@ -29,6 +29,8 @@ export function useConversationPage(conversationId: string) {
   const messages = messagesData?.messages;
 
   const userName = extractConversationUserName(currentUserId, conversation);
+
+  useChatStream(conversationId);
 
   const handleSendMessage = useCallback(
     async (text: string) => {
@@ -41,9 +43,8 @@ export function useConversationPage(conversationId: string) {
           },
         },
       });
-      void refetchMessages();
     },
-    [conversationId, sendMessage, refetchMessages],
+    [conversationId, sendMessage],
   );
 
   return {

@@ -1,5 +1,6 @@
 import type { UserRole } from "generated/gql/graphql";
 import { cookies } from "next/headers";
+import { captureException } from "./error-reporting";
 
 export interface UserSession {
   id: string;
@@ -36,7 +37,7 @@ export async function getUserFromCookie(): Promise<UserSession | null> {
     const user = JSON.parse(userCookie.value) as UserSession;
     return user;
   } catch (error) {
-    console.error("Error parsing user cookie:", error);
+    captureException(error, { message: "Error parsing user cookie" });
     return null;
   }
 }

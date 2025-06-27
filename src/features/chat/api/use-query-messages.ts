@@ -5,6 +5,8 @@ import type {
 } from "generated/gql/graphql";
 import { useCallback } from "react";
 
+export const MESSAGES_PAGE_SIZE = 15;
+
 export const MESSAGES_QUERY = gql`
   query Messages($conversationId: ID!, $first: Int, $after: String) {
     messages(conversationId: $conversationId, first: $first, after: $after) {
@@ -28,12 +30,17 @@ export const MESSAGES_QUERY = gql`
   }
 `;
 
+export const getMessagesQueryVariables = (conversationId: string) => ({
+  conversationId,
+  first: MESSAGES_PAGE_SIZE,
+});
+
 export function useQueryMessages(conversationId: string) {
   const { fetchMore, data, networkStatus, ...rest } = useQuery<
     MessagesQuery,
     MessagesQueryVariables
   >(MESSAGES_QUERY, {
-    variables: { conversationId, first: 15 },
+    variables: getMessagesQueryVariables(conversationId),
     fetchPolicy: "cache-and-network",
     notifyOnNetworkStatusChange: true,
   });

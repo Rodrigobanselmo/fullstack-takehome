@@ -15,6 +15,7 @@ import type {
   FindConversationByParticipantsArgs,
   RawConversationRow,
 } from "./chat.types";
+import { publish } from "~/server/utils/pubsub";
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -85,6 +86,8 @@ export async function createMessageService({
     },
     include: { sender: true },
   });
+
+  publish(conversationId, message);
 
   return message;
 }

@@ -1,4 +1,12 @@
 export const paths = {
+  api: {
+    chat: {
+      stream: {
+        getHref: (conversationId: string) =>
+          `/api/chat/stream/${conversationId}`,
+      },
+    },
+  },
   login: {
     getHref: () => "/login",
   },
