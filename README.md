@@ -2,6 +2,14 @@
 
 Welcome! This is a fullstack takehome project built with Next.js, Prisma, and a modern component-based architecture. The project is structured for clarity, scalability, and ease of development.
 
+### Context
+This implementation follows the [Full-Stack Engineer Take-Home Challenge](https://handoffai.notion.site/Take-Home-Challenge-Full-Stack-Engineer-191fc39a5fa781abadf6d0bdcf071a26#1e0fc39a5fa780388f28f1a0e5c6320a) requirements and is built upon the [fullstack-takehome starter project](https://github.com/1build/fullstack-takehome).
+
+- [x] React frontend
+- [x] Node or Python backend
+- [x] GraphQL or REST
+- [x] Relational database persistence
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -18,7 +26,7 @@ Welcome! This is a fullstack takehome project built with Next.js, Prisma, and a 
 
 1. **Clone your fork of this repository:**
    ```bash
-   git clone <your-github-repo-url>
+   git clone https://github.com/Rodrigobanselmo/fullstack-takehome
    cd fullstack-takehome
    ```
 2. **Install dependencies:**
