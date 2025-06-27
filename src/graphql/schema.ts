@@ -1,19 +1,23 @@
 import { gql } from "graphql-tag";
+import { authTypeDefs } from "./auth/auth.schema";
+import { chatTypeDefs } from "./chat/chat.schema";
+import { jobTypeDefs } from "./job/job.schema";
+import { userTypeDefs } from "./user/user.schema";
 
-// Define your GraphQL schema
-export const typeDefs = gql`
-  type Message {
-    id: ID!
-    text: String!
-    createdAt: String!
-  }
-
+const baseTypeDefs = gql`
   type Query {
-    hello: String!
-    messages: [Message!]!
+    _empty: String
   }
 
   type Mutation {
-    addMessage(text: String!): Message!
+    _empty: String
   }
 `;
+
+export const typeDefs = [
+  baseTypeDefs,
+  authTypeDefs,
+  chatTypeDefs,
+  jobTypeDefs,
+  userTypeDefs,
+];

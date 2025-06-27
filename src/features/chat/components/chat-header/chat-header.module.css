@@ -1,0 +1,53 @@
+.header {
+  padding: 16px 24px;
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-gray-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.backButton {
+  margin-left: auto;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-text-primary);
+  background-color: transparent;
+  border: none;
+
+  &:hover {
+    background-color: var(--color-gray-10);
+  }
+
+  &:active {
+    background-color: var(--color-gray-20);
+  }
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}

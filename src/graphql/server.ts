@@ -1,10 +1,10 @@
 import { ApolloServer } from "@apollo/server";
 import { typeDefs } from "./schema";
 import { resolvers } from "./resolvers";
+import type { GraphQLContext } from "./context";
 
-// Create the Apollo Server instance
 export function createApolloServer() {
-  return new ApolloServer({
+  return new ApolloServer<GraphQLContext>({
     typeDefs,
     resolvers,
   });

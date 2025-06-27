@@ -1,0 +1,57 @@
+.container {
+  width: 300px;
+  border-right: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversation {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.conversation:hover {
+  background-color: var(--color-gray-10);
+}
+
+.conversation.active {
+  background-color: var(--color-primary-10);
+  border-right: 3px solid var(--color-primary);
+}
+
+.name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.role {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+

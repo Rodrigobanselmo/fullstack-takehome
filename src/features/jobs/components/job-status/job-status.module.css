@@ -1,0 +1,28 @@
+.jobStatus {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.jobStatus.planning {
+  background: var(--color-status-planning-bg);
+  color: var(--color-status-planning);
+}
+
+.jobStatus.inProgress {
+  background: var(--color-status-in-progress-bg);
+  color: var(--color-status-in-progress);
+}
+
+.jobStatus.completed {
+  background: var(--color-status-completed-bg);
+  color: var(--color-status-completed);
+}
+
+.jobStatus.canceled {
+  background: var(--color-status-canceled-bg);
+  color: var(--color-status-canceled);
+} 

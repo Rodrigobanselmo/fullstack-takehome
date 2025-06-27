@@ -1,0 +1,29 @@
+.navbarNav {
+  display: flex;
+  gap: 16px;
+}
+
+.navbarLink {
+  text-decoration: none;
+  color: #222;
+  background: transparent;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.navbarLinkActive {
+  color: #fff;
+  background: #222;
+}
+
+@media (max-width: 600px) {
+  .navbarNav {
+    gap: 8px;
+  }
+  .navbarLink {
+    font-size: 14px;
+    padding: 4px 8px;
+  }
+}

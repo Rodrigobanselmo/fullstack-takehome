@@ -1,0 +1,8 @@
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: var(--color-text-secondary);
+  font-size: 1.125rem;
+} 

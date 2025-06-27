@@ -3,7 +3,7 @@
 
 generator client {
     provider = "prisma-client-js"
-    output = "../generated/prisma"
+    output   = "../generated/prisma"
 }
 
 datasource db {
@@ -11,19 +11,92 @@ datasource db {
     url      = "file:./dev.db"
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Job {
+    id           String    @id @default(cuid())
+    description  String
+    location     String
+    status       JobStatus @default(PLANNING)
+    cost         Decimal
+    contractorId String    @map("contractor_id")
+    homeownerId  String    @map("homeowner_id")
 
-    @@index([name])
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    contractor User @relation("ContractorJobs", fields: [contractorId], references: [id])
+    homeowner  User @relation("HomeownerJobs", fields: [homeownerId], references: [id])
+
+    @@index([contractorId])
+    @@index([homeownerId])
+    @@index([deletedAt])
+    @@index([status])
+    @@index([createdAt])
+    @@map("jobs")
+}
+
+model Conversation {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    contractorId String @map("contractor_id")
+    contractor   User   @relation("ContractorConversations", fields: [contractorId], references: [id])
+
+    homeownerId String @map("homeowner_id")
+    homeowner   User   @relation("HomeownerConversations", fields: [homeownerId], references: [id])
+
+    messages Message[]
+
+    @@unique([contractorId, homeownerId])
+    @@index([contractorId])
+    @@index([homeownerId])
+    @@index([createdAt])
+    @@map("conversations")
 }
 
 model Message {
-    id        String   @id @default(uuid())
-    text      String
-    createdAt DateTime @default(now())
+    id             String   @id @default(cuid())
+    text           String
+    createdAt      DateTime @default(now()) @map("created_at")
+    senderId       String   @map("sender_id")
+    conversationId String   @map("conversation_id")
+
+    sender       User         @relation("UserMessages", fields: [senderId], references: [id])
+    conversation Conversation @relation(fields: [conversationId], references: [id])
 
     @@index([createdAt])
+    @@index([conversationId])
+    @@map("messages")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+    name      String
+    username  String   @unique
+    password  String
+    role      UserRole
+
+    messages                Message[]      @relation("UserMessages")
+    contractorJobs          Job[]          @relation("ContractorJobs")
+    homeownerJobs           Job[]          @relation("HomeownerJobs")
+    contractorConversations Conversation[] @relation("ContractorConversations")
+    homeownerConversations  Conversation[] @relation("HomeownerConversations")
+
+    @@index([username])
+    @@map("users")
+}
+
+enum JobStatus {
+    PLANNING    @map("planning")
+    IN_PROGRESS @map("in_progress")
+    COMPLETED   @map("completed")
+    CANCELED    @map("canceled")
+}
+
+enum UserRole {
+    CONTRACTOR @map("contractor")
+    HOMEOWNER  @map("homeowner")
 }
