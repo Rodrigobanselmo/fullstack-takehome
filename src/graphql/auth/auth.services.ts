@@ -5,16 +5,12 @@ import type {
   UserRole,
 } from "generated/gql/graphql";
 import { setUserCookie, clearUserCookie } from "~/lib/auth";
-import { prisma } from "~/server/database/prisma";
+import { userRepository } from "~/server/repositories/user.repository";
 import { passwordHasher } from "~/server/utils/password-hasher";
 import { invalidCredentialsError } from "../auth/auth.errors";
 
 export async function loginService(input: LoginInput): Promise<LoginOutput> {
-  const user = await prisma.user.findFirst({
-    where: {
-      username: input.username,
-    },
-  });
+  const user = await userRepository.findByUsername(input.username);
 
   if (!user) {
     throw invalidCredentialsError();

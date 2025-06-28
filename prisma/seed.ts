@@ -1,4 +1,3 @@
-// prisma/seed.ts
 import type { User } from "generated/gql/graphql";
 import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
 import bcrypt from "bcrypt";
@@ -27,7 +26,6 @@ async function main() {
     `Created/updated contractor user: ${contractorUser.username} with ID: ${contractorUser.id}`,
   );
 
-  // Additional homeowners
   const moreHomeowners = [
     { username: "guest.homeowner", name: "Guest Homeowner" },
     { username: "guest.homeowner2", name: "Guest Homeowner 2" },

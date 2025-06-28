@@ -1,9 +1,7 @@
 import type { User } from "generated/gql/graphql";
-import { UserRole } from "generated/prisma";
-import { prisma } from "~/server/database/prisma";
+import { UserRole } from "generated/gql/graphql";
+import { userRepository } from "~/server/repositories/user.repository";
 
 export async function getHomeowners(): Promise<User[]> {
-  return prisma.user.findMany({
-    where: { role: UserRole.HOMEOWNER },
-  });
+  return userRepository.findManyByRole(UserRole.Homeowner);
 }

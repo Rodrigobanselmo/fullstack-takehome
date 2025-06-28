@@ -3,6 +3,7 @@
 import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import Button from "../button/button";
+import { captureException } from "~/lib/error-reporting";
 
 const LOGOUT_MUTATION = gql`
   mutation Logout {
@@ -21,7 +22,7 @@ export default function LogoutButton() {
       await logout();
       router.push("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      captureException(error, { error });
       router.push("/");
     }
   };

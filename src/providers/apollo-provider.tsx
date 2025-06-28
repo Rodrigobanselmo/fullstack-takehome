@@ -9,7 +9,6 @@ import {
 } from "@apollo/client";
 import { useMemo } from "react";
 
-// Function to create Apollo Client
 function createApolloClient() {
   return new ApolloClient({
     link: new HttpLink({
@@ -51,7 +50,6 @@ function createApolloClient() {
   });
 }
 
-// Apollo Provider component
 export function ApolloWrapper({ children }: { children: React.ReactNode }) {
   const client = useMemo(() => createApolloClient(), []);
 
