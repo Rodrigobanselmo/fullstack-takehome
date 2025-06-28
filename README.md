@@ -23,5 +23,5 @@ We have configured Prisma ORM to use a sqlite database located in `prisma/dev.db
 - update `prisma/schema.prisma`
 - run `npx prisma migrate dev` to create the migration
 
-If you need to you can always reset the database with `npx prisma reset`
+If you need to you can always reset the database with `npx prisma reset`.
 
