@@ -10,3 +10,14 @@ export function JobNotFoundError() {
     },
   });
 }
+
+export function JobNotContractorError() {
+  return new GraphQLError("You are not the contractor of this job.", {
+    extensions: {
+      code: "JOB_NOT_CONTRACTOR",
+      http: {
+        status: 403,
+      },
+    },
+  });
+}

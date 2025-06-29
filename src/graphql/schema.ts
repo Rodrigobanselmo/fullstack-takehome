@@ -3,8 +3,11 @@ import { authTypeDefs } from "./auth/auth.schema";
 import { chatTypeDefs } from "./chat/chat.schema";
 import { jobTypeDefs } from "./job/job.schema";
 import { userTypeDefs } from "./user/user.schema";
+import { subtaskSchema } from "./subtask/subtask.schema";
 
 const baseTypeDefs = gql`
+  scalar DateTime
+
   type Query {
     _empty: String
   }
@@ -20,4 +23,5 @@ export const typeDefs = [
   chatTypeDefs,
   jobTypeDefs,
   userTypeDefs,
+  subtaskSchema,
 ];

@@ -40,6 +40,15 @@ function createApolloClient() {
             },
           },
         },
+        Subtask: {
+          fields: {
+            deadline: {
+              read(existing: string | null) {
+                return existing ? new Date(existing) : null;
+              },
+            },
+          },
+        },
       },
     }),
     defaultOptions: {
