@@ -18,7 +18,7 @@ Welcome! This is a fullstack takehome project built with Next.js, Prisma, and a 
 
 1. **Clone your fork of this repository:**
    ```bash
-   git clone <your-github-repo-url>
+   git clone https://github.com/Rodrigobanselmo/fullstack-takehome/
    cd fullstack-takehome
    ```
 2. **Install dependencies:**
