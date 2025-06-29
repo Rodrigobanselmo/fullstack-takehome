@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./job-card.module.css";
 import JobStatus from "../job-status/job-status";
 import type { JobStatus as JobStatusEnum } from "generated/gql/graphql";
+import { formatCurrency } from "~/lib/currency";
 
 interface JobCardProps {
   description: string;
@@ -40,10 +41,7 @@ const JobCard: React.FC<JobCardProps> = ({
 
         <div className={styles.jobCost}>
           <span className={styles.currencySymbol}>$</span>
-          {cost.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
+          {formatCurrency(cost)}
         </div>
       </div>
     </div>

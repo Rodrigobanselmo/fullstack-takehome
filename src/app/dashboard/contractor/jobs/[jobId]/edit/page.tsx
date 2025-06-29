@@ -15,7 +15,7 @@ import { type CreateJobFormData } from "~/features/jobs/schemas/create-job-schem
 export default function EditJobPage() {
   const params = useParams();
   const router = useRouter();
-  const jobId = params.id as string;
+  const jobId = params.jobId as string;
 
   const { data, loading: loadingJob, error } = useQueryContractorJob(jobId);
   const [updateJob, { loading: updating }] = useUpdateJobMutation();

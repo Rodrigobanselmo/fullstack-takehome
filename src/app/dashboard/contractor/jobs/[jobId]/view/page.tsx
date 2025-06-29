@@ -7,11 +7,12 @@ import LoadingState from "~/components/ui/loading-state/loading-state";
 import { paths } from "~/config/paths";
 import { useQueryContractorJob } from "~/features/jobs/api/use-query-contractor-job";
 import JobView from "~/features/jobs/components/job-view/job-view";
+import SubtasksSection from "~/features/subtasks/components/subtasks-section/subtasks-section";
 
 export default function ViewJobPage() {
   const params = useParams();
   const router = useRouter();
-  const jobId = params.id as string;
+  const jobId = params.jobId as string;
 
   const { data, loading: loadingJob, error } = useQueryContractorJob(jobId);
 
@@ -36,19 +37,23 @@ export default function ViewJobPage() {
   }
 
   return (
-    <ContentLayout title="Job Details" maxWidth="600px" onBack={handleBack}>
-      <JobView
-        description={data.job.description}
-        location={data.job.location}
-        status={data.job.status}
-        cost={data.job.cost}
-        name={data.job.homeowner.name}
-        homeownerId={data.job.homeowner.id}
-        contractorId={data.job.contractor.id}
-        onEdit={() =>
-          router.push(paths.dashboard.contractor.jobs.edit.getHref(jobId))
-        }
-      />
+    <ContentLayout title="Job Details" maxWidth="800px" onBack={handleBack}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+        <JobView
+          description={data.job.description}
+          location={data.job.location}
+          status={data.job.status}
+          cost={data.job.cost}
+          name={data.job.homeowner.name}
+          homeownerId={data.job.homeowner.id}
+          contractorId={data.job.contractor.id}
+          onEdit={() =>
+            router.push(paths.dashboard.contractor.jobs.edit.getHref(jobId))
+          }
+        />
+
+        <SubtasksSection jobId={jobId} canEdit={true} />
+      </div>
     </ContentLayout>
   );
 }

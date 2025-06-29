@@ -5,6 +5,7 @@ import Button from "../../../../components/ui/button/button";
 import { useQueryJobConversation } from "../../api/use-query-job-conversation";
 import { JOB_STATUS_MAP } from "../../constants/job-status-map";
 import styles from "./job-view.module.css";
+import { formatCurrency } from "~/lib/currency";
 
 interface JobViewProps {
   description: string;
@@ -59,10 +60,7 @@ export default function JobView({
         <span className={styles.label}>Cost</span>
         <span className={styles.value}>
           <span className={styles.currencySymbol}>$</span>
-          {cost.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
+          {formatCurrency(cost)}
         </span>
       </div>
       <div className={styles.field}>

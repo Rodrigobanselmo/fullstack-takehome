@@ -63,7 +63,11 @@ export default function JobForm({
     const validationResult = createJobSchema.safeParse(formData);
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0];
-      setFormError(firstError?.message ?? "Validation failed");
+      const message = firstError
+        ? `${firstError.path.join(".")}: ${firstError.message}`
+        : "Validation failed";
+
+      setFormError(message);
       return;
     }
 

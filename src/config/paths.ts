@@ -24,6 +24,16 @@ export const paths = {
         edit: {
           getHref: (id: string) => `/dashboard/contractor/jobs/${id}/edit`,
         },
+        subtasks: {
+          add: {
+            getHref: (jobId: string) =>
+              `/dashboard/contractor/jobs/${jobId}/subtasks/add`,
+          },
+          edit: {
+            getHref: (jobId: string, subtaskId: string) =>
+              `/dashboard/contractor/jobs/${jobId}/subtasks/${subtaskId}/edit`,
+          },
+        },
       },
     },
     homeowner: {

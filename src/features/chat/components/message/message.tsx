@@ -1,4 +1,5 @@
 import type { Message } from "generated/gql/graphql";
+import { formatMessageTimestamp } from "~/lib/date";
 import styles from "./message.module.css";
 
 interface MessageProps {
@@ -23,13 +24,7 @@ export default function MessageComponent({
     if (isNaN(date.getTime())) {
       return "Invalid date";
     }
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return formatMessageTimestamp(date);
   };
 
   return (
