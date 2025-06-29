@@ -102,7 +102,7 @@ export const jobResolvers = {
       const { id, input } = inputValidation.data;
 
       return updateJobById({
-        contractorId: context.user!.id,
+        userId: context.user!.id,
         jobId: id,
         input,
       });
@@ -124,7 +124,7 @@ export const jobResolvers = {
       const { id } = validation.data;
 
       return deleteJobById({
-        contractorId: context.user!.id,
+        userId: context.user!.id,
         jobId: id,
       });
     },

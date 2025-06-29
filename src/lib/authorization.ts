@@ -30,3 +30,13 @@ export const canViewChat = (user: UserSession | null) => {
 export const canSendMessage = (user: UserSession | null) => {
   return !!user;
 };
+
+export const canViewSubtasks = (user: UserSession | null) => {
+  return (
+    user?.role === UserRole.Contractor || user?.role === UserRole.Homeowner
+  );
+};
+
+export const canManageSubtasks = (user: UserSession | null) => {
+  return user?.role === UserRole.Contractor;
+};

@@ -119,22 +119,6 @@ class PrismaJobRepository {
     };
   }
 
-  async contractorHasJobAccess(
-    jobId: string,
-    contractorId: string,
-  ): Promise<boolean> {
-    const job = await prisma.job.findFirst({
-      where: {
-        id: jobId,
-        contractorId,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
-
-    return job !== null;
-  }
-
   async createWithConversation(data: {
     cost: number;
     description: string;
