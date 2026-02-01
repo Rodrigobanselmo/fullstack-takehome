@@ -1,5 +1,8 @@
-import { prisma } from "~/server/database/prisma";
-import type { Recipe, RecipeIngredient } from "generated/gql/graphql";
+import type { Recipe } from "generated/gql/graphql";
+import { getPrismaClient } from "~/server/database/transaction";
+
+// Scalar entity without nested relations (ingredients will be loaded by field resolver)
+export type RecipeEntity = Omit<Recipe, "ingredients">;
 
 export interface RecipeIngredientData {
   name: string;
@@ -15,20 +18,20 @@ export interface CreateRecipeData {
 }
 
 export interface UpdateRecipeData {
+  recipeId: string;
+  userId: string;
   name?: string;
   servings?: number;
   ingredients?: RecipeIngredientData[];
 }
 
 class PrismaRecipeRepository {
-  async findManyByUserId(userId: string): Promise<Recipe[]> {
-    const recipes = await prisma.recipes.findMany({
+  async findManyByUserId({ userId }: { userId: string }): Promise<RecipeEntity[]> {
+    const db = getPrismaClient();
+    const recipes = await db.recipes.findMany({
       where: {
         userId,
         deletedAt: null,
-      },
-      include: {
-        recipeIngredients: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -39,24 +42,16 @@ class PrismaRecipeRepository {
       servings: recipe.servings,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      ingredients: recipe.recipeIngredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      })),
     }));
   }
 
-  async findById(recipeId: string, userId: string): Promise<Recipe | null> {
-    const recipe = await prisma.recipes.findFirst({
+  async findById({ recipeId, userId }: { recipeId: string; userId: string }): Promise<RecipeEntity | null> {
+    const db = getPrismaClient();
+    const recipe = await db.recipes.findFirst({
       where: {
         id: recipeId,
         userId,
         deletedAt: null,
-      },
-      include: {
-        recipeIngredients: true,
       },
     });
 
@@ -70,17 +65,12 @@ class PrismaRecipeRepository {
       servings: recipe.servings,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      ingredients: recipe.recipeIngredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      })),
     };
   }
 
-  async create(data: CreateRecipeData): Promise<Recipe> {
-    const recipe = await prisma.recipes.create({
+  async create(data: CreateRecipeData): Promise<RecipeEntity> {
+    const db = getPrismaClient();
+    const recipe = await db.recipes.create({
       data: {
         name: data.name,
         servings: data.servings,
@@ -93,9 +83,6 @@ class PrismaRecipeRepository {
           })),
         },
       },
-      include: {
-        recipeIngredients: true,
-      },
     });
 
     return {
@@ -104,22 +91,13 @@ class PrismaRecipeRepository {
       servings: recipe.servings,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      ingredients: recipe.recipeIngredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      })),
     };
   }
 
-  async update(
-    recipeId: string,
-    userId: string,
-    data: UpdateRecipeData,
-  ): Promise<Recipe> {
-    const recipe = await prisma.recipes.update({
-      where: { id: recipeId, userId },
+  async update(data: UpdateRecipeData): Promise<RecipeEntity> {
+    const db = getPrismaClient();
+    const recipe = await db.recipes.update({
+      where: { id: data.recipeId, userId: data.userId },
       data: {
         name: data.name,
         servings: data.servings,
@@ -135,9 +113,6 @@ class PrismaRecipeRepository {
           },
         }),
       },
-      include: {
-        recipeIngredients: true,
-      },
     });
 
     return {
@@ -146,22 +121,14 @@ class PrismaRecipeRepository {
       servings: recipe.servings,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      ingredients: recipe.recipeIngredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      })),
     };
   }
 
-  async softDelete(recipeId: string, userId: string): Promise<Recipe> {
-    const recipe = await prisma.recipes.update({
+  async softDelete({ recipeId, userId }: { recipeId: string; userId: string }): Promise<RecipeEntity> {
+    const db = getPrismaClient();
+    const recipe = await db.recipes.update({
       where: { id: recipeId, userId },
       data: { deletedAt: new Date() },
-      include: {
-        recipeIngredients: true,
-      },
     });
 
     return {
@@ -170,13 +137,38 @@ class PrismaRecipeRepository {
       servings: recipe.servings,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      ingredients: recipe.recipeIngredients.map((ingredient) => ({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      })),
     };
+  }
+
+  // File relations
+  async attachFileToRecipe({ recipeId, fileId }: { recipeId: string; fileId: string }): Promise<void> {
+    const db = getPrismaClient();
+    await db.recipe_files.create({
+      data: {
+        recipeId,
+        fileId,
+      },
+    });
+  }
+
+  async detachFileFromRecipe({ recipeId, fileId }: { recipeId: string; fileId: string }): Promise<void> {
+    const db = getPrismaClient();
+    await db.recipe_files.deleteMany({
+      where: {
+        recipeId,
+        fileId,
+      },
+    });
+  }
+
+  async findFileIdsByRecipeId({ recipeId }: { recipeId: string }): Promise<string[]> {
+    const db = getPrismaClient();
+    const recipeFiles = await db.recipe_files.findMany({
+      where: { recipeId },
+      select: { fileId: true },
+    });
+
+    return recipeFiles.map((rf) => rf.fileId);
   }
 }
 

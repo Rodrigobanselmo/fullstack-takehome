@@ -1,4 +1,4 @@
-import { canSendMessage, canViewChat } from "~/lib/authorization";
+import { canSendMessage, canViewChat } from "./chat.auth";
 import { schemaValidation } from "~/lib/validation";
 import type {
   Conversation,

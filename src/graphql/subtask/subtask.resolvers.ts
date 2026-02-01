@@ -5,7 +5,7 @@ import {
   type QuerySubtaskArgs,
   type QuerySubtasksArgs,
 } from "generated/gql/graphql";
-import { canManageSubtasks, canViewSubtasks } from "~/lib/authorization";
+import { canManageSubtasks, canViewSubtasks } from "./subtask.auth";
 import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
 import { InvalidInputError, UnauthorizedError } from "../errors";

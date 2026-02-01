@@ -5,6 +5,8 @@ import { jobTypeDefs } from "./job/job.schema";
 import { userTypeDefs } from "./user/user.schema";
 import { subtaskSchema } from "./subtask/subtask.schema";
 import { recipeTypeDefs } from "./recipe/recipe.schema";
+import { recipeGroupTypeDefs } from "./recipe-group/recipe-group.schema";
+import { fileTypeDefs } from "./file/file.schema";
 
 const baseTypeDefs = gql`
   scalar DateTime
@@ -25,5 +27,7 @@ export const typeDefs = [
   jobTypeDefs,
   userTypeDefs,
   subtaskSchema,
+  fileTypeDefs,
   recipeTypeDefs,
+  recipeGroupTypeDefs,
 ];

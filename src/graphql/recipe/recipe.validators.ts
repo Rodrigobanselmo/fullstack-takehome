@@ -37,6 +37,16 @@ export const updateRecipeArgsSchema = z.object({
   input: updateRecipeInputSchema,
 });
 
+export const generatePresignedUrlInputSchema = z.object({
+  recipeId: z.string().min(1, "Recipe ID is required"),
+  filename: z.string().min(1, "Filename is required"),
+  mimeType: z.string().min(1, "MIME type is required"),
+});
+
+export const deleteRecipeImageArgsSchema = z.object({
+  recipeId: z.string().min(1, "Recipe ID is required"),
+});
+
 export const recipeArgsSchema = z.object({
   id: z.string().min(1, "Recipe ID is required"),
 });

@@ -88,20 +88,24 @@ model users {
     homeownerJobs           jobs[]          @relation("jobs_homeowner_idTousers")
     messages                messages[]
     recipes                 recipes[]
+    recipeGroups            recipe_groups[]
+    files                   files[]
 
     @@index([username], map: "users_username_idx")
 }
 
 model recipes {
-    id                String               @id @default(cuid())
+    id                String                 @id @default(cuid())
     name              String
     servings          Int
-    userId            String               @map("user_id")
-    createdAt         DateTime             @default(now()) @map("created_at")
-    updatedAt         DateTime             @default(now()) @map("updated_at")
-    deletedAt         DateTime?            @map("deleted_at")
-    user              users                @relation(fields: [userId], references: [id])
+    userId            String                 @map("user_id")
+    createdAt         DateTime               @default(now()) @map("created_at")
+    updatedAt         DateTime               @default(now()) @map("updated_at")
+    deletedAt         DateTime?              @map("deleted_at")
+    user              users                  @relation(fields: [userId], references: [id])
     recipeIngredients recipe_ingredients[]
+    recipeGroups      recipe_group_recipes[]
+    files             recipe_files[]
 
     @@index([userId], map: "recipes_user_id_idx")
     @@index([createdAt], map: "recipes_created_at_idx")
@@ -119,6 +123,83 @@ model recipe_ingredients {
     recipe    recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
     @@index([recipeId], map: "recipe_ingredients_recipe_id_idx")
+}
+
+model recipe_groups {
+    id          String                 @id @default(cuid())
+    name        String
+    description String?
+    userId      String                 @map("user_id")
+    createdAt   DateTime               @default(now()) @map("created_at")
+    updatedAt   DateTime               @default(now()) @map("updated_at")
+    deletedAt   DateTime?              @map("deleted_at")
+    user        users                  @relation(fields: [userId], references: [id])
+    recipes     recipe_group_recipes[]
+    files       recipe_group_files[]
+
+    @@index([userId], map: "recipe_groups_user_id_idx")
+    @@index([createdAt], map: "recipe_groups_created_at_idx")
+    @@index([deletedAt], map: "recipe_groups_deleted_at_idx")
+}
+
+model recipe_group_recipes {
+    id        String        @id @default(cuid())
+    recipeId  String        @map("recipe_id")
+    groupId   String        @map("group_id")
+    createdAt DateTime      @default(now()) @map("created_at")
+    recipe    recipes       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+    group     recipe_groups @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+    @@unique([recipeId, groupId], map: "recipe_group_recipes_recipe_id_group_id_unique")
+    @@index([recipeId], map: "recipe_group_recipes_recipe_id_idx")
+    @@index([groupId], map: "recipe_group_recipes_group_id_idx")
+}
+
+model files {
+    id               String               @id @default(cuid())
+    key              String               @unique
+    bucket           String // S3 bucket name
+    region           String // AWS region
+    filename         String
+    mimeType         String               @map("mime_type")
+    size             Int
+    createdAt        DateTime             @default(now()) @map("created_at")
+    updatedAt        DateTime             @default(now()) @map("updated_at")
+    deletedAt        DateTime?            @map("deleted_at")
+    uploaderId       String               @map("uploaded_by")
+    uploader         users                @relation(fields: [uploaderId], references: [id])
+    recipeFiles      recipe_files[]
+    recipeGroupFiles recipe_group_files[]
+
+    @@index([uploaderId], map: "files_uploaded_by_idx")
+    @@index([createdAt], map: "files_created_at_idx")
+    @@index([deletedAt], map: "files_deleted_at_idx")
+}
+
+model recipe_files {
+    id        String   @id @default(cuid())
+    recipeId  String   @map("recipe_id")
+    fileId    String   @map("file_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    recipe    recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+    file      files    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+    @@unique([recipeId, fileId], map: "recipe_files_recipe_id_file_id_unique")
+    @@index([recipeId], map: "recipe_files_recipe_id_idx")
+    @@index([fileId], map: "recipe_files_file_id_idx")
+}
+
+model recipe_group_files {
+    id        String        @id @default(cuid())
+    groupId   String        @map("group_id")
+    fileId    String        @map("file_id")
+    createdAt DateTime      @default(now()) @map("created_at")
+    group     recipe_groups @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    file      files         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+    @@unique([groupId, fileId], map: "recipe_group_files_group_id_file_id_unique")
+    @@index([groupId], map: "recipe_group_files_group_id_idx")
+    @@index([fileId], map: "recipe_group_files_file_id_idx")
 }
 
 enum JobStatus {

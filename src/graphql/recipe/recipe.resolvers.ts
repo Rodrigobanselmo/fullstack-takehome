@@ -2,10 +2,12 @@ import type {
   MutationCreateRecipeArgs,
   MutationDeleteRecipeArgs,
   MutationUpdateRecipeArgs,
+  MutationUploadRecipeImageArgs,
+  MutationDeleteRecipeImageArgs,
   QueryRecipeArgs,
-  Recipe,
+  RecipeIngredient,
 } from "generated/gql/graphql";
-import { canManageRecipes, canViewRecipes } from "~/lib/authorization";
+import { canManageRecipes, canViewRecipes } from "./recipe.auth";
 import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
 import { InvalidInputError, UnauthorizedError } from "../errors";
@@ -15,20 +17,43 @@ import {
   getRecipeById,
   getRecipesByUserId,
   updateRecipe,
+  uploadRecipeImagePresigned,
+  deleteRecipeImage as deleteRecipeImageService,
 } from "./recipe.services";
+import type { RecipeEntity } from "~/server/repositories/recipe.repository";
 import {
   createRecipeInputSchema,
   recipeArgsSchema,
   updateRecipeArgsSchema,
+  generatePresignedUrlInputSchema,
+  deleteRecipeImageArgsSchema,
 } from "./recipe.validators";
+import type { FileEntity } from "~/server/repositories/file.repository";
 
 export const recipeResolvers = {
+  Recipe: {
+    ingredients: async (
+      parent: RecipeEntity,
+      _: unknown,
+      context: GraphQLContext,
+    ): Promise<RecipeIngredient[]> => {
+      return context.dataloaders.ingredientsByRecipeId.load(parent.id);
+    },
+    image: async (
+      parent: RecipeEntity,
+      _: unknown,
+      context: GraphQLContext,
+    ): Promise<FileEntity | null> => {
+      return context.dataloaders.fileByRecipeId.load(parent.id);
+    },
+  },
+
   Query: {
     recipes: async (
       _: unknown,
       __: unknown,
       context: GraphQLContext,
-    ): Promise<Recipe[]> => {
+    ): Promise<RecipeEntity[]> => {
       const isUnauthorized = !canViewRecipes(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -45,7 +70,7 @@ export const recipeResolvers = {
       _: unknown,
       args: QueryRecipeArgs,
       context: GraphQLContext,
-    ): Promise<Recipe | null> => {
+    ): Promise<RecipeEntity | null> => {
       const isUnauthorized = !canViewRecipes(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -72,7 +97,7 @@ export const recipeResolvers = {
       _: unknown,
       args: MutationCreateRecipeArgs,
       context: GraphQLContext,
-    ): Promise<Recipe> => {
+    ): Promise<RecipeEntity> => {
       const isUnauthorized = !canManageRecipes(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -97,7 +122,7 @@ export const recipeResolvers = {
       _: unknown,
       args: MutationUpdateRecipeArgs,
       context: GraphQLContext,
-    ): Promise<Recipe> => {
+    ): Promise<RecipeEntity> => {
       const isUnauthorized = !canManageRecipes(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -142,6 +167,69 @@ export const recipeResolvers = {
         userId: context.user.id,
         recipeId: validation.data.id,
       });
+    },
+
+    uploadRecipeImage: async (
+      _: unknown,
+      args: MutationUploadRecipeImageArgs,
+      context: GraphQLContext,
+    ) => {
+      const isUnauthorized = !canManageRecipes(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+
+      if (!context.user) {
+        throw UnauthorizedError();
+      }
+
+      const validation = schemaValidation(generatePresignedUrlInputSchema, args.input);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+
+      const result = await uploadRecipeImagePresigned({
+        recipeId: validation.data.recipeId,
+        userId: context.user.id,
+        filename: validation.data.filename,
+        mimeType: validation.data.mimeType,
+      });
+
+      return {
+        file: result.file,
+        presignedPost: {
+          url: result.presignedPost.url,
+          fields: JSON.stringify(result.presignedPost.fields),
+          key: result.presignedPost.key,
+        },
+      };
+    },
+
+    deleteRecipeImage: async (
+      _: unknown,
+      args: MutationDeleteRecipeImageArgs,
+      context: GraphQLContext,
+    ): Promise<boolean> => {
+      const isUnauthorized = !canManageRecipes(context.user);
+      if (isUnauthorized) {
+        throw UnauthorizedError();
+      }
+
+      if (!context.user) {
+        throw UnauthorizedError();
+      }
+
+      const validation = schemaValidation(deleteRecipeImageArgsSchema, args);
+      if (validation.success === false) {
+        throw InvalidInputError(validation.error);
+      }
+
+      await deleteRecipeImageService({
+        recipeId: validation.data.recipeId,
+        userId: context.user.id,
+      });
+
+      return true;
     },
   },
 };

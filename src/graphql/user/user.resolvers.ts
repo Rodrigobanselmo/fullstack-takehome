@@ -1,4 +1,4 @@
-import { canListHomeowners } from "~/lib/authorization";
+import { canListHomeowners } from "./user.auth";
 import type { GraphQLContext } from "../context";
 import { UnauthorizedError } from "../errors";
 import { getHomeowners } from "./user.services";

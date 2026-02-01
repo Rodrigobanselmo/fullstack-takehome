@@ -6,7 +6,7 @@ import {
   type QueryJobArgs,
   type QueryJobsArgs,
 } from "generated/gql/graphql";
-import { canManageJob, canViewJobs } from "~/lib/authorization";
+import { canManageJob, canViewJobs } from "./job.auth";
 import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
 import { InvalidInputError, UnauthorizedError } from "../errors";
