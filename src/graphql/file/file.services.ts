@@ -8,6 +8,7 @@ import {
   type FileEntity,
 } from "~/server/repositories/file.repository";
 import { InvalidInputError } from "../errors";
+import { env } from "~/config/env";
 
 export interface UploadFileParams {
   file: Buffer;
@@ -48,7 +49,8 @@ export async function uploadFile({
   // Create database record
   const fileEntity = await fileRepository.create({
       key: s3Result.key,
-      url: s3Result.url,
+      bucket: env.AWS_S3_BUCKET,
+      region: env.AWS_REGION,
       filename: s3Result.filename,
       mimeType: s3Result.mimeType,
       size: s3Result.size,

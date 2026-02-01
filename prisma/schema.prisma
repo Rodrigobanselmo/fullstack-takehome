@@ -90,15 +90,24 @@ model users {
     recipes                 recipes[]
     recipeGroups            recipe_groups[]
     files                   files[]
+    ingredients             ingredients[]
 
     @@index([username], map: "users_username_idx")
 }
 
 model recipes {
-    id                String                 @id @default(cuid())
-    name              String
-    servings          Int
-    userId            String                 @map("user_id")
+    id       String   @id @default(cuid())
+    name     String
+    servings Int
+    userId   String   @map("user_id")
+    tags     String[] @default([])
+
+    // Ratings
+    overallRating Int? @map("overall_rating") // Avaliação geral (1-5)
+
+    // Time in minutes
+    prepTimeMinutes Int? @map("prep_time_minutes") // Tempo médio para fazer
+
     createdAt         DateTime               @default(now()) @map("created_at")
     updatedAt         DateTime               @default(now()) @map("updated_at")
     deletedAt         DateTime?              @map("deleted_at")
@@ -112,17 +121,49 @@ model recipes {
     @@index([deletedAt], map: "recipes_deleted_at_idx")
 }
 
+// Tabela de ingredientes base (reutilizável entre receitas)
+model ingredients {
+    id          String  @id @default(cuid())
+    name        String  @unique // Nome do ingrediente (ex: "Tomate", "Arroz")
+    description String? // Descrição opcional
+    category    String? // Categoria do ingrediente (validated by GraphQL enum)
+    defaultUnit String? @map("default_unit") // Unidade padrão para uso em receitas (ex: "g", "ml", "unidade")
+
+    // Preço: "R$ 5,00 por litro" ou "R$ 0,10 por ml"
+    averagePrice  Decimal? @map("average_price") // Valor do preço (ex: 5.00)
+    priceUnit     String?  @map("price_unit") // Unidade do preço (ex: "litro", "kg", "unidade")
+    priceCurrency String?  @default("BRL") @map("price_currency") // Moeda (BRL, USD, etc)
+
+    userId            String               @map("user_id") // Ingrediente pertence ao usuário
+    createdAt         DateTime             @default(now()) @map("created_at")
+    updatedAt         DateTime             @default(now()) @map("updated_at")
+    deletedAt         DateTime?            @map("deleted_at")
+    user              users                @relation(fields: [userId], references: [id])
+    recipeIngredients recipe_ingredients[] // Receitas que usam este ingrediente
+    files             ingredient_files[] // Fotos do ingrediente
+
+    @@index([userId], map: "ingredients_user_id_idx")
+    @@index([name], map: "ingredients_name_idx")
+    @@index([category], map: "ingredients_category_idx")
+}
+
+// Relacionamento entre receita e ingrediente (com quantidade específica)
 model recipe_ingredients {
-    id        String   @id @default(cuid())
-    recipeId  String   @map("recipe_id")
-    name      String
-    quantity  Decimal
-    unit      String
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @map("updated_at")
-    recipe    recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+    id           String      @id @default(cuid())
+    recipeId     String      @map("recipe_id")
+    ingredientId String      @map("ingredient_id")
+    quantity     Decimal // Quantidade usada nesta receita
+    unit         String // Unidade (pode ser diferente da padrão)
+    notes        String? // Notas opcionais (ex: "picado", "ralado")
+    optional     Boolean     @default(false) // Se o ingrediente é opcional (ex: ketchup para batata frita)
+    price        Decimal? // Preço específico para este item (opcional, sobrescreve o preço do ingrediente)
+    createdAt    DateTime    @default(now()) @map("created_at")
+    updatedAt    DateTime    @default(now()) @map("updated_at")
+    recipe       recipes     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+    ingredient   ingredients @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 
     @@index([recipeId], map: "recipe_ingredients_recipe_id_idx")
+    @@index([ingredientId], map: "recipe_ingredients_ingredient_id_idx")
 }
 
 model recipe_groups {
@@ -170,6 +211,7 @@ model files {
     uploader         users                @relation(fields: [uploaderId], references: [id])
     recipeFiles      recipe_files[]
     recipeGroupFiles recipe_group_files[]
+    ingredientFiles  ingredient_files[]
 
     @@index([uploaderId], map: "files_uploaded_by_idx")
     @@index([createdAt], map: "files_created_at_idx")
@@ -200,6 +242,20 @@ model recipe_group_files {
     @@unique([groupId, fileId], map: "recipe_group_files_group_id_file_id_unique")
     @@index([groupId], map: "recipe_group_files_group_id_idx")
     @@index([fileId], map: "recipe_group_files_file_id_idx")
+}
+
+// Tabela para fotos de ingredientes
+model ingredient_files {
+    id           String      @id @default(cuid())
+    ingredientId String      @map("ingredient_id")
+    fileId       String      @map("file_id")
+    createdAt    DateTime    @default(now()) @map("created_at")
+    ingredient   ingredients @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+    file         files       @relation(fields: [fileId], references: [id])
+
+    @@unique([ingredientId, fileId], map: "ingredient_files_ingredient_id_file_id_key")
+    @@index([ingredientId], map: "ingredient_files_ingredient_id_idx")
+    @@index([fileId], map: "ingredient_files_file_id_idx")
 }
 
 enum JobStatus {

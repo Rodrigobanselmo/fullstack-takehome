@@ -1,4 +1,6 @@
 import { DateTimeResolver } from "graphql-scalars";
+import { GraphQLScalarType, Kind } from "graphql";
+import { Prisma } from "generated/prisma";
 import { authResolvers } from "./auth/auth.resolvers";
 import { chatResolvers } from "./chat/chat.resolvers";
 import { jobResolvers } from "./job/job.resolvers";
@@ -6,11 +8,41 @@ import { userResolvers } from "./user/user.resolvers";
 import { subtaskResolvers } from "./subtask/subtask.resolvers";
 import { recipeResolvers } from "./recipe/recipe.resolvers";
 import { recipeGroupResolvers } from "./recipe-group/recipe-group.resolvers";
+import { ingredientResolvers } from "./ingredient/ingredient.resolvers";
+
+// Custom Decimal scalar for Prisma Decimal type
+const DecimalScalar = new GraphQLScalarType({
+  name: "Decimal",
+  description: "Decimal custom scalar type",
+  serialize(value: unknown) {
+    if (value instanceof Prisma.Decimal) {
+      return value.toNumber();
+    }
+    if (typeof value === "object" && value !== null && "toNumber" in value) {
+      return (value as Prisma.Decimal).toNumber();
+    }
+    return value;
+  },
+  parseValue(value: unknown) {
+    if (typeof value === "number" || typeof value === "string") {
+      return new Prisma.Decimal(value);
+    }
+    return value;
+  },
+  parseLiteral(ast) {
+    if (ast.kind === Kind.FLOAT || ast.kind === Kind.INT) {
+      return new Prisma.Decimal(ast.value);
+    }
+    return null;
+  },
+});
 
 export const resolvers = {
   DateTime: DateTimeResolver,
+  Decimal: DecimalScalar,
   Recipe: recipeResolvers.Recipe,
   RecipeGroup: recipeGroupResolvers.RecipeGroup,
+  Ingredient: ingredientResolvers.Ingredient,
   Mutation: {
     ...authResolvers.Mutation,
     ...jobResolvers.Mutation,
@@ -18,6 +50,7 @@ export const resolvers = {
     ...subtaskResolvers.Mutation,
     ...recipeResolvers.Mutation,
     ...recipeGroupResolvers.Mutation,
+    ...ingredientResolvers.Mutation,
   },
   Query: {
     ...jobResolvers.Query,
@@ -26,5 +59,6 @@ export const resolvers = {
     ...subtaskResolvers.Query,
     ...recipeResolvers.Query,
     ...recipeGroupResolvers.Query,
+    ...ingredientResolvers.Query,
   },
 };

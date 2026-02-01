@@ -49,9 +49,11 @@ export async function createRecipe({
       servings: input.servings,
       userId,
       ingredients: input.ingredients.map((ingredient) => ({
-        name: ingredient.name,
+        ingredientId: ingredient.ingredientId,
         quantity: ingredient.quantity,
         unit: ingredient.unit,
+        notes: ingredient.notes ?? undefined,
+        optional: ingredient.optional ?? undefined,
       })),
   });
 }
@@ -74,9 +76,11 @@ export async function updateRecipe({
     name: input.name ?? undefined,
     servings: input.servings ?? undefined,
     ingredients: input.ingredients?.map((ingredient) => ({
-      name: ingredient.name,
+      ingredientId: ingredient.ingredientId,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
+      notes: ingredient.notes ?? undefined,
+      optional: ingredient.optional ?? undefined,
     })),
   });
 }

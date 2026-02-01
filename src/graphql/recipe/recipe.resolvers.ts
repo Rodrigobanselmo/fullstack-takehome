@@ -5,7 +5,7 @@ import type {
   MutationUploadRecipeImageArgs,
   MutationDeleteRecipeImageArgs,
   QueryRecipeArgs,
-  RecipeIngredient,
+  Ingredient,
 } from "generated/gql/graphql";
 import { canManageRecipes, canViewRecipes } from "./recipe.auth";
 import { schemaValidation } from "~/lib/validation";
@@ -20,7 +20,7 @@ import {
   uploadRecipeImagePresigned,
   deleteRecipeImage as deleteRecipeImageService,
 } from "./recipe.services";
-import type { RecipeEntity } from "~/server/repositories/recipe.repository";
+import type { RecipeEntity, RecipeIngredientEntity } from "~/server/repositories/recipe.repository";
 import {
   createRecipeInputSchema,
   recipeArgsSchema,
@@ -36,7 +36,7 @@ export const recipeResolvers = {
       parent: RecipeEntity,
       _: unknown,
       context: GraphQLContext,
-    ): Promise<RecipeIngredient[]> => {
+    ): Promise<RecipeIngredientEntity[]> => {
       return context.dataloaders.ingredientsByRecipeId.load(parent.id);
     },
     image: async (
@@ -45,6 +45,20 @@ export const recipeResolvers = {
       context: GraphQLContext,
     ): Promise<FileEntity | null> => {
       return context.dataloaders.fileByRecipeId.load(parent.id);
+    },
+  },
+
+  RecipeIngredient: {
+    ingredient: async (
+      parent: RecipeIngredientEntity,
+      _: unknown,
+      context: GraphQLContext,
+    ): Promise<Ingredient> => {
+      const ingredient = await context.dataloaders.ingredientById.load(parent.ingredientId);
+      if (!ingredient) {
+        throw new Error(`Ingredient not found: ${parent.ingredientId}`);
+      }
+      return ingredient;
     },
   },
 

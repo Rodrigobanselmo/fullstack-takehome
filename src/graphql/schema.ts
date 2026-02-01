@@ -6,6 +6,7 @@ import { userTypeDefs } from "./user/user.schema";
 import { subtaskSchema } from "./subtask/subtask.schema";
 import { recipeTypeDefs } from "./recipe/recipe.schema";
 import { recipeGroupTypeDefs } from "./recipe-group/recipe-group.schema";
+import { ingredientTypeDefs } from "./ingredient/ingredient.schema";
 import { fileTypeDefs } from "./file/file.schema";
 
 const baseTypeDefs = gql`
@@ -30,4 +31,5 @@ export const typeDefs = [
   fileTypeDefs,
   recipeTypeDefs,
   recipeGroupTypeDefs,
+  ingredientTypeDefs,
 ];

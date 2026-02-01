@@ -3,37 +3,79 @@ import { gql } from "graphql-tag";
 export const recipeTypeDefs = gql`
   scalar DateTime
 
+  enum RecipeTag {
+    FAVORITE
+    HEALTHY
+    QUICK
+    EASY
+    CHEAP
+    EXPENSIVE
+    DELICIOUS
+    COMFORT_FOOD
+    VEGETARIAN
+    VEGAN
+    GLUTEN_FREE
+    DAIRY_FREE
+    LOW_CARB
+    HIGH_PROTEIN
+    SPICY
+    SWEET
+    SAVORY
+    BREAKFAST
+    LUNCH
+    DINNER
+    SNACK
+    DESSERT
+    PARTY
+    KIDS_FRIENDLY
+    MEAL_PREP
+  }
+
   type RecipeIngredient {
     id: ID!
-    name: String!
+    ingredientId: ID!
+    ingredient: Ingredient!
     quantity: Float!
     unit: String!
+    notes: String
+    optional: Boolean!
   }
 
   type Recipe {
     id: ID!
     name: String!
     servings: Int!
+    tags: [RecipeTag!]!
+    overallRating: Int
+    prepTimeMinutes: Int
     ingredients: [RecipeIngredient!]!
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
   input RecipeIngredientInput {
-    name: String!
+    ingredientId: ID!
     quantity: Float!
     unit: String!
+    notes: String
+    optional: Boolean
   }
 
   input CreateRecipeInput {
     name: String!
     servings: Int!
+    tags: [RecipeTag!]
+    overallRating: Int
+    prepTimeMinutes: Int
     ingredients: [RecipeIngredientInput!]!
   }
 
   input UpdateRecipeInput {
     name: String
     servings: Int
+    tags: [RecipeTag!]
+    overallRating: Int
+    prepTimeMinutes: Int
     ingredients: [RecipeIngredientInput!]
   }
 

@@ -1,6 +1,7 @@
 import DataLoader from "dataloader";
 import { prisma } from "~/server/database/prisma";
-import type { Recipe, RecipeIngredient } from "generated/gql/graphql";
+import type { Recipe } from "generated/gql/graphql";
+import type { RecipeIngredientEntity } from "~/server/repositories/recipe.repository";
 
 /**
  * DataLoader for batch loading recipes by group ID
@@ -34,6 +35,9 @@ export function createRecipesByGroupIdLoader() {
           id: recipe.id,
           name: recipe.name,
           servings: recipe.servings,
+          tags: recipe.tags,
+          overallRating: recipe.overallRating ?? undefined,
+          prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
           createdAt: recipe.createdAt,
           updatedAt: recipe.updatedAt,
           ingredients: [], // Will be loaded by field resolver
@@ -67,28 +71,32 @@ export function createRecipesByGroupIdLoader() {
  * Prevents N+1 query problem when loading ingredients for multiple recipes
  */
 export function createIngredientsByRecipeIdLoader() {
-  return new DataLoader<string, RecipeIngredient[]>(async (recipeIds) => {
-    // Fetch all ingredients for the requested recipe IDs
-    const ingredients = await prisma.recipe_ingredients.findMany({
+  return new DataLoader<string, RecipeIngredientEntity[]>(async (recipeIds) => {
+    // Fetch all recipe_ingredients for the requested recipe IDs
+    const recipeIngredients = await prisma.recipe_ingredients.findMany({
       where: {
         recipeId: { in: [...recipeIds] },
       },
     });
 
-    // Group ingredients by recipeId
-    const ingredientsByRecipeId = new Map<string, RecipeIngredient[]>();
+    // Group recipe_ingredients by recipeId
+    const ingredientsByRecipeId = new Map<string, RecipeIngredientEntity[]>();
 
-    for (const ingredient of ingredients) {
-      if (!ingredientsByRecipeId.has(ingredient.recipeId)) {
-        ingredientsByRecipeId.set(ingredient.recipeId, []);
+    for (const ri of recipeIngredients) {
+      if (!ingredientsByRecipeId.has(ri.recipeId)) {
+        ingredientsByRecipeId.set(ri.recipeId, []);
       }
 
-      ingredientsByRecipeId.get(ingredient.recipeId)!.push({
-        id: ingredient.id,
-        name: ingredient.name,
-        quantity: ingredient.quantity.toNumber(),
-        unit: ingredient.unit,
-      });
+      // Return only the recipe_ingredient data
+      // The ingredient object will be loaded by a field resolver
+      ingredientsByRecipeId.get(ri.recipeId)!.push({
+        id: ri.id,
+        ingredientId: ri.ingredientId,
+        quantity: ri.quantity.toNumber(),
+        unit: ri.unit,
+        notes: ri.notes ?? undefined,
+        optional: ri.optional,
+      } as RecipeIngredientEntity);
     }
 
     // Return ingredients in the same order as recipeIds
