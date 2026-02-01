@@ -40,3 +40,11 @@ export const canViewSubtasks = (user: UserSession | null) => {
 export const canManageSubtasks = (user: UserSession | null) => {
   return user?.role === UserRole.Contractor;
 };
+
+export const canViewRecipes = (user: UserSession | null) => {
+  return !!user;
+};
+
+export const canManageRecipes = (user: UserSession | null) => {
+  return !!user;
+};

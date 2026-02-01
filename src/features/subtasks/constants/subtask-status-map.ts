@@ -1,15 +1,15 @@
 import { type SubtaskStatus } from "generated/gql/graphql";
 
 export const SUBTASK_STATUS_MAP: Record<SubtaskStatus, string> = {
-  PENDING: "Pending",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Completed",
-  CANCELED: "Canceled",
+  pending: "Pending",
+  in_progress: "In Progress",
+  completed: "Completed",
+  canceled: "Canceled",
 };
 
 export const SUBTASK_STATUS_OPTIONS = [
-  { value: "PENDING", label: SUBTASK_STATUS_MAP.PENDING },
-  { value: "IN_PROGRESS", label: SUBTASK_STATUS_MAP.IN_PROGRESS },
-  { value: "COMPLETED", label: SUBTASK_STATUS_MAP.COMPLETED },
-  { value: "CANCELED", label: SUBTASK_STATUS_MAP.CANCELED },
+  { value: "pending", label: SUBTASK_STATUS_MAP.pending },
+  { value: "in_progress", label: SUBTASK_STATUS_MAP.in_progress },
+  { value: "completed", label: SUBTASK_STATUS_MAP.completed },
+  { value: "canceled", label: SUBTASK_STATUS_MAP.canceled },
 ] as const;

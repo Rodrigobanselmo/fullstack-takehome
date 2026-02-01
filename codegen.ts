@@ -20,7 +20,7 @@ const config: CodegenConfig = {
   },
   ignoreNoDocuments: true,
   hooks: {
-    afterAllFileWrite: ["eslint --fix", "prettier --write"],
+    afterAllFileWrite: ["prettier --write"],
   },
 };
 

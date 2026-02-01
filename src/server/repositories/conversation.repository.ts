@@ -3,7 +3,7 @@ import type { Conversation } from "generated/gql/graphql";
 
 class PrismaConversationRepository {
   async hasAccess(conversationId: string, userId: string): Promise<boolean> {
-    const conversation = await prisma.conversation.findFirst({
+    const conversation = await prisma.conversations.findFirst({
       where: {
         id: conversationId,
         OR: [{ contractorId: userId }, { homeownerId: userId }],
@@ -18,7 +18,7 @@ class PrismaConversationRepository {
     conversationId: string,
     userId: string,
   ): Promise<Conversation | null> {
-    const conversation = await prisma.conversation.findFirst({
+    const conversation = await prisma.conversations.findFirst({
       where: {
         id: conversationId,
         OR: [{ contractorId: userId }, { homeownerId: userId }],
@@ -41,7 +41,7 @@ class PrismaConversationRepository {
     homeownerId: string,
     userId: string,
   ): Promise<Conversation | null> {
-    const conversation = await prisma.conversation.findFirst({
+    const conversation = await prisma.conversations.findFirst({
       where: {
         contractorId,
         homeownerId,

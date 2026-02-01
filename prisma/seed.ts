@@ -1,8 +1,21 @@
+import 'dotenv/config';
 import type { User } from "generated/gql/graphql";
 import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
+// Create PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Create Prisma adapter for PostgreSQL
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({
+  adapter,
+});
 
 async function main() {
   console.log(`Start seeding ...`);
@@ -11,13 +24,13 @@ async function main() {
   const guestPassword = "guest";
   const hashedPassword = await bcrypt.hash(guestPassword, saltRounds);
 
-  const contractorUser = await prisma.user.upsert({
+  const contractorUser = await prisma.users.upsert({
     where: { username: "guest.contractor" },
     update: {},
     create: {
       username: "guest.contractor",
       password: hashedPassword,
-      role: UserRole.CONTRACTOR,
+      role: UserRole.contractor,
       name: "Contractor Guest",
     },
   });
@@ -36,13 +49,13 @@ async function main() {
 
   const homeownerUsers: User[] = [];
   for (const { username, name } of moreHomeowners) {
-    const user = await prisma.user.upsert({
+    const user = await prisma.users.upsert({
       where: { username },
       update: {},
       create: {
         username,
         password: hashedPassword,
-        role: UserRole.HOMEOWNER,
+        role: UserRole.homeowner,
         name,
       },
     });
@@ -58,7 +71,7 @@ async function main() {
       id: "seed-job-planning",
       description: "Kitchen Renovation Project",
       location: "123 Main St, Anytown, USA",
-      status: JobStatus.PLANNING,
+      status: JobStatus.planning,
       cost: 25000.0,
       homeownerId: homeownerUsers[0]!.id,
     },
@@ -66,7 +79,7 @@ async function main() {
       id: "seed-job-in-progress",
       description: "Bathroom Remodel",
       location: "456 Oak Ave, Somewhere, USA",
-      status: JobStatus.IN_PROGRESS,
+      status: JobStatus.in_progress,
       cost: 15000.0,
       homeownerId: homeownerUsers[1]!.id,
     },
@@ -74,7 +87,7 @@ async function main() {
       id: "seed-job-completed",
       description: "Deck Construction",
       location: "789 Pine Rd, Elsewhere, USA",
-      status: JobStatus.COMPLETED,
+      status: JobStatus.completed,
       cost: 8000.0,
       homeownerId: homeownerUsers[2]!.id,
     },
@@ -82,7 +95,7 @@ async function main() {
       id: "seed-job-canceled",
       description: "Basement Finishing",
       location: "321 Elm St, Nowhere, USA",
-      status: JobStatus.CANCELED,
+      status: JobStatus.canceled,
       cost: 30000.0,
       homeownerId: homeownerUsers[3]!.id,
     },
@@ -90,7 +103,7 @@ async function main() {
 
   const createdJobs = [];
   for (const jobData of jobs) {
-    const job = await prisma.job.upsert({
+    const job = await prisma.jobs.upsert({
       where: { id: jobData.id },
       update: {},
       create: {
@@ -99,7 +112,7 @@ async function main() {
       },
     });
 
-    await prisma.conversation.upsert({
+    await prisma.conversations.upsert({
       where: {
         contractorId_homeownerId: {
           contractorId: contractorUser.id,

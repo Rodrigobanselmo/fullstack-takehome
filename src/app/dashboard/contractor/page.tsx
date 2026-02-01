@@ -47,7 +47,7 @@ export default function ContractorDashboardPage() {
         <ErrorState message="Unable to load jobs. Please try again later." />
       )}
 
-      {data && data.jobs.length === 0 && (
+      {data?.jobs.length === 0 && (
         <EmptyState
           title={`No ${selectedStatus.toLowerCase()} jobs`}
           message={`You don't have any ${selectedStatus.toLowerCase()} jobs.`}

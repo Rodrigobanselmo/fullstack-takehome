@@ -23,7 +23,7 @@ export default async function DashboardLayout({
         <header className={styles.header}>
           <div className={styles.headerContainer}>
             <div className={styles.headerContent}>
-              <span className={styles.logo} aria-label="Home" title="Dashboard">
+              {/* <span className={styles.logo} aria-label="Home" title="Dashboard">
                 <Image
                   src="/favicon.ico"
                   alt="Dashboard Icon"
@@ -32,7 +32,7 @@ export default async function DashboardLayout({
                   style={{ display: "block" }}
                   priority
                 />
-              </span>
+              </span> */}
               <div>
                 <h1
                   className={`${styles.title} ${styles.subtitleMobileHidden}`}

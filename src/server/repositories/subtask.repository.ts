@@ -7,7 +7,7 @@ import type { SubtaskStatus } from "generated/prisma";
 
 class PrismaSubtaskRepository {
   async findManyByJobId(jobId: string, userId: string): Promise<Subtask[]> {
-    const subtasks = await prisma.subtask.findMany({
+    const subtasks = await prisma.subtasks.findMany({
       where: {
         jobId,
         deletedAt: null,
@@ -35,7 +35,7 @@ class PrismaSubtaskRepository {
     jobId: string;
     userId: string;
   }): Promise<Subtask | null> {
-    const subtask = await prisma.subtask.findFirst({
+    const subtask = await prisma.subtasks.findFirst({
       where: {
         id: subtaskId,
         jobId,
@@ -65,7 +65,7 @@ class PrismaSubtaskRepository {
     jobId: string;
     status: GraphQLSubtaskStatus;
   }): Promise<Subtask> {
-    const subtask = await prisma.subtask.create({
+    const subtask = await prisma.subtasks.create({
       data: {
         ...data,
         status: data.status as SubtaskStatus,
@@ -89,11 +89,11 @@ class PrismaSubtaskRepository {
       status?: GraphQLSubtaskStatus;
     },
   ): Promise<Subtask> {
-    const subtask = await prisma.subtask.update({
+    const subtask = await prisma.subtasks.update({
       where: { id: subtaskId, jobId },
       data: {
         ...data,
-        status: data.status as SubtaskStatus,
+        status: data.status ? data.status as SubtaskStatus : undefined,
       },
     });
 
@@ -108,7 +108,7 @@ class PrismaSubtaskRepository {
     jobId: string,
     subtaskId: string,
   ): Promise<Subtask> {
-    const subtask = await prisma.subtask.update({
+    const subtask = await prisma.subtasks.update({
       where: { id: subtaskId, jobId },
       data: { deletedAt: new Date() },
     });

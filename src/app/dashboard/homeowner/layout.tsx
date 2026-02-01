@@ -9,7 +9,7 @@ export default async function DashboardLayout({
 }) {
   const user = await getUserFromCookie();
 
-  const isHomeowner = user && user.role === UserRole.Homeowner;
+  const isHomeowner = user?.role === UserRole.Homeowner;
   if (!isHomeowner) {
     redirect("/");
   }

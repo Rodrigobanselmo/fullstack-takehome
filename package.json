@@ -13,9 +13,10 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo -p 3210",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+    "generate": "prisma generate && graphql-codegen --config codegen.ts",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -24,32 +25,36 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@apollo/client": "^3.13.8",
-    "@apollo/server": "^4.12.0",
-    "@as-integrations/next": "^3.2.0",
-    "@prisma/client": "^6.5.0",
-    "@t3-oss/env-nextjs": "^0.12.0",
+    "@apollo/client": "^3.14.0",
+    "@apollo/server": "^5.3.0",
+    "@as-integrations/next": "^4.1.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "@t3-oss/env-nextjs": "^0.13.10",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
     "graphql": "^16.10.0",
     "graphql-scalars": "^1.24.2",
     "graphql-tag": "^2.12.6",
-    "next": "^15.2.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "zod": "^3.24.2"
+    "next": "^16.1.6",
+    "pg": "^8.13.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@graphql-codegen/cli": "^5.0.7",
-    "@graphql-codegen/client-preset": "^4.8.2",
-    "@types/bcrypt": "^5.0.2",
-    "@types/node": "^20.19.1",
+    "@graphql-codegen/client-preset": "^4.8.3",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^25.1.0",
+    "@types/pg": "^8.11.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.23.0",
-    "eslint-config-next": "^15.2.3",
+    "eslint-config-next": "^15.5.11",
     "prettier": "^3.5.3",
-    "prisma": "^6.5.0",
+    "prisma": "^7.3.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.27.0"
@@ -57,5 +62,12 @@
   "ct3aMetadata": {
     "initVersion": "7.39.3"
   },
-  "packageManager": "npm@10.2.4"
+  "packageManager": "npm@10.2.4",
+  "overrides": {
+    "hono": "^4.11.7",
+    "lodash": "^4.17.21",
+    "chevrotain": "^11.0.3",
+    "@chevrotain/gast": "^11.0.3",
+    "@chevrotain/cst-dts-gen": "^11.0.3"
+  }
 }

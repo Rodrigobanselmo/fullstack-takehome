@@ -16,10 +16,10 @@ export const subtaskSchema = gql`
   }
 
   enum SubtaskStatus {
-    PENDING
-    IN_PROGRESS
-    COMPLETED
-    CANCELED
+    pending
+    in_progress
+    completed
+    canceled
   }
 
   input CreateSubtaskInput {

@@ -1,11 +1,11 @@
 import { prisma } from "~/server/database/prisma";
 import type { User, UserRole as GraphQLUserRole } from "generated/gql/graphql";
-import type { UserRole, User as PrismaUser } from "generated/prisma";
+import type { UserRole, users as PrismaUser } from "generated/prisma";
 
 class PrismaUserRepository {
   async findManyByRole(role: GraphQLUserRole): Promise<User[]> {
-    const users = await prisma.user.findMany({
-      where: { role: role as UserRole },
+    const users = await prisma.users.findMany({
+      where: { role: role.toLowerCase() as UserRole },
     });
 
     return users.map((user) => ({
@@ -15,7 +15,7 @@ class PrismaUserRepository {
   }
 
   async findByUsername(username: string): Promise<PrismaUser | null> {
-    return prisma.user.findFirst({
+    return prisma.users.findFirst({
       where: { username },
     });
   }

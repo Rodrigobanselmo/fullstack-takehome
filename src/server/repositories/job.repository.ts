@@ -9,7 +9,7 @@ class PrismaJobRepository {
       status?: GraphQLJobStatus | null;
     },
   ): Promise<Job[]> {
-    const jobs = await prisma.job.findMany({
+    const jobs = await prisma.jobs.findMany({
       orderBy: { createdAt: "desc" },
       where: {
         deletedAt: null,
@@ -30,7 +30,7 @@ class PrismaJobRepository {
   }
 
   async findByIdAndUserId(jobId: string, userId: string): Promise<Job | null> {
-    const job = await prisma.job.findFirst({
+    const job = await prisma.jobs.findFirst({
       where: {
         id: jobId,
         deletedAt: null,
@@ -61,7 +61,7 @@ class PrismaJobRepository {
     contractorId: string;
     homeownerId: string;
   }): Promise<Job> {
-    const job = await prisma.job.create({
+    const job = await prisma.jobs.create({
       data,
       include: {
         contractor: true,
@@ -86,7 +86,7 @@ class PrismaJobRepository {
       homeownerId?: string;
     },
   ): Promise<Job> {
-    const job = await prisma.job.update({
+    const job = await prisma.jobs.update({
       where: { id: jobId },
       data,
       include: {
@@ -103,7 +103,7 @@ class PrismaJobRepository {
   }
 
   async softDeleteById(jobId: string): Promise<Job> {
-    const job = await prisma.job.update({
+    const job = await prisma.jobs.update({
       where: { id: jobId },
       data: { deletedAt: new Date() },
       include: {
@@ -128,7 +128,7 @@ class PrismaJobRepository {
     homeownerId: string;
   }): Promise<string> {
     const result = await prisma.$transaction(async (tx) => {
-      const job = await tx.job.create({
+      const job = await tx.jobs.create({
         data: {
           cost: data.cost,
           description: data.description,
@@ -139,7 +139,7 @@ class PrismaJobRepository {
         },
       });
 
-      const existingConversation = await tx.conversation.findFirst({
+      const existingConversation = await tx.conversations.findFirst({
         where: {
           contractorId: data.contractorId,
           homeownerId: data.homeownerId,
@@ -148,7 +148,7 @@ class PrismaJobRepository {
       });
 
       if (!existingConversation) {
-        await tx.conversation.create({
+        await tx.conversations.create({
           data: {
             contractorId: data.contractorId,
             homeownerId: data.homeownerId,

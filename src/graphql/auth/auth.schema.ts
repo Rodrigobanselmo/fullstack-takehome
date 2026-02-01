@@ -2,8 +2,8 @@ import { gql } from "graphql-tag";
 
 export const authTypeDefs = gql`
   enum UserRole {
-    CONTRACTOR
-    HOMEOWNER
+    contractor
+    homeowner
   }
 
   type LoginOutput {

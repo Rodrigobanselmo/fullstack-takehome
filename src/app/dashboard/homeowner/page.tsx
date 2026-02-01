@@ -39,7 +39,7 @@ export default function HomeownerDashboardPage() {
         <ErrorState message="Unable to load projects. Please try again later." />
       )}
 
-      {data && data.jobs.length === 0 && (
+      {data?.jobs.length === 0 && (
         <EmptyState
           title={`No ${selectedStatus.toLowerCase()} projects`}
           message={`You don't have any ${selectedStatus.toLowerCase()} projects.`}

@@ -1,5 +1,4 @@
 import { formatToGQLConnection } from "~/lib/pagination";
-import { prisma } from "~/server/database/prisma";
 import type {
   Conversation,
   Message,
@@ -87,7 +86,7 @@ export async function findConversationsService({
 export async function findConversationByIdService({
   conversationId,
   userId,
-}: FindConversationByIdArgs): Promise<Conversation | null> {
+}: FindConversationByIdArgs): Promise<Conversation> {
   const conversation = await conversationRepository.findById(
     conversationId,
     userId,

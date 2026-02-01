@@ -11,19 +11,19 @@ const JobStatus: React.FC<JobStatusProps> = ({ status }) => {
   const statusConfig = {
     [JobStatusEnum.Planning]: {
       className: styles.jobStatus + " " + styles.planning,
-      displayText: JOB_STATUS_MAP.PLANNING,
+      displayText: JOB_STATUS_MAP.planning,
     },
     [JobStatusEnum.InProgress]: {
       className: styles.jobStatus + " " + styles.inProgress,
-      displayText: JOB_STATUS_MAP.IN_PROGRESS,
+      displayText: JOB_STATUS_MAP.in_progress,
     },
     [JobStatusEnum.Completed]: {
       className: styles.jobStatus + " " + styles.completed,
-      displayText: JOB_STATUS_MAP.COMPLETED,
+      displayText: JOB_STATUS_MAP.completed,
     },
     [JobStatusEnum.Canceled]: {
       className: styles.jobStatus + " " + styles.canceled,
-      displayText: JOB_STATUS_MAP.CANCELED,
+      displayText: JOB_STATUS_MAP.canceled,
     },
   };
 

@@ -45,7 +45,7 @@ export async function createJobWithConversation({
     cost: input.cost,
     description: input.description,
     location: input.location,
-    status: input.status as JobStatus,
+    status: (input.status || 'planning') as JobStatus,
     contractorId,
     homeownerId,
   });
@@ -85,7 +85,7 @@ export async function updateJobById({
   await jobRepository.updateById(jobId, {
     description: input.description,
     location: input.location,
-    status: input.status as JobStatus,
+    status: input.status ? (input.status as JobStatus) : undefined,
     cost: input.cost,
     homeownerId: input.homeownerId,
   });

@@ -2,10 +2,10 @@ import { gql } from "graphql-tag";
 
 export const jobTypeDefs = gql`
   enum JobStatus {
-    PLANNING
-    IN_PROGRESS
-    COMPLETED
-    CANCELED
+    planning
+    in_progress
+    completed
+    canceled
   }
 
   type Job {

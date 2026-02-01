@@ -7,7 +7,7 @@ class PrismaMessageRepository {
     limit: number,
     cursor?: string,
   ): Promise<Message[]> {
-    return prisma.message.findMany({
+    return prisma.messages.findMany({
       where: { conversationId },
       orderBy: { createdAt: "desc" },
       include: { sender: true },
@@ -22,7 +22,7 @@ class PrismaMessageRepository {
     text: string,
     senderId: string,
   ): Promise<Message> {
-    return prisma.message.create({
+    return prisma.messages.create({
       data: {
         conversationId,
         text,
@@ -33,7 +33,7 @@ class PrismaMessageRepository {
   }
 
   async findById(messageId: string): Promise<Message | null> {
-    return prisma.message.findFirst({
+    return prisma.messages.findFirst({
       where: { id: messageId },
       include: { sender: true },
     });

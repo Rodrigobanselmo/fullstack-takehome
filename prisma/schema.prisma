@@ -1,129 +1,141 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
     output   = "../generated/prisma"
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = "file:./dev.db"
+    provider = "postgresql"
 }
 
-model Job {
-    id           String    @id @default(cuid())
+model conversations {
+    id           String     @id @default(cuid())
+    createdAt    DateTime   @default(now()) @map("created_at")
+    updatedAt    DateTime   @default(now()) @map("updated_at")
+    contractorId String     @map("contractor_id")
+    homeownerId  String     @map("homeowner_id")
+    contractor   users      @relation("conversations_contractor_idTousers", fields: [contractorId], references: [id])
+    homeowner    users      @relation("conversations_homeowner_idTousers", fields: [homeownerId], references: [id])
+    messages     messages[]
+
+    @@unique([contractorId, homeownerId], map: "conversations_contractor_id_homeowner_id_key")
+    @@index([contractorId], map: "conversations_contractor_id_idx")
+    @@index([createdAt], map: "conversations_created_at_idx")
+    @@index([homeownerId], map: "conversations_homeowner_id_idx")
+}
+
+model jobs {
+    id           String     @id @default(cuid())
     description  String
     location     String
-    status       JobStatus @default(PLANNING)
+    status       JobStatus  @default(planning)
     cost         Decimal
-    contractorId String    @map("contractor_id")
-    homeownerId  String    @map("homeowner_id")
+    contractorId String     @map("contractor_id")
+    homeownerId  String     @map("homeowner_id")
+    createdAt    DateTime   @default(now()) @map("created_at")
+    updatedAt    DateTime   @default(now()) @map("updated_at")
+    deletedAt    DateTime?  @map("deleted_at")
+    contractor   users      @relation("jobs_contractor_idTousers", fields: [contractorId], references: [id])
+    homeowner    users      @relation("jobs_homeowner_idTousers", fields: [homeownerId], references: [id])
+    subtasks     subtasks[]
 
-    createdAt DateTime  @default(now()) @map("created_at")
-    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-    deletedAt DateTime? @map("deleted_at")
-
-    contractor User      @relation("ContractorJobs", fields: [contractorId], references: [id])
-    homeowner  User      @relation("HomeownerJobs", fields: [homeownerId], references: [id])
-    subtasks   Subtask[]
-
-    @@index([contractorId])
-    @@index([homeownerId])
-    @@index([deletedAt])
-    @@index([status])
-    @@index([createdAt])
-    @@map("jobs")
+    @@index([contractorId], map: "jobs_contractor_id_idx")
+    @@index([createdAt], map: "jobs_created_at_idx")
+    @@index([deletedAt], map: "jobs_deleted_at_idx")
+    @@index([homeownerId], map: "jobs_homeowner_id_idx")
+    @@index([status], map: "jobs_status_idx")
 }
 
-model Subtask {
+model messages {
+    id             String        @id @default(cuid())
+    text           String
+    createdAt      DateTime      @default(now()) @map("created_at")
+    senderId       String        @map("sender_id")
+    conversationId String        @map("conversation_id")
+    conversation   conversations @relation(fields: [conversationId], references: [id])
+    sender         users         @relation(fields: [senderId], references: [id])
+
+    @@index([conversationId], map: "messages_conversation_id_idx")
+    @@index([createdAt], map: "messages_created_at_idx")
+}
+
+model subtasks {
     id          String        @id @default(cuid())
     description String
     deadline    DateTime?
     cost        Decimal
-    status      SubtaskStatus @default(PENDING)
+    status      SubtaskStatus @default(pending)
     jobId       String        @map("job_id")
+    createdAt   DateTime      @default(now()) @map("created_at")
+    updatedAt   DateTime      @default(now()) @map("updated_at")
+    deletedAt   DateTime?     @map("deleted_at")
+    job         jobs          @relation(fields: [jobId], references: [id])
 
-    createdAt DateTime  @default(now()) @map("created_at")
-    updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
-    deletedAt DateTime? @map("deleted_at")
-
-    job Job @relation(fields: [jobId], references: [id])
-
-    @@index([deletedAt, jobId])
-    @@index([createdAt])
-    @@map("subtasks")
+    @@index([createdAt], map: "subtasks_created_at_idx")
+    @@index([deletedAt, jobId], map: "subtasks_deleted_at_job_id_idx")
 }
 
-model Conversation {
+model users {
+    id                      String          @id @default(cuid())
+    createdAt               DateTime        @default(now()) @map("created_at")
+    updatedAt               DateTime        @default(now()) @map("updated_at")
+    name                    String
+    username                String          @unique
+    password                String
+    role                    UserRole
+    contractorConversations conversations[] @relation("conversations_contractor_idTousers")
+    homeownerConversations  conversations[] @relation("conversations_homeowner_idTousers")
+    contractorJobs          jobs[]          @relation("jobs_contractor_idTousers")
+    homeownerJobs           jobs[]          @relation("jobs_homeowner_idTousers")
+    messages                messages[]
+    recipes                 recipes[]
+
+    @@index([username], map: "users_username_idx")
+}
+
+model recipes {
+    id                String               @id @default(cuid())
+    name              String
+    servings          Int
+    userId            String               @map("user_id")
+    createdAt         DateTime             @default(now()) @map("created_at")
+    updatedAt         DateTime             @default(now()) @map("updated_at")
+    deletedAt         DateTime?            @map("deleted_at")
+    user              users                @relation(fields: [userId], references: [id])
+    recipeIngredients recipe_ingredients[]
+
+    @@index([userId], map: "recipes_user_id_idx")
+    @@index([createdAt], map: "recipes_created_at_idx")
+    @@index([deletedAt], map: "recipes_deleted_at_idx")
+}
+
+model recipe_ingredients {
     id        String   @id @default(cuid())
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
-
-    contractorId String @map("contractor_id")
-    contractor   User   @relation("ContractorConversations", fields: [contractorId], references: [id])
-
-    homeownerId String @map("homeowner_id")
-    homeowner   User   @relation("HomeownerConversations", fields: [homeownerId], references: [id])
-
-    messages Message[]
-
-    @@unique([contractorId, homeownerId])
-    @@index([contractorId])
-    @@index([homeownerId])
-    @@index([createdAt])
-    @@map("conversations")
-}
-
-model Message {
-    id             String   @id @default(cuid())
-    text           String
-    createdAt      DateTime @default(now()) @map("created_at")
-    senderId       String   @map("sender_id")
-    conversationId String   @map("conversation_id")
-
-    sender       User         @relation("UserMessages", fields: [senderId], references: [id])
-    conversation Conversation @relation(fields: [conversationId], references: [id])
-
-    @@index([createdAt])
-    @@index([conversationId])
-    @@map("messages")
-}
-
-model User {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+    recipeId  String   @map("recipe_id")
     name      String
-    username  String   @unique
-    password  String
-    role      UserRole
+    quantity  Decimal
+    unit      String
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @map("updated_at")
+    recipe    recipes  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
-    messages                Message[]      @relation("UserMessages")
-    contractorJobs          Job[]          @relation("ContractorJobs")
-    homeownerJobs           Job[]          @relation("HomeownerJobs")
-    contractorConversations Conversation[] @relation("ContractorConversations")
-    homeownerConversations  Conversation[] @relation("HomeownerConversations")
-
-    @@index([username])
-    @@map("users")
+    @@index([recipeId], map: "recipe_ingredients_recipe_id_idx")
 }
 
 enum JobStatus {
-    PLANNING    @map("planning")
-    IN_PROGRESS @map("in_progress")
-    COMPLETED   @map("completed")
-    CANCELED    @map("canceled")
+    planning
+    in_progress
+    completed
+    canceled
 }
 
 enum SubtaskStatus {
-    PENDING     @map("pending")
-    IN_PROGRESS @map("in_progress")
-    COMPLETED   @map("completed")
-    CANCELED    @map("canceled")
+    pending
+    in_progress
+    completed
+    canceled
 }
 
 enum UserRole {
-    CONTRACTOR @map("contractor")
-    HOMEOWNER  @map("homeowner")
+    contractor
+    homeowner
 }
