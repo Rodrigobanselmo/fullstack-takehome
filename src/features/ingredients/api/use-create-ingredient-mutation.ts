@@ -33,4 +33,3 @@ export function useCreateIngredientMutation() {
     refetchQueries: [{ query: INGREDIENTS_QUERY }],
   });
 }
-

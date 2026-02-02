@@ -29,4 +29,3 @@ export function createUserByIdLoader() {
     return userIds.map((userId) => userMap.get(userId) ?? null);
   });
 }
-

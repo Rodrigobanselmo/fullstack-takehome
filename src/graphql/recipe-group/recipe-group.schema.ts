@@ -53,8 +53,9 @@ export const recipeGroupTypeDefs = gql`
     deleteRecipeGroup(id: ID!): ID!
     addRecipesToGroup(input: AddRecipesToGroupInput!): RecipeGroup!
     removeRecipesFromGroup(input: RemoveRecipesFromGroupInput!): RecipeGroup!
-    uploadRecipeGroupImage(input: GenerateRecipeGroupPresignedUrlInput!): UploadRecipeGroupImageResult!
+    uploadRecipeGroupImage(
+      input: GenerateRecipeGroupPresignedUrlInput!
+    ): UploadRecipeGroupImageResult!
     deleteRecipeGroupImage(groupId: ID!): Boolean!
   }
 `;
-

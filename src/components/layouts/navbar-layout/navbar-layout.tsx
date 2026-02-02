@@ -15,6 +15,8 @@ const navItems = (user: UserSession) => [
     href: getAuthenticatedRoute(user.role),
   },
   { label: "Chat", href: paths.dashboard.chat.getHref() },
+  { label: "Recipes", href: paths.dashboard.recipes.getHref() },
+  { label: "Ingredients", href: paths.dashboard.ingredients.getHref() },
 ];
 
 export default function NavbarLayout() {

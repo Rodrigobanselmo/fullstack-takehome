@@ -93,7 +93,7 @@ class PrismaSubtaskRepository {
       where: { id: subtaskId, jobId },
       data: {
         ...data,
-        status: data.status ? data.status as SubtaskStatus : undefined,
+        status: data.status ? (data.status as SubtaskStatus) : undefined,
       },
     });
 

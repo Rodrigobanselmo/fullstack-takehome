@@ -25,12 +25,8 @@ const INGREDIENT_QUERY = gql`
 `;
 
 export function useQueryIngredient(id: string) {
-  return useQuery<IngredientQuery, IngredientQueryVariables>(
-    INGREDIENT_QUERY,
-    {
-      variables: { id },
-      skip: !id,
-    },
-  );
+  return useQuery<IngredientQuery, IngredientQueryVariables>(INGREDIENT_QUERY, {
+    variables: { id },
+    skip: !id,
+  });
 }
-

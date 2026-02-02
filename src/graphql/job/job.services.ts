@@ -45,7 +45,7 @@ export async function createJobWithConversation({
     cost: input.cost,
     description: input.description,
     location: input.location,
-    status: (input.status || 'planning') as JobStatus,
+    status: (input.status || "planning") as JobStatus,
     contractorId,
     homeownerId,
   });

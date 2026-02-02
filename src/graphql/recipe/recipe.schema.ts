@@ -105,8 +105,9 @@ export const recipeTypeDefs = gql`
     createRecipe(input: CreateRecipeInput!): Recipe!
     updateRecipe(id: ID!, input: UpdateRecipeInput!): Recipe!
     deleteRecipe(id: ID!): Boolean!
-    uploadRecipeImage(input: GeneratePresignedUrlInput!): UploadRecipeImageResult!
+    uploadRecipeImage(
+      input: GeneratePresignedUrlInput!
+    ): UploadRecipeImageResult!
     deleteRecipeImage(recipeId: ID!): Boolean!
   }
 `;
-

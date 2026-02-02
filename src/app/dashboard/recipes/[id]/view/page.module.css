@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.content {
+  background: var(--color-paper);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .actions button {
+    width: 100%;
+  }
+  
+  .content {
+    padding: 1.5rem;
+  }
+}
+

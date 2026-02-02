@@ -21,4 +21,3 @@ export function useDeleteIngredientMutation() {
     refetchQueries: [{ query: INGREDIENTS_QUERY }],
   });
 }
-

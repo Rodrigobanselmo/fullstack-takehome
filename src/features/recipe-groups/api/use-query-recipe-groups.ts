@@ -18,4 +18,3 @@ export const RECIPE_GROUPS_QUERY = gql`
 export function useQueryRecipeGroups() {
   return useQuery<RecipeGroupsQuery>(RECIPE_GROUPS_QUERY);
 }
-

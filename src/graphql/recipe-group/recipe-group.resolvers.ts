@@ -9,7 +9,10 @@ import type {
   QueryRecipeGroupArgs,
   Recipe,
 } from "generated/gql/graphql";
-import { canManageRecipeGroups, canViewRecipeGroups } from "./recipe-group.auth";
+import {
+  canManageRecipeGroups,
+  canViewRecipeGroups,
+} from "./recipe-group.auth";
 import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
 import { InvalidInputError, UnauthorizedError } from "../errors";
@@ -101,7 +104,10 @@ export const recipeGroupResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(createRecipeGroupInputSchema, args.input);
+      const validation = schemaValidation(
+        createRecipeGroupInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -165,7 +171,10 @@ export const recipeGroupResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(addRecipesToGroupInputSchema, args.input);
+      const validation = schemaValidation(
+        addRecipesToGroupInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -186,7 +195,10 @@ export const recipeGroupResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(removeRecipesFromGroupInputSchema, args.input);
+      const validation = schemaValidation(
+        removeRecipesFromGroupInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -211,7 +223,10 @@ export const recipeGroupResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(generateRecipeGroupPresignedUrlInputSchema, args.input);
+      const validation = schemaValidation(
+        generateRecipeGroupPresignedUrlInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -247,7 +262,10 @@ export const recipeGroupResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(deleteRecipeGroupImageArgsSchema, args);
+      const validation = schemaValidation(
+        deleteRecipeGroupImageArgsSchema,
+        args,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -261,4 +279,3 @@ export const recipeGroupResolvers = {
     },
   },
 };
-

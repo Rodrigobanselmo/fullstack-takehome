@@ -4,6 +4,7 @@ import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryHomeowners } from "../../api/use-query-homeowners";
 import { JOB_STATUS_OPTIONS } from "../../constants/job-status-map";
 import {
@@ -74,9 +75,7 @@ export default function JobForm({
     try {
       await onSubmit(validationResult.data);
     } catch (error) {
-      setFormError(
-        error instanceof Error ? error.message : "Failed to create job",
-      );
+      setFormError(extractGraphQLErrorMessage(error));
     }
   };
 

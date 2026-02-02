@@ -13,6 +13,7 @@ const config: CodegenConfig = {
       config: {
         scalars: {
           DateTime: "Date",
+          Decimal: "number",
         },
         useTypeImports: true,
       },

@@ -3,7 +3,7 @@ import { getPrismaClient } from "~/server/database/transaction";
 
 // Scalar entity without nested relations (includes uploaderId for loading uploader)
 // Omit 'url' because it's computed dynamically in the resolver
-export type FileEntity = Omit<File, "uploader" | "url">
+export type FileEntity = Omit<File, "uploader" | "url">;
 
 export interface CreateFileData {
   key: string;
@@ -113,4 +113,3 @@ class PrismaFileRepository {
 }
 
 export const fileRepository = new PrismaFileRepository();
-

@@ -40,4 +40,3 @@ export function createIngredientByIdLoader() {
     return ingredientIds.map((id) => ingredientMap.get(id) ?? null);
   });
 }
-

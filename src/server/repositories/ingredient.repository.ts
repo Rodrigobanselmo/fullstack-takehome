@@ -29,7 +29,11 @@ export interface UpdateIngredientData {
 }
 
 class PrismaIngredientRepository {
-  async findManyByUserId({ userId }: { userId: string }): Promise<IngredientEntity[]> {
+  async findManyByUserId({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<IngredientEntity[]> {
     const db = getPrismaClient();
     const ingredients = await db.ingredients.findMany({
       where: {
@@ -45,7 +49,7 @@ class PrismaIngredientRepository {
       description: ingredient.description ?? undefined,
       category: ingredient.category as IngredientCategory,
       defaultUnit: ingredient.defaultUnit ?? undefined,
-      averagePrice: ingredient.averagePrice ?? undefined,
+      averagePrice: ingredient.averagePrice?.toNumber() ?? undefined,
       priceUnit: ingredient.priceUnit ?? undefined,
       priceCurrency: ingredient.priceCurrency ?? undefined,
       userId: ingredient.userId,
@@ -54,7 +58,13 @@ class PrismaIngredientRepository {
     }));
   }
 
-  async findById({ ingredientId, userId }: { ingredientId: string; userId: string }): Promise<IngredientEntity | null> {
+  async findById({
+    ingredientId,
+    userId,
+  }: {
+    ingredientId: string;
+    userId: string;
+  }): Promise<IngredientEntity | null> {
     const db = getPrismaClient();
     const ingredient = await db.ingredients.findFirst({
       where: {
@@ -74,7 +84,7 @@ class PrismaIngredientRepository {
       description: ingredient.description ?? undefined,
       category: ingredient.category as IngredientCategory,
       defaultUnit: ingredient.defaultUnit ?? undefined,
-      averagePrice: ingredient.averagePrice ?? undefined,
+      averagePrice: ingredient.averagePrice?.toNumber() ?? undefined,
       priceUnit: ingredient.priceUnit ?? undefined,
       priceCurrency: ingredient.priceCurrency ?? undefined,
       userId: ingredient.userId,
@@ -104,7 +114,7 @@ class PrismaIngredientRepository {
       description: ingredient.description ?? undefined,
       category: ingredient.category as IngredientCategory,
       defaultUnit: ingredient.defaultUnit ?? undefined,
-      averagePrice: ingredient.averagePrice ?? undefined,
+      averagePrice: ingredient.averagePrice?.toNumber() ?? undefined,
       priceUnit: ingredient.priceUnit ?? undefined,
       priceCurrency: ingredient.priceCurrency ?? undefined,
       userId: ingredient.userId,
@@ -115,9 +125,12 @@ class PrismaIngredientRepository {
 
   async update(data: UpdateIngredientData): Promise<IngredientEntity | null> {
     const db = getPrismaClient();
-    
+
     // Check if ingredient exists and belongs to user
-    const existing = await this.findById({ ingredientId: data.ingredientId, userId: data.userId });
+    const existing = await this.findById({
+      ingredientId: data.ingredientId,
+      userId: data.userId,
+    });
     if (!existing) {
       return null;
     }
@@ -142,7 +155,7 @@ class PrismaIngredientRepository {
       description: ingredient.description ?? undefined,
       category: ingredient.category as IngredientCategory,
       defaultUnit: ingredient.defaultUnit ?? undefined,
-      averagePrice: ingredient.averagePrice ?? undefined,
+      averagePrice: ingredient.averagePrice?.toNumber() ?? undefined,
       priceUnit: ingredient.priceUnit ?? undefined,
       priceCurrency: ingredient.priceCurrency ?? undefined,
       userId: ingredient.userId,
@@ -151,7 +164,13 @@ class PrismaIngredientRepository {
     };
   }
 
-  async delete({ ingredientId, userId }: { ingredientId: string; userId: string }): Promise<IngredientEntity | null> {
+  async delete({
+    ingredientId,
+    userId,
+  }: {
+    ingredientId: string;
+    userId: string;
+  }): Promise<IngredientEntity | null> {
     const db = getPrismaClient();
 
     // Check if ingredient exists and belongs to user
@@ -171,7 +190,7 @@ class PrismaIngredientRepository {
       name: ingredient.name,
       description: ingredient.description ?? undefined,
       defaultUnit: ingredient.defaultUnit ?? undefined,
-      averagePrice: ingredient.averagePrice ?? undefined,
+      averagePrice: ingredient.averagePrice?.toNumber() ?? undefined,
       priceUnit: ingredient.priceUnit ?? undefined,
       priceCurrency: ingredient.priceCurrency ?? undefined,
       userId: ingredient.userId,
@@ -182,4 +201,3 @@ class PrismaIngredientRepository {
 }
 
 export const ingredientRepository = new PrismaIngredientRepository();
-

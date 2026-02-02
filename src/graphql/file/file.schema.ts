@@ -24,4 +24,3 @@ export const fileTypeDefs = gql`
     image: File
   }
 `;
-

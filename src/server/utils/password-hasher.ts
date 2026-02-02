@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'; 
+import bcrypt from "bcrypt";
 
 export class PasswordHasher {
   private readonly saltRounds: number = 10;

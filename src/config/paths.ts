@@ -49,5 +49,29 @@ export const paths = {
           `/dashboard/chat/${conversationId}`,
       },
     },
+    recipes: {
+      getHref: () => "/dashboard/recipes",
+      view: {
+        getHref: (id: string) => `/dashboard/recipes/${id}/view`,
+      },
+      add: {
+        getHref: () => "/dashboard/recipes/add",
+      },
+      edit: {
+        getHref: (id: string) => `/dashboard/recipes/${id}/edit`,
+      },
+    },
+    ingredients: {
+      getHref: () => "/dashboard/ingredients",
+      view: {
+        getHref: (id: string) => `/dashboard/ingredients/${id}/view`,
+      },
+      add: {
+        getHref: () => "/dashboard/ingredients/add",
+      },
+      edit: {
+        getHref: (id: string) => `/dashboard/ingredients/${id}/edit`,
+      },
+    },
   },
 } as const;

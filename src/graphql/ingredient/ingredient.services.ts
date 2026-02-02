@@ -7,7 +7,10 @@ import {
   type IngredientEntity,
 } from "~/server/repositories/ingredient.repository";
 import { IngredientNotFoundError } from "./ingredient.errors";
-import { fileRepository, type FileEntity } from "~/server/repositories/file.repository";
+import {
+  fileRepository,
+  type FileEntity,
+} from "~/server/repositories/file.repository";
 import { withTransaction } from "~/server/database/transaction";
 import { env } from "~/config/env";
 import { generatePresignedPost } from "~/lib/s3";
@@ -28,7 +31,10 @@ export async function getIngredientById({
   ingredientId: string;
   userId: string;
 }): Promise<IngredientEntity> {
-  const ingredient = await ingredientRepository.findById({ ingredientId, userId });
+  const ingredient = await ingredientRepository.findById({
+    ingredientId,
+    userId,
+  });
 
   if (!ingredient) {
     throw IngredientNotFoundError();
@@ -114,7 +120,10 @@ export async function uploadIngredientImagePresigned({
   ingredientId: string;
   filename: string;
   mimeType: string;
-}): Promise<{ file: FileEntity; presignedPost: { url: string; fields: Record<string, string>; key: string } }> {
+}): Promise<{
+  file: FileEntity;
+  presignedPost: { url: string; fields: Record<string, string>; key: string };
+}> {
   // Verify ingredient exists and belongs to user
   await getIngredientById({ ingredientId, userId });
 
@@ -139,7 +148,9 @@ export async function uploadIngredientImagePresigned({
     });
 
     // Delete old ingredient image if exists
-    const db = (await import("~/server/database/transaction")).getPrismaClient();
+    const db = (
+      await import("~/server/database/transaction")
+    ).getPrismaClient();
     const existingFile = await db.ingredient_files.findFirst({
       where: { ingredientId },
     });
@@ -199,4 +210,3 @@ export async function deleteIngredientImage({
 
   return true;
 }
-

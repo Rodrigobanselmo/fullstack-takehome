@@ -10,4 +10,3 @@ export const canViewSubtasks = (user: UserSession | null) => {
 export const canManageSubtasks = (user: UserSession | null) => {
   return user?.role === UserRole.Contractor;
 };
-

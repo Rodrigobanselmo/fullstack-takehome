@@ -19,7 +19,11 @@ export interface UpdateRecipeGroupData {
 }
 
 class PrismaRecipeGroupRepository {
-  async findManyByUserId({ userId }: { userId: string }): Promise<RecipeGroupEntity[]> {
+  async findManyByUserId({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<RecipeGroupEntity[]> {
     const db = getPrismaClient();
     const groups = await db.recipe_groups.findMany({
       where: {
@@ -115,7 +119,13 @@ class PrismaRecipeGroupRepository {
     };
   }
 
-  async softDelete({ groupId, userId }: { groupId: string; userId: string }): Promise<RecipeGroupEntity> {
+  async softDelete({
+    groupId,
+    userId,
+  }: {
+    groupId: string;
+    userId: string;
+  }): Promise<RecipeGroupEntity> {
     const db = getPrismaClient();
     const group = await db.recipe_groups.update({
       where: { id: groupId, userId },
@@ -175,7 +185,13 @@ class PrismaRecipeGroupRepository {
   }
 
   // File relations
-  async attachFileToRecipeGroup({ groupId, fileId }: { groupId: string; fileId: string }): Promise<void> {
+  async attachFileToRecipeGroup({
+    groupId,
+    fileId,
+  }: {
+    groupId: string;
+    fileId: string;
+  }): Promise<void> {
     const db = getPrismaClient();
     await db.recipe_group_files.create({
       data: {
@@ -185,7 +201,13 @@ class PrismaRecipeGroupRepository {
     });
   }
 
-  async detachFileFromRecipeGroup({ groupId, fileId }: { groupId: string; fileId: string }): Promise<void> {
+  async detachFileFromRecipeGroup({
+    groupId,
+    fileId,
+  }: {
+    groupId: string;
+    fileId: string;
+  }): Promise<void> {
     const db = getPrismaClient();
     await db.recipe_group_files.deleteMany({
       where: {
@@ -195,7 +217,11 @@ class PrismaRecipeGroupRepository {
     });
   }
 
-  async findFileIdsByRecipeGroupId({ groupId }: { groupId: string }): Promise<string[]> {
+  async findFileIdsByRecipeGroupId({
+    groupId,
+  }: {
+    groupId: string;
+  }): Promise<string[]> {
     const db = getPrismaClient();
     const groupFiles = await db.recipe_group_files.findMany({
       where: { groupId },
@@ -207,4 +233,3 @@ class PrismaRecipeGroupRepository {
 }
 
 export const recipeGroupRepository = new PrismaRecipeGroupRepository();
-

@@ -7,4 +7,3 @@ export const canViewRecipeGroups = (user: UserSession | null) => {
 export const canManageRecipeGroups = (user: UserSession | null) => {
   return !!user;
 };
-

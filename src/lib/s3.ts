@@ -143,9 +143,7 @@ export async function generatePresignedPost({
 }): Promise<PresignedPostResult> {
   // Validate file type
   if (!validateImageFile(mimeType)) {
-    throw new Error(
-      "Only image files are allowed (JPEG, PNG, GIF, WebP)",
-    );
+    throw new Error("Only image files are allowed (JPEG, PNG, GIF, WebP)");
   }
 
   // Generate unique key

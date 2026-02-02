@@ -1,0 +1,76 @@
+.recipeGroupCard {
+  background: var(--color-paper);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  min-height: 150px;
+}
+
+.recipeGroupCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--color-shadow);
+  border-color: var(--color-primary-20);
+}
+
+.recipeGroupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.recipeGroupTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin: 0;
+  flex: 1;
+}
+
+.recipeGroupDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recipeGroupFooter {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.recipeGroupMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.recipeGroupMetaIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .recipeGroupCard {
+    padding: 1.25rem;
+  }
+}
+

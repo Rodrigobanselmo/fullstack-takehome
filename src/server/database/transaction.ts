@@ -42,10 +42,9 @@ export function getPrismaClient(): TransactionClient | typeof prisma {
  * ```
  */
 export async function withTransaction<T>(
-  callback: () => Promise<T>
+  callback: () => Promise<T>,
 ): Promise<T> {
   return prisma.$transaction(async (tx) => {
     return transactionContext.run(tx, callback);
   });
 }
-

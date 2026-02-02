@@ -77,4 +77,3 @@ export const deleteRecipeImageArgsSchema = z.object({
 export const recipeArgsSchema = z.object({
   id: z.string().min(1, "Recipe ID is required"),
 });
-

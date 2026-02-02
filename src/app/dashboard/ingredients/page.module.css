@@ -1,0 +1,62 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.formContainer {
+  background: var(--color-paper);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  border: 2px solid var(--color-primary-20);
+}
+
+.formTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 1.5rem 0;
+}
+
+.searchContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resultCount {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.content {
+  min-height: 400px;
+}
+
+.ingredientCardWrapper {
+  position: relative;
+}
+
+.ingredientActions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .formContainer {
+    padding: 1.5rem;
+  }
+}
+

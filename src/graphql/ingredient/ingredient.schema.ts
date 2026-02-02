@@ -79,8 +79,9 @@ export const ingredientTypeDefs = gql`
     createIngredient(input: CreateIngredientInput!): Ingredient!
     updateIngredient(id: ID!, input: UpdateIngredientInput!): Ingredient!
     deleteIngredient(id: ID!): Boolean!
-    uploadIngredientImage(input: GenerateIngredientPresignedUrlInput!): UploadIngredientImageResult!
+    uploadIngredientImage(
+      input: GenerateIngredientPresignedUrlInput!
+    ): UploadIngredientImageResult!
     deleteIngredientImage(ingredientId: ID!): Boolean!
   }
 `;
-

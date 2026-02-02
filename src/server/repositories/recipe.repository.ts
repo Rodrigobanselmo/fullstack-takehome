@@ -1,4 +1,8 @@
-import type { Recipe, RecipeIngredient, RecipeTag } from "generated/gql/graphql";
+import type {
+  Recipe,
+  RecipeIngredient,
+  RecipeTag,
+} from "generated/gql/graphql";
 import { getPrismaClient } from "~/server/database/transaction";
 
 // Scalar entity without nested relations (ingredients will be loaded by field resolver)
@@ -37,7 +41,11 @@ export interface UpdateRecipeData {
 }
 
 class PrismaRecipeRepository {
-  async findManyByUserId({ userId }: { userId: string }): Promise<RecipeEntity[]> {
+  async findManyByUserId({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<RecipeEntity[]> {
     const db = getPrismaClient();
     const recipes = await db.recipes.findMany({
       where: {
@@ -59,7 +67,13 @@ class PrismaRecipeRepository {
     }));
   }
 
-  async findById({ recipeId, userId }: { recipeId: string; userId: string }): Promise<RecipeEntity | null> {
+  async findById({
+    recipeId,
+    userId,
+  }: {
+    recipeId: string;
+    userId: string;
+  }): Promise<RecipeEntity | null> {
     const db = getPrismaClient();
     const recipe = await db.recipes.findFirst({
       where: {
@@ -159,7 +173,13 @@ class PrismaRecipeRepository {
     };
   }
 
-  async softDelete({ recipeId, userId }: { recipeId: string; userId: string }): Promise<RecipeEntity> {
+  async softDelete({
+    recipeId,
+    userId,
+  }: {
+    recipeId: string;
+    userId: string;
+  }): Promise<RecipeEntity> {
     const db = getPrismaClient();
     const recipe = await db.recipes.update({
       where: { id: recipeId, userId },
@@ -179,7 +199,13 @@ class PrismaRecipeRepository {
   }
 
   // File relations
-  async attachFileToRecipe({ recipeId, fileId }: { recipeId: string; fileId: string }): Promise<void> {
+  async attachFileToRecipe({
+    recipeId,
+    fileId,
+  }: {
+    recipeId: string;
+    fileId: string;
+  }): Promise<void> {
     const db = getPrismaClient();
     await db.recipe_files.create({
       data: {
@@ -189,7 +215,13 @@ class PrismaRecipeRepository {
     });
   }
 
-  async detachFileFromRecipe({ recipeId, fileId }: { recipeId: string; fileId: string }): Promise<void> {
+  async detachFileFromRecipe({
+    recipeId,
+    fileId,
+  }: {
+    recipeId: string;
+    fileId: string;
+  }): Promise<void> {
     const db = getPrismaClient();
     await db.recipe_files.deleteMany({
       where: {
@@ -199,7 +231,11 @@ class PrismaRecipeRepository {
     });
   }
 
-  async findFileIdsByRecipeId({ recipeId }: { recipeId: string }): Promise<string[]> {
+  async findFileIdsByRecipeId({
+    recipeId,
+  }: {
+    recipeId: string;
+  }): Promise<string[]> {
     const db = getPrismaClient();
     const recipeFiles = await db.recipe_files.findMany({
       where: { recipeId },

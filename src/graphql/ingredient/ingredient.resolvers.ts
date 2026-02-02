@@ -99,7 +99,10 @@ export const ingredientResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(createIngredientInputSchema, args.input);
+      const validation = schemaValidation(
+        createIngredientInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -175,7 +178,10 @@ export const ingredientResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(generateIngredientPresignedUrlInputSchema, args.input);
+      const validation = schemaValidation(
+        generateIngredientPresignedUrlInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -211,7 +217,10 @@ export const ingredientResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(deleteIngredientImageArgsSchema, args);
+      const validation = schemaValidation(
+        deleteIngredientImageArgsSchema,
+        args,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -225,4 +234,3 @@ export const ingredientResolvers = {
     },
   },
 };
-

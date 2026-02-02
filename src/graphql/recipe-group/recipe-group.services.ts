@@ -8,7 +8,10 @@ import { env } from "~/config/env";
 import { deleteFile, uploadFile } from "~/graphql/file/file.services";
 import { generatePresignedPost } from "~/lib/s3";
 import { withTransaction } from "~/server/database/transaction";
-import { fileRepository, type FileEntity } from "~/server/repositories/file.repository";
+import {
+  fileRepository,
+  type FileEntity,
+} from "~/server/repositories/file.repository";
 import {
   recipeGroupRepository,
   type RecipeGroupEntity,
@@ -47,10 +50,10 @@ export async function createRecipeGroup({
   input: CreateRecipeGroupInput;
 }): Promise<RecipeGroupEntity> {
   return recipeGroupRepository.create({
-      name: input.name,
-      description: input.description ?? undefined,
-      userId,
-      recipeIds: input.recipeIds ?? undefined,
+    name: input.name,
+    description: input.description ?? undefined,
+    userId,
+    recipeIds: input.recipeIds ?? undefined,
   });
 }
 
@@ -142,7 +145,8 @@ export async function uploadRecipeGroupImage({
   await getRecipeGroupById({ groupId, userId });
 
   // Get existing file IDs for group
-  const existingFileIds = await recipeGroupRepository.findFileIdsByRecipeGroupId({ groupId });
+  const existingFileIds =
+    await recipeGroupRepository.findFileIdsByRecipeGroupId({ groupId });
 
   // Use transaction to ensure atomicity
   return withTransaction(async () => {
@@ -155,11 +159,17 @@ export async function uploadRecipeGroupImage({
     });
 
     // Attach to group
-    await recipeGroupRepository.attachFileToRecipeGroup({ groupId, fileId: newFile.id });
+    await recipeGroupRepository.attachFileToRecipeGroup({
+      groupId,
+      fileId: newFile.id,
+    });
 
     // Delete old files (if any)
     for (const oldFileId of existingFileIds) {
-      await recipeGroupRepository.detachFileFromRecipeGroup({ groupId, fileId: oldFileId });
+      await recipeGroupRepository.detachFileFromRecipeGroup({
+        groupId,
+        fileId: oldFileId,
+      });
     }
 
     return newFile;
@@ -179,7 +189,9 @@ export async function deleteRecipeGroupImage({
   // Verify group exists and belongs to user
   await getRecipeGroupById({ groupId, userId });
 
-  const fileIds = await recipeGroupRepository.findFileIdsByRecipeGroupId({ groupId });
+  const fileIds = await recipeGroupRepository.findFileIdsByRecipeGroupId({
+    groupId,
+  });
 
   for (const fileId of fileIds) {
     await recipeGroupRepository.detachFileFromRecipeGroup({ groupId, fileId });
@@ -221,7 +233,8 @@ export async function uploadRecipeGroupImagePresigned({
   });
 
   // Get existing file IDs for group
-  const existingFileIds = await recipeGroupRepository.findFileIdsByRecipeGroupId({ groupId });
+  const existingFileIds =
+    await recipeGroupRepository.findFileIdsByRecipeGroupId({ groupId });
 
   // Use transaction to ensure atomicity
   const newFile = await withTransaction(async () => {
@@ -237,11 +250,17 @@ export async function uploadRecipeGroupImagePresigned({
     });
 
     // Attach to group
-    await recipeGroupRepository.attachFileToRecipeGroup({ groupId, fileId: file.id });
+    await recipeGroupRepository.attachFileToRecipeGroup({
+      groupId,
+      fileId: file.id,
+    });
 
     // Soft delete old files (if any)
     for (const oldFileId of existingFileIds) {
-      await recipeGroupRepository.detachFileFromRecipeGroup({ groupId, fileId: oldFileId });
+      await recipeGroupRepository.detachFileFromRecipeGroup({
+        groupId,
+        fileId: oldFileId,
+      });
       await deleteFile(oldFileId);
     }
 
@@ -253,4 +272,3 @@ export async function uploadRecipeGroupImagePresigned({
     presignedPost,
   };
 }
-

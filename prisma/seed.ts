@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 import type { User } from "generated/gql/graphql";
 import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -25,10 +25,10 @@ async function main() {
   const hashedPassword = await bcrypt.hash(guestPassword, saltRounds);
 
   const contractorUser = await prisma.users.upsert({
-    where: { username: "guest.contractor" },
+    where: { username: "guest" },
     update: {},
     create: {
-      username: "guest.contractor",
+      username: "guest",
       password: hashedPassword,
       role: UserRole.contractor,
       name: "Contractor Guest",

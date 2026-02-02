@@ -10,4 +10,3 @@ export const canViewJobs = (user: UserSession | null) => {
     user?.role === UserRole.Contractor || user?.role === UserRole.Homeowner
   );
 };
-

@@ -6,4 +6,3 @@ export const RecipeNotFoundError = () =>
       code: "RECIPE_NOT_FOUND",
     },
   });
-

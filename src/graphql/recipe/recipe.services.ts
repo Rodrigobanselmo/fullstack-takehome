@@ -8,7 +8,10 @@ import {
 } from "~/server/repositories/recipe.repository";
 import { RecipeNotFoundError } from "./recipe.errors";
 import { uploadFile, deleteFile } from "~/graphql/file/file.services";
-import { fileRepository, type FileEntity } from "~/server/repositories/file.repository";
+import {
+  fileRepository,
+  type FileEntity,
+} from "~/server/repositories/file.repository";
 import { withTransaction } from "~/server/database/transaction";
 import { env } from "~/config/env";
 import { generatePresignedPost } from "~/lib/s3";
@@ -45,16 +48,16 @@ export async function createRecipe({
   input: CreateRecipeInput;
 }): Promise<RecipeEntity> {
   return recipeRepository.create({
-      name: input.name,
-      servings: input.servings,
-      userId,
-      ingredients: input.ingredients.map((ingredient) => ({
-        ingredientId: ingredient.ingredientId,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        notes: ingredient.notes ?? undefined,
-        optional: ingredient.optional ?? undefined,
-      })),
+    name: input.name,
+    servings: input.servings,
+    userId,
+    ingredients: input.ingredients.map((ingredient) => ({
+      ingredientId: ingredient.ingredientId,
+      quantity: ingredient.quantity,
+      unit: ingredient.unit,
+      notes: ingredient.notes ?? undefined,
+      optional: ingredient.optional ?? undefined,
+    })),
   });
 }
 
@@ -119,7 +122,9 @@ export async function uploadRecipeImage({
   await getRecipeById({ recipeId, userId });
 
   // Get existing file IDs for recipe
-  const existingFileIds = await recipeRepository.findFileIdsByRecipeId({ recipeId });
+  const existingFileIds = await recipeRepository.findFileIdsByRecipeId({
+    recipeId,
+  });
 
   // Use transaction to ensure atomicity
   return withTransaction(async () => {
@@ -136,7 +141,10 @@ export async function uploadRecipeImage({
 
     // Delete old files (if any)
     for (const oldFileId of existingFileIds) {
-      await recipeRepository.detachFileFromRecipe({ recipeId, fileId: oldFileId });
+      await recipeRepository.detachFileFromRecipe({
+        recipeId,
+        fileId: oldFileId,
+      });
     }
 
     return newFile;
@@ -198,7 +206,9 @@ export async function uploadRecipeImagePresigned({
   });
 
   // Get existing file IDs for recipe
-  const existingFileIds = await recipeRepository.findFileIdsByRecipeId({ recipeId });
+  const existingFileIds = await recipeRepository.findFileIdsByRecipeId({
+    recipeId,
+  });
 
   // Use transaction to ensure atomicity
   const newFile = await withTransaction(async () => {
@@ -218,7 +228,10 @@ export async function uploadRecipeImagePresigned({
 
     // Soft delete old files (if any)
     for (const oldFileId of existingFileIds) {
-      await recipeRepository.detachFileFromRecipe({ recipeId, fileId: oldFileId });
+      await recipeRepository.detachFileFromRecipe({
+        recipeId,
+        fileId: oldFileId,
+      });
       await deleteFile(oldFileId);
     }
 
@@ -230,4 +243,3 @@ export async function uploadRecipeImagePresigned({
     presignedPost,
   };
 }
-

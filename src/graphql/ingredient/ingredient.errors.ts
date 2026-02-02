@@ -13,4 +13,3 @@ export const IngredientAlreadyExistsError = () =>
       code: "INGREDIENT_ALREADY_EXISTS",
     },
   });
-

@@ -1,10 +1,7 @@
 "use client";
 
 import { gql, useQuery } from "@apollo/client";
-import type {
-  RecipeQuery,
-  RecipeQueryVariables,
-} from "generated/gql/graphql";
+import type { RecipeQuery, RecipeQueryVariables } from "generated/gql/graphql";
 
 const RECIPE_QUERY = gql`
   query Recipe($id: ID!) {
@@ -39,4 +36,3 @@ export function useQueryRecipe(id: string) {
     skip: !id,
   });
 }
-

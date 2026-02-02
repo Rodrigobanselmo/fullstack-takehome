@@ -17,7 +17,9 @@ export function createRecipesByGroupIdLoader() {
     });
 
     // Get unique recipe IDs
-    const recipeIds = [...new Set(recipeGroupRecipes.map((rgr) => rgr.recipeId))];
+    const recipeIds = [
+      ...new Set(recipeGroupRecipes.map((rgr) => rgr.recipeId)),
+    ];
 
     // Fetch all recipes in one query
     const recipes = await prisma.recipes.findMany({
@@ -42,7 +44,7 @@ export function createRecipesByGroupIdLoader() {
           updatedAt: recipe.updatedAt,
           ingredients: [], // Will be loaded by field resolver
         } as Recipe,
-      ])
+      ]),
     );
 
     // Group recipes by groupId
@@ -101,7 +103,8 @@ export function createIngredientsByRecipeIdLoader() {
 
     // Return ingredients in the same order as recipeIds
     // If a recipe has no ingredients, return empty array
-    return recipeIds.map((recipeId) => ingredientsByRecipeId.get(recipeId) ?? []);
+    return recipeIds.map(
+      (recipeId) => ingredientsByRecipeId.get(recipeId) ?? [],
+    );
   });
 }
-

@@ -20,7 +20,10 @@ import {
   uploadRecipeImagePresigned,
   deleteRecipeImage as deleteRecipeImageService,
 } from "./recipe.services";
-import type { RecipeEntity, RecipeIngredientEntity } from "~/server/repositories/recipe.repository";
+import type {
+  RecipeEntity,
+  RecipeIngredientEntity,
+} from "~/server/repositories/recipe.repository";
 import {
   createRecipeInputSchema,
   recipeArgsSchema,
@@ -54,7 +57,9 @@ export const recipeResolvers = {
       _: unknown,
       context: GraphQLContext,
     ): Promise<Ingredient> => {
-      const ingredient = await context.dataloaders.ingredientById.load(parent.ingredientId);
+      const ingredient = await context.dataloaders.ingredientById.load(
+        parent.ingredientId,
+      );
       if (!ingredient) {
         throw new Error(`Ingredient not found: ${parent.ingredientId}`);
       }
@@ -197,7 +202,10 @@ export const recipeResolvers = {
         throw UnauthorizedError();
       }
 
-      const validation = schemaValidation(generatePresignedUrlInputSchema, args.input);
+      const validation = schemaValidation(
+        generatePresignedUrlInputSchema,
+        args.input,
+      );
       if (validation.success === false) {
         throw InvalidInputError(validation.error);
       }
@@ -247,4 +255,3 @@ export const recipeResolvers = {
     },
   },
 };
-

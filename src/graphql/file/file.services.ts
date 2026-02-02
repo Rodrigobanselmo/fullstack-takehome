@@ -1,8 +1,4 @@
-import {
-  uploadFileToS3,
-  validateFileSize,
-  validateImageFile,
-} from "~/lib/s3";
+import { uploadFileToS3, validateFileSize, validateImageFile } from "~/lib/s3";
 import {
   fileRepository,
   type FileEntity,
@@ -48,13 +44,13 @@ export async function uploadFile({
 
   // Create database record
   const fileEntity = await fileRepository.create({
-      key: s3Result.key,
-      bucket: env.AWS_S3_BUCKET,
-      region: env.AWS_REGION,
-      filename: s3Result.filename,
-      mimeType: s3Result.mimeType,
-      size: s3Result.size,
-      uploaderId,
+    key: s3Result.key,
+    bucket: env.AWS_S3_BUCKET,
+    region: env.AWS_REGION,
+    filename: s3Result.filename,
+    mimeType: s3Result.mimeType,
+    size: s3Result.size,
+    uploaderId,
   });
 
   return fileEntity;
@@ -73,4 +69,3 @@ export async function deleteFile(fileId: string): Promise<void> {
   // Soft delete from database only
   await fileRepository.softDelete({ fileId });
 }
-

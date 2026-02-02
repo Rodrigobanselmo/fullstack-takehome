@@ -23,4 +23,3 @@ export const INGREDIENTS_QUERY = gql`
 export function useQueryIngredients() {
   return useQuery<IngredientsQuery>(INGREDIENTS_QUERY);
 }
-

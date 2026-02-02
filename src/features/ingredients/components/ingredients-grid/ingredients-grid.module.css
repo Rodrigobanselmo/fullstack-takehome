@@ -1,0 +1,12 @@
+.ingredientsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .ingredientsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

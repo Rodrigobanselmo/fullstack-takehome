@@ -157,7 +157,8 @@ export function createFileByIngredientIdLoader() {
 
     // Return files in the same order as ingredientIds
     // If an ingredient has no file, return null
-    return ingredientIds.map((ingredientId) => filesByIngredientId.get(ingredientId) ?? null);
+    return ingredientIds.map(
+      (ingredientId) => filesByIngredientId.get(ingredientId) ?? null,
+    );
   });
 }
-

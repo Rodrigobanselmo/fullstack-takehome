@@ -21,4 +21,3 @@ export const RECIPES_QUERY = gql`
 export function useQueryRecipes() {
   return useQuery<RecipesQuery>(RECIPES_QUERY);
 }
-

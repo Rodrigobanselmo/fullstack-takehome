@@ -1,0 +1,12 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+

@@ -10,4 +10,4 @@ const FormError: React.FC<FormErrorProps> = ({ error }) => {
   return <div className={styles.errorMessage}>{error}</div>;
 };
 
-export default FormError; 
+export default FormError;

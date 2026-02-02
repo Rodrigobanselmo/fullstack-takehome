@@ -4,4 +4,3 @@ import type { UserSession } from "~/lib/auth";
 export const canListHomeowners = (user: UserSession | null) => {
   return user?.role === UserRole.Contractor;
 };
-

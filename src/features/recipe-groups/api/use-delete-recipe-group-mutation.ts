@@ -21,4 +21,3 @@ export function useDeleteRecipeGroupMutation() {
     refetchQueries: [{ query: RECIPE_GROUPS_QUERY }],
   });
 }
-

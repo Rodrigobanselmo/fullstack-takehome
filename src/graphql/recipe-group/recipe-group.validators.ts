@@ -22,16 +22,12 @@ export const updateRecipeGroupArgsSchema = z.object({
 
 export const addRecipesToGroupInputSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
-  recipeIds: z
-    .array(z.string())
-    .min(1, "At least one recipe ID is required"),
+  recipeIds: z.array(z.string()).min(1, "At least one recipe ID is required"),
 });
 
 export const removeRecipesFromGroupInputSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
-  recipeIds: z
-    .array(z.string())
-    .min(1, "At least one recipe ID is required"),
+  recipeIds: z.array(z.string()).min(1, "At least one recipe ID is required"),
 });
 
 export const generateRecipeGroupPresignedUrlInputSchema = z.object({
@@ -43,4 +39,3 @@ export const generateRecipeGroupPresignedUrlInputSchema = z.object({
 export const deleteRecipeGroupImageArgsSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
 });
-

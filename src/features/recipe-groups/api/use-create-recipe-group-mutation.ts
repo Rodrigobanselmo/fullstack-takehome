@@ -32,4 +32,3 @@ export function useCreateRecipeGroupMutation() {
     refetchQueries: [{ query: RECIPE_GROUPS_QUERY }],
   });
 }
-

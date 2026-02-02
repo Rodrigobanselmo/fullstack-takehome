@@ -7,4 +7,3 @@ export const canViewChat = (user: UserSession | null) => {
 export const canSendMessage = (user: UserSession | null) => {
   return !!user;
 };
-

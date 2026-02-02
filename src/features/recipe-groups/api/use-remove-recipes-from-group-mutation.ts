@@ -32,4 +32,3 @@ export function useRemoveRecipesFromGroupMutation() {
     refetchQueries: [{ query: RECIPE_GROUPS_QUERY }],
   });
 }
-
