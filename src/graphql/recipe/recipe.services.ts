@@ -54,12 +54,14 @@ export async function createRecipe({
     tags: input.tags ?? undefined,
     overallRating: input.overallRating ?? undefined,
     prepTimeMinutes: input.prepTimeMinutes ?? undefined,
+    instructions: input.instructions ?? undefined,
     ingredients: input.ingredients.map((ingredient) => ({
       ingredientId: ingredient.ingredientId,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
       notes: ingredient.notes ?? undefined,
       optional: ingredient.optional ?? undefined,
+      price: ingredient.price ?? undefined,
     })),
   });
 }
@@ -84,12 +86,14 @@ export async function updateRecipe({
     tags: input.tags ?? undefined,
     overallRating: input.overallRating ?? undefined,
     prepTimeMinutes: input.prepTimeMinutes ?? undefined,
+    instructions: input.instructions ?? undefined,
     ingredients: input.ingredients?.map((ingredient) => ({
       ingredientId: ingredient.ingredientId,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
       notes: ingredient.notes ?? undefined,
       optional: ingredient.optional ?? undefined,
+      price: ingredient.price ?? undefined,
     })),
   });
 }

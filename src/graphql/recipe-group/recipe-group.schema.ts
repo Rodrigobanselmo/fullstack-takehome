@@ -19,6 +19,7 @@ export const recipeGroupTypeDefs = gql`
   input UpdateRecipeGroupInput {
     name: String
     description: String
+    recipeIds: [ID!]
   }
 
   input AddRecipesToGroupInput {

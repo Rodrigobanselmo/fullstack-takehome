@@ -184,6 +184,37 @@ class PrismaRecipeGroupRepository {
     return this.findById({ groupId, userId }).then((group) => group!);
   }
 
+  async setRecipes({
+    groupId,
+    userId,
+    recipeIds,
+  }: {
+    groupId: string;
+    userId: string;
+    recipeIds: string[];
+  }): Promise<RecipeGroupEntity> {
+    const db = getPrismaClient();
+
+    // Delete all existing recipes for this group
+    await db.recipe_group_recipes.deleteMany({
+      where: { groupId },
+    });
+
+    // Add new recipes
+    if (recipeIds.length > 0) {
+      await db.recipe_group_recipes.createMany({
+        data: recipeIds.map((recipeId) => ({
+          groupId,
+          recipeId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    // Return updated group
+    return this.findById({ groupId, userId }).then((group) => group!);
+  }
+
   // File relations
   async attachFileToRecipeGroup({
     groupId,

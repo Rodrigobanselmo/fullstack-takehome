@@ -15,7 +15,10 @@ import styles from "./page.module.css";
 
 export default function RecipesPage() {
   const router = useRouter();
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  // Track collapsed groups instead - empty set means all expanded (no layout shift)
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set(),
+  );
 
   const {
     data: groupsData,
@@ -30,7 +33,7 @@ export default function RecipesPage() {
   };
 
   const handleGroupToggle = (id: string) => {
-    setExpandedGroups((prev) => {
+    setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -42,11 +45,11 @@ export default function RecipesPage() {
   };
 
   const handleExpandAll = () => {
-    setExpandedGroups(new Set(groups.map((g) => g.id)));
+    setCollapsedGroups(new Set());
   };
 
   const handleCollapseAll = () => {
-    setExpandedGroups(new Set());
+    setCollapsedGroups(new Set(groups.map((g) => g.id)));
   };
 
   const handleViewGroup = (id: string, e: React.MouseEvent) => {
@@ -62,12 +65,13 @@ export default function RecipesPage() {
     router.push(paths.dashboard.recipeGroups.add.getHref());
   };
 
-  const totalRecipes = groups.reduce(
-    (acc, group) => acc + (group.recipes?.length || 0),
-    0,
+  // Count unique recipes across all groups (a recipe can be in multiple groups)
+  const uniqueRecipeIds = new Set(
+    groups.flatMap((group) => group.recipes?.map((r) => r.id) || []),
   );
+  const totalRecipes = uniqueRecipeIds.size;
 
-  const allExpanded = groups.length > 0 && expandedGroups.size === groups.length;
+  const allExpanded = groups.length > 0 && collapsedGroups.size === 0;
 
   return (
     <div className={styles.container}>
@@ -124,7 +128,7 @@ export default function RecipesPage() {
         {!groupsLoading && !groupsError && groups.length > 0 && (
           <div className={styles.groupsContainer}>
             {groups.map((group) => {
-              const isExpanded = expandedGroups.has(group.id);
+              const isExpanded = !collapsedGroups.has(group.id);
               const recipes = group.recipes || [];
 
               return (

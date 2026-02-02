@@ -9,6 +9,7 @@ export const createRecipeGroupInputSchema = z.object({
 export const updateRecipeGroupInputSchema = z.object({
   name: z.string().min(1, "Group name is required").optional(),
   description: z.string().optional(),
+  recipeIds: z.array(z.string()).optional(),
 });
 
 export const recipeGroupArgsSchema = z.object({

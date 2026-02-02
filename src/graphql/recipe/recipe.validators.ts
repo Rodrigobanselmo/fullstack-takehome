@@ -9,6 +9,10 @@ export const recipeIngredientInputSchema = z.object({
   unit: z.string().min(1, "Unit is required"),
   notes: z.string().optional(),
   optional: z.boolean().optional(),
+  price: z
+    .number({ invalid_type_error: "Price must be a number" })
+    .nonnegative("Price must be non-negative")
+    .optional(),
 });
 
 export const createRecipeInputSchema = z.object({
@@ -29,6 +33,7 @@ export const createRecipeInputSchema = z.object({
     .int("Prep time must be an integer")
     .positive("Prep time must be positive")
     .optional(),
+  instructions: z.string().optional(),
   ingredients: z
     .array(recipeIngredientInputSchema)
     .min(1, "At least one ingredient is required"),
@@ -53,6 +58,7 @@ export const updateRecipeInputSchema = z.object({
     .int("Prep time must be an integer")
     .positive("Prep time must be positive")
     .optional(),
+  instructions: z.string().optional(),
   ingredients: z
     .array(recipeIngredientInputSchema)
     .min(1, "At least one ingredient is required")

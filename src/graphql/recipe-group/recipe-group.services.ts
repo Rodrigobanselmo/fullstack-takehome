@@ -69,11 +69,25 @@ export async function updateRecipeGroup({
   // Verify group exists and belongs to user
   await getRecipeGroupById({ groupId, userId });
 
-  return recipeGroupRepository.update({
-    groupId,
-    userId,
-    name: input.name ?? undefined,
-    description: input.description ?? undefined,
+  return withTransaction(async () => {
+    // Update basic fields
+    const updatedGroup = await recipeGroupRepository.update({
+      groupId,
+      userId,
+      name: input.name ?? undefined,
+      description: input.description ?? undefined,
+    });
+
+    // Update recipes if provided
+    if (input.recipeIds !== undefined && input.recipeIds !== null) {
+      return recipeGroupRepository.setRecipes({
+        groupId,
+        userId,
+        recipeIds: input.recipeIds,
+      });
+    }
+
+    return updatedGroup;
   });
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "~/components/ui/page-header/page-header";
 import RecipeGroupForm from "~/features/recipe-groups/components/recipe-group-form/recipe-group-form";
@@ -11,6 +12,7 @@ import styles from "./page.module.css";
 export default function AddRecipeGroupPage() {
   const router = useRouter();
   const [createRecipeGroup, { loading }] = useCreateRecipeGroupMutation();
+  const createdIdRef = useRef<string | null>(null);
 
   const handleSubmit = async (data: CreateRecipeGroupFormData) => {
     const result = await createRecipeGroup({
@@ -24,16 +26,20 @@ export default function AddRecipeGroupPage() {
     });
 
     if (result.data?.createRecipeGroup) {
+      createdIdRef.current = result.data.createRecipeGroup.id;
+    }
+  };
+
+  const handleSuccess = () => {
+    if (createdIdRef.current) {
       router.push(
-        paths.dashboard.recipeGroups.view.getHref(
-          result.data.createRecipeGroup.id,
-        ),
+        paths.dashboard.recipeGroups.view.getHref(createdIdRef.current),
       );
     }
   };
 
   const handleCancel = () => {
-    router.push(paths.dashboard.recipes.getHref());
+    router.back();
   };
 
   return (
@@ -42,10 +48,12 @@ export default function AddRecipeGroupPage() {
       <div className={styles.formContainer}>
         <RecipeGroupForm
           onSubmit={handleSubmit}
+          onSuccess={handleSuccess}
           loading={loading}
           onCancel={handleCancel}
           submitButtonText="Create Group"
           loadingText="Creating Group..."
+          successMessage="Recipe group created successfully!"
         />
       </div>
     </div>

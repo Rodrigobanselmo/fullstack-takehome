@@ -1,13 +1,16 @@
 import { gql } from "@apollo/client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { FragmentType } from "generated/gql/fragment-masking";
 import { useFragment } from "generated/gql/fragment-masking";
 import type { RecipeGroupFormFragment } from "generated/gql/graphql";
 import { RecipeGroupFormFragmentDoc } from "generated/gql/graphql";
 import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
 import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import { useToast } from "~/components/ui/toast";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryRecipes } from "~/features/recipes/api/use-query-recipes";
 import {
@@ -33,21 +36,24 @@ export interface RecipeGroupFormProps {
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateRecipeGroupFormData) => Promise<void>;
+  onSuccess?: () => void;
   submitButtonText?: string;
   loadingText?: string;
   onCancel?: () => void;
+  successMessage?: string;
+  errorMessage?: string;
 }
 
-const initialRecipeGroupData: CreateRecipeGroupFormData = {
-  name: "",
-  description: "",
-  recipeIds: [],
-};
-
-function getInitialData(
+function getDefaultValues(
   recipeGroupData?: RecipeGroupFormFragment,
 ): CreateRecipeGroupFormData {
-  if (!recipeGroupData) return initialRecipeGroupData;
+  if (!recipeGroupData) {
+    return {
+      name: "",
+      description: "",
+      recipeIds: [],
+    };
+  }
 
   return {
     name: recipeGroupData.name,
@@ -61,59 +67,36 @@ export default function RecipeGroupForm({
   loading = false,
   error = "",
   onSubmit,
+  onSuccess,
   submitButtonText = "Create Recipe Group",
   loadingText = "Creating Recipe Group...",
   onCancel,
+  successMessage = "Recipe group saved successfully!",
+  errorMessage = "Failed to save recipe group",
 }: RecipeGroupFormProps) {
   const recipeGroupData = useFragment(RecipeGroupFormFragmentDoc, recipeGroup);
-
-  const initialData = getInitialData(recipeGroupData);
-
-  const [formData, setFormData] =
-    useState<CreateRecipeGroupFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
   const { data: recipesData, loading: recipesLoading } = useQueryRecipes();
+  const toast = useToast();
 
-  const handleInputChange =
-    (name: keyof CreateRecipeGroupFormData) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: e.target.value,
-      }));
-      setFormError("");
-    };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateRecipeGroupFormData>({
+    resolver: zodResolver(createRecipeGroupSchema),
+    defaultValues: getDefaultValues(recipeGroupData),
+  });
 
-  const handleRecipesChange = (selectedRecipeIds: string[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      recipeIds: selectedRecipeIds,
-    }));
-    setFormError("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    const validationResult = createRecipeGroupSchema.safeParse(formData);
-    if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
-      const message = firstError
-        ? `${firstError.path.join(".")}: ${firstError.message}`
-        : "Validation failed";
-
-      setFormError(message);
-      return;
-    }
-
+  const onFormSubmit = async (data: CreateRecipeGroupFormData) => {
     try {
-      await onSubmit(validationResult.data);
-    } catch (error) {
-      setFormError(extractGraphQLErrorMessage(error));
+      await onSubmit(data);
+      toast.success(successMessage);
+      onSuccess?.();
+    } catch (err) {
+      const errorMsg = extractGraphQLErrorMessage(err);
+      setFormError(errorMsg);
+      toast.error(errorMessage, errorMsg);
     }
   };
 
@@ -123,37 +106,59 @@ export default function RecipeGroupForm({
       label: recipe.name,
     })) ?? [];
 
+  const firstError = errors
+    ? Object.entries(errors)[0]?.[1]?.message
+    : null;
+
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>
       <div className={styles.formSection}>
-        <TextField
-          label="Group Name"
+        <Controller
           name="name"
-          value={formData.name}
-          onChange={handleInputChange("name")}
-          placeholder="Enter group name..."
-          required={true}
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Group Name"
+              name="name"
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Enter group name..."
+              required={true}
+            />
+          )}
         />
-        <TextField
-          label="Description"
+        <Controller
           name="description"
-          value={formData.description || ""}
-          onChange={handleInputChange("description")}
-          placeholder="Enter group description..."
-          multiline={true}
-          maxLines={3}
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Description"
+              name="description"
+              value={field.value || ""}
+              onChange={field.onChange}
+              placeholder="Enter group description..."
+              multiline={true}
+              maxLines={3}
+            />
+          )}
         />
-        <MultiSelectField
-          label="Recipes"
+        <Controller
           name="recipeIds"
-          value={formData.recipeIds ?? []}
-          onChange={handleRecipesChange}
-          options={recipeOptions}
-          placeholder="Select recipes..."
-          disabled={recipesLoading}
+          control={control}
+          render={({ field }) => (
+            <MultiSelectField
+              label="Recipes"
+              name="recipeIds"
+              value={field.value ?? []}
+              onChange={field.onChange}
+              options={recipeOptions}
+              placeholder="Select recipes..."
+              disabled={recipesLoading}
+            />
+          )}
         />
       </div>
-      <FormError error={formError} />
+      <FormError error={formError || firstError || ""} />
       <FormActions
         primaryAction={{
           text: loading ? loadingText : submitButtonText,

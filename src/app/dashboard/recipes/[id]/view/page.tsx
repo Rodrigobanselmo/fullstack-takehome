@@ -87,7 +87,7 @@ export default function ViewRecipePage({
   };
 
   const handleBack = () => {
-    router.push(paths.dashboard.recipes.getHref());
+    router.back();
   };
 
   if (loading) {

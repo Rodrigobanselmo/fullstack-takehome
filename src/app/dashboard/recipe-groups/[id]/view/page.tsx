@@ -40,6 +40,7 @@ export default function ViewRecipeGroupPage({
         input: {
           name: formData.name,
           description: formData.description,
+          recipeIds: formData.recipeIds,
         },
       },
     });
@@ -61,7 +62,7 @@ export default function ViewRecipeGroupPage({
               variables: { id },
             });
             closeModal(modalId);
-            router.push(paths.dashboard.recipeGroups.getHref());
+            router.push(paths.dashboard.recipes.getHref());
           } finally {
             setIsDeleting(false);
           }
@@ -72,7 +73,7 @@ export default function ViewRecipeGroupPage({
   };
 
   const handleBack = () => {
-    router.push(paths.dashboard.recipeGroups.getHref());
+    router.back();
   };
 
   if (loading) {
@@ -109,10 +110,12 @@ export default function ViewRecipeGroupPage({
         <RecipeGroupForm
           recipeGroup={recipeGroup}
           onSubmit={handleSubmit}
+          onSuccess={() => router.back()}
           loading={updateLoading}
           error={updateError?.message}
           submitButtonText="Update Group"
           loadingText="Updating..."
+          successMessage="Recipe group updated successfully!"
         />
       </div>
     </div>

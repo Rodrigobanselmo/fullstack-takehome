@@ -98,7 +98,8 @@ export function createIngredientsByRecipeIdLoader() {
         unit: ri.unit,
         notes: ri.notes ?? undefined,
         optional: ri.optional,
-      } as RecipeIngredientEntity);
+        price: ri.price?.toNumber() ?? undefined,
+      });
     }
 
     // Return ingredients in the same order as recipeIds
