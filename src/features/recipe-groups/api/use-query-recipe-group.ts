@@ -5,17 +5,17 @@ import type {
   RecipeGroupQuery,
   RecipeGroupQueryVariables,
 } from "generated/gql/graphql";
-import { RECIPE_GROUP_VIEW_FRAGMENT } from "../components/recipe-group-view/recipe-group-view";
+import { RECIPE_GROUP_FORM_FRAGMENT } from "../components/recipe-group-form/recipe-group-form";
 
 const RECIPE_GROUP_QUERY = gql`
   query RecipeGroup($id: ID!) {
     recipeGroup(id: $id) {
       id
       name
-      ...RecipeGroupView
+      ...RecipeGroupForm
     }
   }
-  ${RECIPE_GROUP_VIEW_FRAGMENT}
+  ${RECIPE_GROUP_FORM_FRAGMENT}
 `;
 
 export function useQueryRecipeGroup(id: string) {

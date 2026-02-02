@@ -1,3 +1,4 @@
+import Button from "~/components/ui/button/button";
 import styles from "./page-header.module.css";
 
 interface PageHeaderProps {
@@ -15,13 +16,15 @@ export default function PageHeader({
     <div className={styles.header}>
       <div className={styles.leftSection}>
         {onBack && (
-          <button
+          <Button
             onClick={onBack}
+            variant="ghost"
+            size="icon"
             className={styles.backButton}
             aria-label="Go back"
           >
             ←
-          </button>
+          </Button>
         )}
         <h1 className={styles.title} title={title}>
           {title}

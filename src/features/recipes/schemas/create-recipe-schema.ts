@@ -11,6 +11,7 @@ export const recipeIngredientSchema = z.object({
   unit: z.string().min(1, "Unit is required"),
   notes: z.string().optional(),
   optional: z.boolean().optional(),
+  price: z.string().optional(),
 });
 
 export const createRecipeSchema = z.object({
@@ -51,6 +52,7 @@ export const createRecipeSchema = z.object({
         message: "Prep time must be a positive number",
       },
     ),
+  instructions: z.string().optional(),
   ingredients: z
     .array(recipeIngredientSchema)
     .min(1, "At least one ingredient is required"),

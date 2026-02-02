@@ -75,9 +75,6 @@ export const paths = {
       view: {
         getHref: (id: string) => `/dashboard/recipe-groups/${id}/view`,
       },
-      edit: {
-        getHref: (id: string) => `/dashboard/recipe-groups/${id}/edit`,
-      },
       add: {
         getHref: () => "/dashboard/recipe-groups/add",
       },

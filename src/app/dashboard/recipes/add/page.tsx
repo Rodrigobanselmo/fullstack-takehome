@@ -25,12 +25,14 @@ export default function AddRecipePage() {
           prepTimeMinutes: data.prepTimeMinutes
             ? parseInt(data.prepTimeMinutes)
             : undefined,
+          instructions: data.instructions || undefined,
           ingredients: data.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
             quantity: parseFloat(ing.quantity),
             unit: ing.unit,
             notes: ing.notes,
             optional: ing.optional,
+            price: ing.price ? parseFloat(ing.price) : undefined,
           })),
         },
       },

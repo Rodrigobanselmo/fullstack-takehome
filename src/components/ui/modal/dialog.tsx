@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import Button from "../button/button";
 import styles from "./modal.module.css";
 
 interface DialogProps {
@@ -22,14 +23,16 @@ export function Dialog({
         <div className={styles.dialogHeader}>
           {title && <h2 className={styles.dialogTitle}>{title}</h2>}
           {showCloseButton && onClose && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               className={styles.dialogCloseButton}
               onClick={onClose}
               aria-label="Close dialog"
             >
               ✕
-            </button>
+            </Button>
           )}
         </div>
       )}

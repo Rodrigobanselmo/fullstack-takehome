@@ -1,3 +1,8 @@
+import { gql } from "@apollo/client";
+import type { FragmentType } from "generated/gql/fragment-masking";
+import { useFragment } from "generated/gql/fragment-masking";
+import type { RecipeGroupFormFragment } from "generated/gql/graphql";
+import { RecipeGroupFormFragmentDoc } from "generated/gql/graphql";
 import { useState } from "react";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
@@ -11,8 +16,20 @@ import {
 } from "../../schemas/create-recipe-group-schema";
 import styles from "./recipe-group-form.module.css";
 
+export const RECIPE_GROUP_FORM_FRAGMENT = gql`
+  fragment RecipeGroupForm on RecipeGroup {
+    id
+    name
+    description
+    recipes {
+      id
+      name
+    }
+  }
+`;
+
 export interface RecipeGroupFormProps {
-  initialData?: CreateRecipeGroupFormData;
+  recipeGroup?: FragmentType<typeof RecipeGroupFormFragmentDoc>;
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateRecipeGroupFormData) => Promise<void>;
@@ -27,8 +44,20 @@ const initialRecipeGroupData: CreateRecipeGroupFormData = {
   recipeIds: [],
 };
 
+function getInitialData(
+  recipeGroupData?: RecipeGroupFormFragment,
+): CreateRecipeGroupFormData {
+  if (!recipeGroupData) return initialRecipeGroupData;
+
+  return {
+    name: recipeGroupData.name,
+    description: recipeGroupData.description || "",
+    recipeIds: recipeGroupData.recipes.map((r) => r.id),
+  };
+}
+
 export default function RecipeGroupForm({
-  initialData = initialRecipeGroupData,
+  recipeGroup,
   loading = false,
   error = "",
   onSubmit,
@@ -36,6 +65,10 @@ export default function RecipeGroupForm({
   loadingText = "Creating Recipe Group...",
   onCancel,
 }: RecipeGroupFormProps) {
+  const recipeGroupData = useFragment(RecipeGroupFormFragmentDoc, recipeGroup);
+
+  const initialData = getInitialData(recipeGroupData);
+
   const [formData, setFormData] =
     useState<CreateRecipeGroupFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);

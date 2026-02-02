@@ -46,12 +46,14 @@ export default function ViewRecipePage({
           prepTimeMinutes: formData.prepTimeMinutes
             ? parseInt(formData.prepTimeMinutes)
             : undefined,
+          instructions: formData.instructions || undefined,
           ingredients: formData.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
             quantity: parseFloat(ing.quantity),
             unit: ing.unit,
             notes: ing.notes,
             optional: ing.optional,
+            price: ing.price ? parseFloat(ing.price) : undefined,
           })),
         },
       },
@@ -122,10 +124,13 @@ export default function ViewRecipePage({
         <RecipeForm
           recipe={recipe}
           onSubmit={handleSubmit}
+          onSuccess={() => router.back()}
           loading={updateLoading}
           error={updateError?.message}
           submitButtonText="Update Recipe"
           loadingText="Updating..."
+          successMessage="Recipe updated successfully!"
+          errorMessage="Failed to update recipe"
         />
       </div>
     </div>

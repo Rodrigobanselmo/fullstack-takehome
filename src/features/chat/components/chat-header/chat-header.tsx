@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import Button from "~/components/ui/button/button";
 import { getNameInitials } from "../../utils/get-name-initials";
 import styles from "./chat-header.module.css";
 
@@ -14,9 +15,14 @@ export default function ChatHeader({ name }: ChatHeaderProps) {
       <div className={styles.avatar}>{initials}</div>
       <h1 className={styles.title}>{name}</h1>
 
-      <button className={styles.backButton} onClick={() => router.back()}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={styles.backButton}
+        onClick={() => router.back()}
+      >
         x
-      </button>
+      </Button>
     </div>
   );
 }

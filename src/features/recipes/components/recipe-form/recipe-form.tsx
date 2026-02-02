@@ -1,37 +1,28 @@
 import { gql } from "@apollo/client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { FragmentType } from "generated/gql/fragment-masking";
 import { useFragment } from "generated/gql/fragment-masking";
-import {
-  type RecipeTag,
-  RecipeFormFragmentDoc,
-  RecipeFormIngredientFragmentDoc,
-} from "generated/gql/graphql";
+import type { RecipeFormFragment, RecipeTag } from "generated/gql/graphql";
+import { RecipeFormFragmentDoc } from "generated/gql/graphql";
 import { useState } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import Button from "~/components/ui/button/button";
+import CheckboxField from "~/components/ui/forms/checkbox-field/checkbox-field";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
+import MarkdownEditor from "~/components/ui/forms/markdown-editor/markdown-editor";
 import FormError from "~/components/ui/forms/form-error/form-error";
 import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import { useToast } from "~/components/ui/toast";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryIngredients } from "~/features/ingredients/api/use-query-ingredients";
 import { RECIPE_TAG_OPTIONS } from "../../constants/recipe-tag-map";
 import {
   createRecipeSchema,
   type CreateRecipeFormData,
-  type RecipeIngredientFormData,
 } from "../../schemas/create-recipe-schema";
 import styles from "./recipe-form.module.css";
-
-export const RECIPE_FORM_INGREDIENT_FRAGMENT = gql`
-  fragment RecipeFormIngredient on RecipeIngredient {
-    id
-    ingredientId
-    quantity
-    unit
-    notes
-    optional
-  }
-`;
 
 export const RECIPE_FORM_FRAGMENT = gql`
   fragment RecipeForm on Recipe {
@@ -41,11 +32,17 @@ export const RECIPE_FORM_FRAGMENT = gql`
     tags
     overallRating
     prepTimeMinutes
+    instructions
     ingredients {
-      ...RecipeFormIngredient
+      id
+      ingredientId
+      quantity
+      unit
+      notes
+      optional
+      price
     }
   }
-  ${RECIPE_FORM_INGREDIENT_FRAGMENT}
 `;
 
 export interface RecipeFormProps {
@@ -53,47 +50,28 @@ export interface RecipeFormProps {
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateRecipeFormData) => Promise<void>;
+  onSuccess?: () => void;
   submitButtonText?: string;
   loadingText?: string;
   onCancel?: () => void;
+  successMessage?: string;
+  errorMessage?: string;
 }
 
-const initialRecipeData: CreateRecipeFormData = {
-  name: "",
-  servings: "4",
-  tags: [],
-  overallRating: "",
-  prepTimeMinutes: "",
-  ingredients: [],
-};
-
-const initialIngredient: RecipeIngredientFormData = {
-  ingredientId: "",
-  quantity: "",
-  unit: "",
-  notes: "",
-  optional: false,
-};
-
-function getInitialData(
-  recipeData:
-    | {
-        name: string;
-        servings: number;
-        tags: RecipeTag[];
-        overallRating?: number | null;
-        prepTimeMinutes?: number | null;
-      }
-    | undefined,
-  ingredientsData: ReadonlyArray<{
-    ingredientId: string;
-    quantity: number;
-    unit: string;
-    notes?: string | null;
-    optional?: boolean | null;
-  }>,
+function getDefaultValues(
+  recipeData?: RecipeFormFragment,
 ): CreateRecipeFormData {
-  if (!recipeData) return initialRecipeData;
+  if (!recipeData) {
+    return {
+      name: "",
+      servings: "4",
+      tags: [],
+      overallRating: "",
+      prepTimeMinutes: "",
+      instructions: "",
+      ingredients: [],
+    };
+  }
 
   return {
     name: recipeData.name,
@@ -101,12 +79,14 @@ function getInitialData(
     tags: recipeData.tags,
     overallRating: recipeData.overallRating?.toString() || "",
     prepTimeMinutes: recipeData.prepTimeMinutes?.toString() || "",
-    ingredients: ingredientsData.map((ing) => ({
+    instructions: recipeData.instructions || "",
+    ingredients: recipeData.ingredients.map((ing) => ({
       ingredientId: ing.ingredientId,
       quantity: ing.quantity.toString(),
       unit: ing.unit,
       notes: ing.notes || "",
       optional: ing.optional || false,
+      price: ing.price?.toString() || "",
     })),
   };
 }
@@ -116,90 +96,42 @@ export default function RecipeForm({
   loading = false,
   error = "",
   onSubmit,
+  onSuccess,
   submitButtonText = "Create Recipe",
   loadingText = "Creating Recipe...",
   onCancel,
+  successMessage = "Recipe saved successfully!",
+  errorMessage = "Failed to save recipe",
 }: RecipeFormProps) {
   const recipeData = useFragment(RecipeFormFragmentDoc, recipe);
-  const recipeIngredientsData = useFragment(
-    RecipeFormIngredientFragmentDoc,
-    recipeData?.ingredients ?? [],
-  );
-  const initialData = getInitialData(recipeData, recipeIngredientsData);
-
-  const [formData, setFormData] = useState<CreateRecipeFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
   const { data: ingredientsQueryData, loading: ingredientsLoading } =
     useQueryIngredients();
+  const toast = useToast();
 
-  const handleInputChange =
-    (name: keyof CreateRecipeFormData) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: e.target.value,
-      }));
-      setFormError("");
-    };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateRecipeFormData>({
+    resolver: zodResolver(createRecipeSchema),
+    defaultValues: getDefaultValues(recipeData),
+  });
 
-  const handleTagsChange = (selectedTags: string[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: selectedTags as RecipeTag[],
-    }));
-    setFormError("");
-  };
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "ingredients",
+  });
 
-  const handleAddIngredient = () => {
-    setFormData((prev) => ({
-      ...prev,
-      ingredients: [...prev.ingredients, { ...initialIngredient }],
-    }));
-  };
-
-  const handleRemoveIngredient = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      ingredients: prev.ingredients.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleIngredientChange = (
-    index: number,
-    field: keyof RecipeIngredientFormData,
-    value: string | boolean,
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      ingredients: prev.ingredients.map((ing, i) =>
-        i === index ? { ...ing, [field]: value } : ing,
-      ),
-    }));
-    setFormError("");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    const validationResult = createRecipeSchema.safeParse(formData);
-    if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
-      const message = firstError
-        ? `${firstError.path.join(".")}: ${firstError.message}`
-        : "Validation failed";
-
-      setFormError(message);
-      return;
-    }
-
+  const onFormSubmit = async (data: CreateRecipeFormData) => {
     try {
-      await onSubmit(validationResult.data);
-    } catch (error) {
-      setFormError(extractGraphQLErrorMessage(error));
+      await onSubmit(data);
+      toast.success(successMessage);
+      onSuccess?.();
+    } catch (err) {
+      const errorMsg = extractGraphQLErrorMessage(err);
+      setFormError(errorMsg);
+      toast.error(errorMessage, errorMsg);
     }
   };
 
@@ -209,120 +141,222 @@ export default function RecipeForm({
       label: ingredient.name,
     })) ?? [];
 
+  const firstError = errors
+    ? Object.entries(errors)[0]?.[1]?.message ||
+      (errors.ingredients as { root?: { message?: string } })?.root?.message
+    : null;
+
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>
       <div className={styles.formSection}>
-        <TextField
-          label="Recipe Name"
+        <Controller
           name="name"
-          value={formData.name}
-          onChange={handleInputChange("name")}
-          placeholder="Enter recipe name..."
-          required={true}
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Recipe Name"
+              name="name"
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Enter recipe name..."
+              required={true}
+            />
+          )}
         />
-        <TextField
-          label="Servings"
+        <Controller
           name="servings"
-          type="number"
-          value={formData.servings}
-          onChange={handleInputChange("servings")}
-          placeholder="Enter number of servings..."
-          required={true}
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Servings"
+              name="servings"
+              type="number"
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Enter number of servings..."
+              required={true}
+            />
+          )}
         />
-        <TextField
-          label="Prep Time (minutes)"
+        <Controller
           name="prepTimeMinutes"
-          type="number"
-          value={formData.prepTimeMinutes || ""}
-          onChange={handleInputChange("prepTimeMinutes")}
-          placeholder="Enter prep time..."
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Prep Time (minutes)"
+              name="prepTimeMinutes"
+              type="number"
+              value={field.value || ""}
+              onChange={field.onChange}
+              placeholder="Enter prep time..."
+            />
+          )}
         />
-        <TextField
-          label="Overall Rating (1-5)"
+        <Controller
           name="overallRating"
-          type="number"
-          value={formData.overallRating || ""}
-          onChange={handleInputChange("overallRating")}
-          placeholder="Enter rating..."
+          control={control}
+          render={({ field }) => (
+            <TextField
+              label="Overall Rating (1-5)"
+              name="overallRating"
+              type="number"
+              value={field.value || ""}
+              onChange={field.onChange}
+              placeholder="Enter rating..."
+            />
+          )}
         />
-        <MultiSelectField
-          label="Tags"
+        <Controller
           name="tags"
-          value={formData.tags ?? []}
-          onChange={handleTagsChange}
-          options={RECIPE_TAG_OPTIONS}
-          placeholder="Select tags..."
+          control={control}
+          render={({ field }) => (
+            <MultiSelectField
+              label="Tags"
+              name="tags"
+              value={(field.value as RecipeTag[]) ?? []}
+              onChange={(values) => field.onChange(values as RecipeTag[])}
+              options={RECIPE_TAG_OPTIONS}
+              placeholder="Select tags..."
+            />
+          )}
         />
       </div>
+
+      <Controller
+        name="instructions"
+        control={control}
+        render={({ field }) => (
+          <MarkdownEditor
+            label="Instructions"
+            name="instructions"
+            value={field.value || ""}
+            onChange={field.onChange}
+            placeholder="Write your recipe instructions here...&#10;&#10;# Example&#10;&#10;1. Preheat oven to 350°F&#10;2. Mix ingredients&#10;&#10;**Tips:** Use fresh ingredients for best results."
+          />
+        )}
+      />
 
       <div className={styles.ingredientsSection}>
         <div className={styles.ingredientsHeader}>
           <h3>Ingredients</h3>
-          <button
+          <Button
             type="button"
-            onClick={handleAddIngredient}
-            className={styles.addButton}
+            size="sm"
+            onClick={() =>
+              append({
+                ingredientId: "",
+                quantity: "",
+                unit: "",
+                notes: "",
+                optional: false,
+                price: "",
+              })
+            }
           >
             + Add Ingredient
-          </button>
+          </Button>
         </div>
 
-        {formData.ingredients.map((ingredient, index) => (
-          <div key={index} className={styles.ingredientRow}>
-            <SelectField
-              label="Ingredient"
-              name={`ingredient-${index}`}
-              value={ingredient.ingredientId}
-              onChange={(e) =>
-                handleIngredientChange(index, "ingredientId", e.target.value)
-              }
-              options={ingredientOptions}
-              placeholder="Select ingredient..."
-              required={true}
-              disabled={ingredientsLoading}
+        {fields.map((field, index) => (
+          <div key={field.id} className={styles.ingredientRow}>
+            <Controller
+              name={`ingredients.${index}.ingredientId`}
+              control={control}
+              render={({ field: f }) => (
+                <SelectField
+                  label="Ingredient"
+                  name={`ingredient-${index}`}
+                  value={f.value}
+                  onChange={f.onChange}
+                  options={ingredientOptions}
+                  placeholder="Select ingredient..."
+                  required={true}
+                  disabled={ingredientsLoading}
+                />
+              )}
             />
-            <TextField
-              label="Quantity"
-              name={`quantity-${index}`}
-              type="number"
-              value={ingredient.quantity}
-              onChange={(e) =>
-                handleIngredientChange(index, "quantity", e.target.value)
-              }
-              placeholder="Amount..."
-              required={true}
+            <Controller
+              name={`ingredients.${index}.quantity`}
+              control={control}
+              render={({ field: f }) => (
+                <TextField
+                  label="Quantity"
+                  name={`quantity-${index}`}
+                  type="number"
+                  value={f.value}
+                  onChange={f.onChange}
+                  placeholder="Amount..."
+                  required={true}
+                />
+              )}
             />
-            <TextField
-              label="Unit"
-              name={`unit-${index}`}
-              value={ingredient.unit}
-              onChange={(e) =>
-                handleIngredientChange(index, "unit", e.target.value)
-              }
-              placeholder="cups, tbsp, etc..."
-              required={true}
+            <Controller
+              name={`ingredients.${index}.unit`}
+              control={control}
+              render={({ field: f }) => (
+                <TextField
+                  label="Unit"
+                  name={`unit-${index}`}
+                  value={f.value}
+                  onChange={f.onChange}
+                  placeholder="cups, tbsp, etc..."
+                  required={true}
+                />
+              )}
             />
-            <TextField
-              label="Notes"
-              name={`notes-${index}`}
-              value={ingredient.notes || ""}
-              onChange={(e) =>
-                handleIngredientChange(index, "notes", e.target.value)
-              }
-              placeholder="Optional notes..."
+            <Controller
+              name={`ingredients.${index}.notes`}
+              control={control}
+              render={({ field: f }) => (
+                <TextField
+                  label="Notes"
+                  name={`notes-${index}`}
+                  value={f.value || ""}
+                  onChange={f.onChange}
+                  placeholder="Optional notes..."
+                />
+              )}
             />
-            <button
+            <Controller
+              name={`ingredients.${index}.price`}
+              control={control}
+              render={({ field: f }) => (
+                <TextField
+                  label="Price"
+                  name={`price-${index}`}
+                  type="number"
+                  value={f.value || ""}
+                  onChange={f.onChange}
+                  placeholder="0.00"
+                />
+              )}
+            />
+            <Controller
+              name={`ingredients.${index}.optional`}
+              control={control}
+              render={({ field: f }) => (
+                <CheckboxField
+                  label="Optional"
+                  name={`optional-${index}`}
+                  checked={f.value ?? false}
+                  onChange={f.onChange}
+                />
+              )}
+            />
+            <Button
               type="button"
-              onClick={() => handleRemoveIngredient(index)}
-              className={styles.removeButton}
+              variant="outline"
+              color="danger"
+              size="sm"
+              onClick={() => remove(index)}
             >
               Remove
-            </button>
+            </Button>
           </div>
         ))}
       </div>
 
-      <FormError error={formError} />
+      <FormError error={formError || (firstError!) || ""} />
       <FormActions
         primaryAction={{
           text: loading ? loadingText : submitButtonText,

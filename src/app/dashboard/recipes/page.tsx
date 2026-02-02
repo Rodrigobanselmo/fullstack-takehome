@@ -97,12 +97,13 @@ export default function RecipesPage() {
         </div>
         {groups.length > 0 && (
           <div className={styles.expandControls}>
-            <button
-              className={styles.expandButton}
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={allExpanded ? handleCollapseAll : handleExpandAll}
             >
               {allExpanded ? "Collapse All" : "Expand All"}
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -153,13 +154,14 @@ export default function RecipesPage() {
                         {recipes.length}{" "}
                         {recipes.length === 1 ? "recipe" : "recipes"}
                       </span>
-                      <button
-                        className={styles.editButton}
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={(e) => handleViewGroup(group.id, e)}
                         title="View collection details"
                       >
                         🔍
-                      </button>
+                      </Button>
                       <span
                         className={`${styles.expandIcon} ${isExpanded ? styles.expandIconOpen : ""}`}
                       >

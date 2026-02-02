@@ -16,6 +16,7 @@ const UPDATE_RECIPE_MUTATION = gql`
       tags
       overallRating
       prepTimeMinutes
+      instructions
       ingredients {
         id
         ingredientId
@@ -23,6 +24,7 @@ const UPDATE_RECIPE_MUTATION = gql`
         unit
         notes
         optional
+        price
         ingredient {
           id
           name

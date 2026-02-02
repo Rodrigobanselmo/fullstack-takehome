@@ -39,6 +39,7 @@ export const recipeTypeDefs = gql`
     unit: String!
     notes: String
     optional: Boolean!
+    price: Decimal
   }
 
   type Recipe {
@@ -48,6 +49,7 @@ export const recipeTypeDefs = gql`
     tags: [RecipeTag!]!
     overallRating: Int
     prepTimeMinutes: Int
+    instructions: String
     ingredients: [RecipeIngredient!]!
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -59,6 +61,7 @@ export const recipeTypeDefs = gql`
     unit: String!
     notes: String
     optional: Boolean
+    price: Decimal
   }
 
   input CreateRecipeInput {
@@ -67,6 +70,7 @@ export const recipeTypeDefs = gql`
     tags: [RecipeTag!]
     overallRating: Int
     prepTimeMinutes: Int
+    instructions: String
     ingredients: [RecipeIngredientInput!]!
   }
 
@@ -76,6 +80,7 @@ export const recipeTypeDefs = gql`
     tags: [RecipeTag!]
     overallRating: Int
     prepTimeMinutes: Int
+    instructions: String
     ingredients: [RecipeIngredientInput!]
   }
 

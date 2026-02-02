@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import Button from "~/components/ui/button/button";
 import styles from "./multi-select-field.module.css";
 
 interface MultiSelectFieldProps {
@@ -63,16 +64,18 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && searchQuery === "" && value.length > 0) {
-      handleRemove(value[value.length - 1]);
+    const lastValue = value[value.length - 1];
+    if (e.key === "Backspace" && searchQuery === "" && lastValue) {
+      handleRemove(lastValue);
     }
     if (e.key === "Escape") {
       setIsOpen(false);
       setSearchQuery("");
     }
-    if (e.key === "Enter" && filteredOptions.length > 0) {
+    const firstOption = filteredOptions[0];
+    if (e.key === "Enter" && firstOption) {
       e.preventDefault();
-      handleSelect(filteredOptions[0].value);
+      handleSelect(firstOption.value);
     }
   };
 
@@ -95,8 +98,10 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
           {selectedOptions.map((option) => (
             <span key={option.value} className={styles.tag}>
               {option.label}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 className={styles.tagRemove}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -105,7 +110,7 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
                 disabled={disabled}
               >
                 ×
-              </button>
+              </Button>
             </span>
           ))}
           <input

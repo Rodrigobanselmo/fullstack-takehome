@@ -108,6 +108,9 @@ model recipes {
     // Time in minutes
     prepTimeMinutes Int? @map("prep_time_minutes") // Tempo médio para fazer
 
+    // Instructions in markdown format
+    instructions String? @db.Text
+
     createdAt         DateTime               @default(now()) @map("created_at")
     updatedAt         DateTime               @default(now()) @map("updated_at")
     deletedAt         DateTime?              @map("deleted_at")

@@ -17,6 +17,7 @@ export interface RecipeIngredientData {
   unit: string;
   notes?: string;
   optional?: boolean;
+  price?: number;
 }
 
 export interface CreateRecipeData {
@@ -26,6 +27,7 @@ export interface CreateRecipeData {
   tags?: string[];
   overallRating?: number;
   prepTimeMinutes?: number;
+  instructions?: string;
   ingredients: RecipeIngredientData[];
 }
 
@@ -37,6 +39,7 @@ export interface UpdateRecipeData {
   tags?: string[];
   overallRating?: number;
   prepTimeMinutes?: number;
+  instructions?: string;
   ingredients?: RecipeIngredientData[];
 }
 
@@ -62,6 +65,7 @@ class PrismaRecipeRepository {
       tags: recipe.tags as RecipeTag[],
       overallRating: recipe.overallRating ?? undefined,
       prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
+      instructions: recipe.instructions ?? undefined,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
     }));
@@ -94,6 +98,7 @@ class PrismaRecipeRepository {
       tags: recipe.tags as RecipeTag[],
       overallRating: recipe.overallRating ?? undefined,
       prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
+      instructions: recipe.instructions ?? undefined,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
     };
@@ -110,6 +115,7 @@ class PrismaRecipeRepository {
         tags: data.tags ?? [],
         overallRating: data.overallRating,
         prepTimeMinutes: data.prepTimeMinutes,
+        instructions: data.instructions,
         recipeIngredients: {
           create: data.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
@@ -117,6 +123,7 @@ class PrismaRecipeRepository {
             unit: ing.unit,
             notes: ing.notes,
             optional: ing.optional ?? false,
+            price: ing.price,
           })),
         },
       },
@@ -129,6 +136,7 @@ class PrismaRecipeRepository {
       tags: recipe.tags as RecipeTag[],
       overallRating: recipe.overallRating ?? undefined,
       prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
+      instructions: recipe.instructions ?? undefined,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
     };
@@ -145,6 +153,7 @@ class PrismaRecipeRepository {
         tags: data.tags,
         overallRating: data.overallRating,
         prepTimeMinutes: data.prepTimeMinutes,
+        instructions: data.instructions,
         updatedAt: new Date(),
         ...(data.ingredients && {
           recipeIngredients: {
@@ -155,6 +164,7 @@ class PrismaRecipeRepository {
               unit: ing.unit,
               notes: ing.notes,
               optional: ing.optional ?? false,
+              price: ing.price,
             })),
           },
         }),
@@ -168,6 +178,7 @@ class PrismaRecipeRepository {
       tags: recipe.tags as RecipeTag[],
       overallRating: recipe.overallRating ?? undefined,
       prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
+      instructions: recipe.instructions ?? undefined,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
     };
@@ -193,6 +204,7 @@ class PrismaRecipeRepository {
       tags: recipe.tags as RecipeTag[],
       overallRating: recipe.overallRating ?? undefined,
       prepTimeMinutes: recipe.prepTimeMinutes ?? undefined,
+      instructions: recipe.instructions ?? undefined,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
     };

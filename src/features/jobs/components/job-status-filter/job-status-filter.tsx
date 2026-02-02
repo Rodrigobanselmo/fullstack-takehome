@@ -1,6 +1,7 @@
 "use client";
 
 import type { JobStatus } from "generated/gql/graphql";
+import Button from "~/components/ui/button/button";
 import { JOB_STATUS_OPTIONS } from "~/features/jobs/constants/job-status-map";
 import styles from "./job-status-filter.module.css";
 
@@ -29,13 +30,16 @@ export default function JobStatusFilter({
           const isActive = selectedStatus === statusValue;
 
           return (
-            <button
+            <Button
               key={option.value}
-              className={`${styles.chip} ${isActive ? styles.active : ""}`}
+              variant={isActive ? "fill" : "outline"}
+              color="grey"
+              size="sm"
+              className={styles.chip}
               onClick={() => handleStatusClick(statusValue)}
             >
               {option.label}
-            </button>
+            </Button>
           );
         })}
       </div>
