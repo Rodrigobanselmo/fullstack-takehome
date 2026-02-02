@@ -5,6 +5,7 @@ import FormError from "~/components/ui/forms/form-error/form-error";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
 import { formatDateForInput, parseDateFromInput } from "~/lib/date";
+import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { SUBTASK_STATUS_OPTIONS } from "../../constants/subtask-status-map";
 import {
   createSubtaskSchema,
@@ -105,9 +106,7 @@ export default function SubtaskForm({
     try {
       await onSubmit(validationResult.data);
     } catch (error) {
-      setFormError(
-        error instanceof Error ? error.message : "Failed to create subtask",
-      );
+      setFormError(extractGraphQLErrorMessage(error));
     }
   };
 

@@ -10,7 +10,7 @@ import styles from "./page.module.css";
 
 export default function AddRecipePage() {
   const router = useRouter();
-  const [createRecipe, { loading, error }] = useCreateRecipeMutation();
+  const [createRecipe, { loading }] = useCreateRecipeMutation();
 
   const handleSubmit = async (data: CreateRecipeFormData) => {
     const result = await createRecipe({
@@ -54,7 +54,6 @@ export default function AddRecipePage() {
         <RecipeForm
           onSubmit={handleSubmit}
           loading={loading}
-          error={error?.message}
           onCancel={handleCancel}
           submitButtonText="Create Recipe"
           loadingText="Creating Recipe..."

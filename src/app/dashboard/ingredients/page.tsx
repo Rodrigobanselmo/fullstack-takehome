@@ -14,7 +14,6 @@ import { useQueryIngredients } from "~/features/ingredients/api/use-query-ingred
 import { useCreateIngredientMutation } from "~/features/ingredients/api/use-create-ingredient-mutation";
 import { useDeleteIngredientMutation } from "~/features/ingredients/api/use-delete-ingredient-mutation";
 import type { CreateIngredientFormData } from "~/features/ingredients/schemas/create-ingredient-schema";
-import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import styles from "./page.module.css";
 
 export default function IngredientsPage() {
@@ -23,10 +22,9 @@ export default function IngredientsPage() {
   const [selectedIngredient, setSelectedIngredient] = useState<string | null>(
     null,
   );
-  const [formError, setFormError] = useState<string>("");
 
   const { data, loading, error } = useQueryIngredients();
-  const [createIngredient, { loading: createLoading, error: createError }] =
+  const [createIngredient, { loading: createLoading }] =
     useCreateIngredientMutation();
   const [deleteIngredient] = useDeleteIngredientMutation();
 
@@ -37,31 +35,29 @@ export default function IngredientsPage() {
   );
 
   const handleAddIngredient = async (formData: CreateIngredientFormData) => {
-    try {
-      setFormError("");
-      const result = await createIngredient({
-        variables: {
-          input: {
-            name: formData.name,
-            description: formData.description || undefined,
-            category: formData.category || undefined,
-            defaultUnit: formData.defaultUnit || undefined,
-            averagePrice: formData.averagePrice
-              ? parseFloat(formData.averagePrice)
-              : undefined,
-            priceUnit: formData.priceUnit || undefined,
-            priceCurrency: formData.priceCurrency || undefined,
-          },
-        },
-      });
+    const parsedPrice = formData.averagePrice
+      ? parseFloat(formData.averagePrice)
+      : undefined;
 
-      if (result.data) {
-        setShowAddForm(false);
-      }
-    } catch (err) {
-      const errorMessage = extractGraphQLErrorMessage(err);
-      setFormError(errorMessage);
-      throw err;
+    const result = await createIngredient({
+      variables: {
+        input: {
+          name: formData.name,
+          description: formData.description || undefined,
+          category: formData.category || undefined,
+          defaultUnit: formData.defaultUnit || undefined,
+          averagePrice:
+            parsedPrice !== undefined && !isNaN(parsedPrice)
+              ? parsedPrice
+              : undefined,
+          priceUnit: formData.priceUnit || undefined,
+          priceCurrency: formData.priceCurrency || undefined,
+        },
+      },
+    });
+
+    if (result.data) {
+      setShowAddForm(false);
     }
   };
 
@@ -94,11 +90,7 @@ export default function IngredientsPage() {
           <IngredientForm
             onSubmit={handleAddIngredient}
             loading={createLoading}
-            error={formError || createError?.message}
-            onCancel={() => {
-              setShowAddForm(false);
-              setFormError("");
-            }}
+            onCancel={() => setShowAddForm(false)}
             submitButtonText="Add Ingredient"
             loadingText="Adding Ingredient..."
           />

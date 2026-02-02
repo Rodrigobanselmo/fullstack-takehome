@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "~/components/ui/button/button";
 import FormError from "~/components/ui/forms/form-error/form-error";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useLoginMutation } from "../../api/use-login-mutation";
 import styles from "./login-form.module.css";
 
@@ -52,7 +53,7 @@ export function LoginForm() {
           e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
         ) => setPassword(e.target.value)}
       />
-      <FormError error={error?.message} />
+      <FormError error={error ? extractGraphQLErrorMessage(error) : undefined} />
 
       <Button
         type="submit"

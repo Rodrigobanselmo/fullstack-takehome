@@ -10,7 +10,7 @@ import styles from "./page.module.css";
 
 export default function AddRecipeGroupPage() {
   const router = useRouter();
-  const [createRecipeGroup, { loading, error }] =
+  const [createRecipeGroup, { loading }] =
     useCreateRecipeGroupMutation();
 
   const handleSubmit = async (data: CreateRecipeGroupFormData) => {
@@ -44,7 +44,6 @@ export default function AddRecipeGroupPage() {
         <RecipeGroupForm
           onSubmit={handleSubmit}
           loading={loading}
-          error={error?.message}
           onCancel={handleCancel}
           submitButtonText="Create Group"
           loadingText="Creating Group..."

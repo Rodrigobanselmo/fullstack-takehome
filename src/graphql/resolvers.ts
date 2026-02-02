@@ -11,6 +11,8 @@ import { recipeGroupResolvers } from "./recipe-group/recipe-group.resolvers";
 import { ingredientResolvers } from "./ingredient/ingredient.resolvers";
 
 // Custom Decimal scalar for Prisma Decimal type
+// parseValue returns a plain number so Zod validators work correctly
+// Conversion to Prisma.Decimal happens at the repository layer
 const DecimalScalar = new GraphQLScalarType({
   name: "Decimal",
   description: "Decimal custom scalar type",
@@ -24,14 +26,19 @@ const DecimalScalar = new GraphQLScalarType({
     return value;
   },
   parseValue(value: unknown) {
-    if (typeof value === "number" || typeof value === "string") {
-      return new Prisma.Decimal(value);
+    // Return plain number so Zod validators can validate it
+    if (typeof value === "number") {
+      return value;
+    }
+    if (typeof value === "string") {
+      const num = parseFloat(value);
+      return isNaN(num) ? value : num;
     }
     return value;
   },
   parseLiteral(ast) {
     if (ast.kind === Kind.FLOAT || ast.kind === Kind.INT) {
-      return new Prisma.Decimal(ast.value);
+      return parseFloat(ast.value);
     }
     return null;
   },
