@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "~/components/ui/page-header/page-header";
 import Button from "~/components/ui/button/button";
@@ -14,17 +15,18 @@ import styles from "./page.module.css";
 export default function ViewRecipeGroupPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
-  const { data, loading, error } = useQueryRecipeGroup(params.id);
+  const { data, loading, error } = useQueryRecipeGroup(id);
   const [deleteRecipeGroup, { loading: deleteLoading }] =
     useDeleteRecipeGroupMutation();
 
   const recipeGroup = data?.recipeGroup;
 
   const handleEdit = () => {
-    router.push(paths.dashboard.recipeGroups.edit.getHref(params.id));
+    router.push(paths.dashboard.recipeGroups.edit.getHref(id));
   };
 
   const handleDelete = async () => {
@@ -33,7 +35,7 @@ export default function ViewRecipeGroupPage({
     }
 
     await deleteRecipeGroup({
-      variables: { id: params.id },
+      variables: { id },
     });
 
     router.push(paths.dashboard.recipes.getHref());
@@ -54,10 +56,7 @@ export default function ViewRecipeGroupPage({
   if (error || !recipeGroup) {
     return (
       <div className={styles.container}>
-        <ErrorState
-          title="Failed to load recipe group"
-          message={error?.message || "Recipe group not found"}
-        />
+        <ErrorState message={error?.message || "Recipe group not found"} />
       </div>
     );
   }
@@ -80,11 +79,7 @@ export default function ViewRecipeGroupPage({
         </div>
       </PageHeader>
       <div className={styles.content}>
-        <RecipeGroupView
-          name={recipeGroup.name}
-          description={recipeGroup.description}
-          recipes={recipeGroup.recipes || []}
-        />
+        <RecipeGroupView recipeGroup={recipeGroup} />
       </div>
     </div>
   );

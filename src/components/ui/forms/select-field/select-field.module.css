@@ -40,3 +40,9 @@
 .input::placeholder {
   color: var(--color-gray);
 }
+
+.multipleSelect {
+  min-height: 120px;
+  padding-right: 1rem;
+  background-image: none;
+}

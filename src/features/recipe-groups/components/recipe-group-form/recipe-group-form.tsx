@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
-import SelectField from "~/components/ui/forms/select-field/select-field";
+import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryRecipes } from "~/features/recipes/api/use-query-recipes";
@@ -55,14 +55,10 @@ export default function RecipeGroupForm({
       setFormError("");
     };
 
-  const handleRecipesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value,
-    );
+  const handleRecipesChange = (selectedRecipeIds: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      recipeIds: selectedOptions,
+      recipeIds: selectedRecipeIds,
     }));
     setFormError("");
   };
@@ -114,14 +110,13 @@ export default function RecipeGroupForm({
           multiline={true}
           maxLines={3}
         />
-        <SelectField
+        <MultiSelectField
           label="Recipes"
           name="recipeIds"
-          value={formData.recipeIds?.[0] || ""}
+          value={formData.recipeIds ?? []}
           onChange={handleRecipesChange}
           options={recipeOptions}
           placeholder="Select recipes..."
-          multiple={true}
           disabled={recipesLoading}
         />
       </div>

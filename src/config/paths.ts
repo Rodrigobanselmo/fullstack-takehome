@@ -57,9 +57,6 @@ export const paths = {
       add: {
         getHref: () => "/dashboard/recipes/add",
       },
-      edit: {
-        getHref: (id: string) => `/dashboard/recipes/${id}/edit`,
-      },
     },
     ingredients: {
       getHref: () => "/dashboard/ingredients",
@@ -71,6 +68,18 @@ export const paths = {
       },
       edit: {
         getHref: (id: string) => `/dashboard/ingredients/${id}/edit`,
+      },
+    },
+    recipeGroups: {
+      getHref: () => "/dashboard/recipe-groups",
+      view: {
+        getHref: (id: string) => `/dashboard/recipe-groups/${id}/view`,
+      },
+      edit: {
+        getHref: (id: string) => `/dashboard/recipe-groups/${id}/edit`,
+      },
+      add: {
+        getHref: () => "/dashboard/recipe-groups/add",
       },
     },
   },

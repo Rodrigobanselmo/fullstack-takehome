@@ -1,37 +1,87 @@
 "use client";
 
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "~/components/ui/page-header/page-header";
 import Button from "~/components/ui/button/button";
 import LoadingState from "~/components/ui/loading-state/loading-state";
 import ErrorState from "~/components/ui/error-state/error-state";
-import RecipeView from "~/features/recipes/components/recipe-view/recipe-view";
+import RecipeForm from "~/features/recipes/components/recipe-form/recipe-form";
 import { useQueryRecipe } from "~/features/recipes/api/use-query-recipe";
+import { useUpdateRecipeMutation } from "~/features/recipes/api/use-update-recipe-mutation";
 import { useDeleteRecipeMutation } from "~/features/recipes/api/use-delete-recipe-mutation";
+import { useModal } from "~/components/ui/modal/modal-context";
+import { ConfirmDialog } from "~/components/ui/modal/confirm-dialog";
+import type { CreateRecipeFormData } from "~/features/recipes/schemas/create-recipe-schema";
 import { paths } from "~/config/paths";
 import styles from "./page.module.css";
 
-export default function ViewRecipePage({ params }: { params: { id: string } }) {
+export default function ViewRecipePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const router = useRouter();
-  const { data, loading, error } = useQueryRecipe(params.id);
+  const { openModal, closeModal } = useModal();
+  const { data, loading, error } = useQueryRecipe(id);
+  const [updateRecipe, { loading: updateLoading, error: updateError }] =
+    useUpdateRecipeMutation();
   const [deleteRecipe, { loading: deleteLoading }] = useDeleteRecipeMutation();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const recipe = data?.recipe;
 
-  const handleEdit = () => {
-    router.push(paths.dashboard.recipes.edit.getHref(params.id));
+  const handleSubmit = async (formData: CreateRecipeFormData) => {
+    await updateRecipe({
+      variables: {
+        id,
+        input: {
+          name: formData.name,
+          servings: parseInt(formData.servings),
+          tags: formData.tags,
+          overallRating: formData.overallRating
+            ? parseInt(formData.overallRating)
+            : undefined,
+          prepTimeMinutes: formData.prepTimeMinutes
+            ? parseInt(formData.prepTimeMinutes)
+            : undefined,
+          ingredients: formData.ingredients.map((ing) => ({
+            ingredientId: ing.ingredientId,
+            quantity: parseFloat(ing.quantity),
+            unit: ing.unit,
+            notes: ing.notes,
+            optional: ing.optional,
+          })),
+        },
+      },
+    });
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this recipe?")) {
-      return;
-    }
-
-    await deleteRecipe({
-      variables: { id: params.id },
-    });
-
-    router.push(paths.dashboard.recipes.getHref());
+  const handleDeleteClick = () => {
+    const modalId = openModal(
+      <ConfirmDialog
+        title="Delete Recipe"
+        message={`Are you sure you want to delete "${recipe?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={async () => {
+          setIsDeleting(true);
+          try {
+            await deleteRecipe({
+              variables: { id },
+            });
+            closeModal(modalId);
+            router.push(paths.dashboard.recipes.getHref());
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => closeModal(modalId)}
+      />,
+    );
   };
 
   const handleBack = () => {
@@ -49,10 +99,7 @@ export default function ViewRecipePage({ params }: { params: { id: string } }) {
   if (error || !recipe) {
     return (
       <div className={styles.container}>
-        <ErrorState
-          title="Failed to load recipe"
-          message={error?.message || "Recipe not found"}
-        />
+        <ErrorState message={error?.message || "Recipe not found"} />
       </div>
     );
   }
@@ -61,27 +108,24 @@ export default function ViewRecipePage({ params }: { params: { id: string } }) {
     <div className={styles.container}>
       <PageHeader title={recipe.name} onBack={handleBack}>
         <div className={styles.actions}>
-          <Button onClick={handleEdit} variant="outline" color="primary">
-            Edit Recipe
-          </Button>
           <Button
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             variant="outline"
             color="danger"
-            disabled={deleteLoading}
+            disabled={deleteLoading || isDeleting}
           >
-            {deleteLoading ? "Deleting..." : "Delete"}
+            {deleteLoading || isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </div>
       </PageHeader>
       <div className={styles.content}>
-        <RecipeView
-          name={recipe.name}
-          servings={recipe.servings}
-          tags={recipe.tags}
-          overallRating={recipe.overallRating}
-          prepTimeMinutes={recipe.prepTimeMinutes}
-          ingredients={recipe.ingredients}
+        <RecipeForm
+          recipe={recipe}
+          onSubmit={handleSubmit}
+          loading={updateLoading}
+          error={updateError?.message}
+          submitButtonText="Update Recipe"
+          loadingText="Updating..."
         />
       </div>
     </div>

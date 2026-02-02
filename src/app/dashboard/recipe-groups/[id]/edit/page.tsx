@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "~/components/ui/page-header/page-header";
 import LoadingState from "~/components/ui/loading-state/loading-state";
@@ -14,14 +15,15 @@ import styles from "./page.module.css";
 export default function EditRecipeGroupPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const router = useRouter();
   const {
     data,
     loading: queryLoading,
     error: queryError,
-  } = useQueryRecipeGroup(params.id);
+  } = useQueryRecipeGroup(id);
   const [updateRecipeGroup, { loading: updateLoading, error: updateError }] =
     useUpdateRecipeGroupMutation();
 
@@ -30,22 +32,21 @@ export default function EditRecipeGroupPage({
   const handleSubmit = async (formData: CreateRecipeGroupFormData) => {
     const result = await updateRecipeGroup({
       variables: {
-        id: params.id,
+        id,
         input: {
           name: formData.name,
           description: formData.description,
-          recipeIds: formData.recipeIds,
         },
       },
     });
 
     if (result.data?.updateRecipeGroup) {
-      router.push(paths.dashboard.recipeGroups.view.getHref(params.id));
+      router.push(paths.dashboard.recipeGroups.view.getHref(id));
     }
   };
 
   const handleCancel = () => {
-    router.push(paths.dashboard.recipeGroups.view.getHref(params.id));
+    router.push(paths.dashboard.recipeGroups.view.getHref(id));
   };
 
   if (queryLoading) {
@@ -60,7 +61,6 @@ export default function EditRecipeGroupPage({
     return (
       <div className={styles.container}>
         <ErrorState
-          title="Failed to load recipe group"
           message={queryError?.message || "Recipe group not found"}
         />
       </div>

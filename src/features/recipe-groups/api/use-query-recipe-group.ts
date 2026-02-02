@@ -5,24 +5,17 @@ import type {
   RecipeGroupQuery,
   RecipeGroupQueryVariables,
 } from "generated/gql/graphql";
+import { RECIPE_GROUP_VIEW_FRAGMENT } from "../components/recipe-group-view/recipe-group-view";
 
 const RECIPE_GROUP_QUERY = gql`
   query RecipeGroup($id: ID!) {
     recipeGroup(id: $id) {
       id
       name
-      description
-      recipes {
-        id
-        name
-        servings
-        createdAt
-        updatedAt
-      }
-      createdAt
-      updatedAt
+      ...RecipeGroupView
     }
   }
+  ${RECIPE_GROUP_VIEW_FRAGMENT}
 `;
 
 export function useQueryRecipeGroup(id: string) {

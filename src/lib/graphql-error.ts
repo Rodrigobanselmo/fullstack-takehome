@@ -32,7 +32,10 @@ export function extractGraphQLErrorMessage(error: unknown): string {
       const networkError = error.networkError as ServerParseError;
 
       // Check if the network error contains GraphQL errors in the result
-      if (networkError.result?.errors && networkError.result.errors.length > 0) {
+      if (
+        networkError.result?.errors &&
+        networkError.result.errors.length > 0
+      ) {
         const messages = networkError.result.errors
           .map((err) => err.message)
           .filter(Boolean);
@@ -60,4 +63,3 @@ export function extractGraphQLErrorMessage(error: unknown): string {
   // Fallback for unknown error types
   return "An unexpected error occurred";
 }
-

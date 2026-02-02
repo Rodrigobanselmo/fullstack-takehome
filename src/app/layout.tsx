@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ApolloWrapper } from "~/providers/apollo-provider";
+import { ModalProvider } from "~/components/ui/modal/modal-context";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={geist.className}>
-        <ApolloWrapper>{children}</ApolloWrapper>
+        <ApolloWrapper>
+          <ModalProvider>{children}</ModalProvider>
+        </ApolloWrapper>
       </body>
     </html>
   );

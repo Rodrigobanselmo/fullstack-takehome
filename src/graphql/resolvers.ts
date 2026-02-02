@@ -48,6 +48,7 @@ export const resolvers = {
   DateTime: DateTimeResolver,
   Decimal: DecimalScalar,
   Recipe: recipeResolvers.Recipe,
+  RecipeIngredient: recipeResolvers.RecipeIngredient,
   RecipeGroup: recipeGroupResolvers.RecipeGroup,
   Ingredient: ingredientResolvers.Ingredient,
   Mutation: {

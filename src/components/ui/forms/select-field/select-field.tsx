@@ -3,7 +3,7 @@ import styles from "./select-field.module.css";
 
 interface SelectFieldProps {
   label: string;
-  value: string;
+  value: string | string[];
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   name: string;
   required?: boolean;
@@ -11,6 +11,7 @@ interface SelectFieldProps {
   placeholder?: string;
   disabled?: boolean;
   clearable?: boolean;
+  multiple?: boolean;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -23,6 +24,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   placeholder,
   disabled = false,
   clearable = false,
+  multiple = false,
 }) => (
   <div className={styles.inputGroup}>
     <label htmlFor={name} className={styles.inputLabel}>
@@ -32,12 +34,13 @@ const SelectField: React.FC<SelectFieldProps> = ({
       id={name}
       name={name}
       required={required}
-      className={styles.input}
+      className={`${styles.input} ${multiple ? styles.multipleSelect : ""}`}
       value={value}
       onChange={onChange}
       disabled={disabled}
+      multiple={multiple}
     >
-      {placeholder && (
+      {placeholder && !multiple && (
         <option value="" disabled={!clearable}>
           {placeholder}
         </option>

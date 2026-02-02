@@ -1,24 +1,74 @@
-import type { RecipeTag, RecipeIngredient } from "generated/gql/graphql";
+import { gql } from "@apollo/client";
+import type { FragmentType } from "generated/gql/fragment-masking";
+import { useFragment } from "generated/gql/fragment-masking";
+import {
+  RecipeViewFragmentDoc,
+  RecipeViewIngredientFragmentDoc,
+} from "generated/gql/graphql";
 import { RECIPE_TAG_MAP } from "../../constants/recipe-tag-map";
 import styles from "./recipe-view.module.css";
 
+export const RECIPE_VIEW_INGREDIENT_FRAGMENT = gql`
+  fragment RecipeViewIngredient on RecipeIngredient {
+    id
+    ingredientId
+    quantity
+    unit
+    notes
+    optional
+    ingredient {
+      id
+      name
+    }
+  }
+`;
+
+export const RECIPE_VIEW_FRAGMENT = gql`
+  fragment RecipeView on Recipe {
+    id
+    name
+    servings
+    tags
+    overallRating
+    prepTimeMinutes
+    ingredients {
+      ...RecipeViewIngredient
+    }
+    createdAt
+    updatedAt
+  }
+  ${RECIPE_VIEW_INGREDIENT_FRAGMENT}
+`;
+
 interface RecipeViewProps {
-  name: string;
-  servings: number;
-  tags?: RecipeTag[];
-  overallRating?: number | null;
-  prepTimeMinutes?: number | null;
-  ingredients: RecipeIngredient[];
+  recipe: FragmentType<typeof RecipeViewFragmentDoc>;
 }
 
-export default function RecipeView({
-  name,
-  servings,
-  tags = [],
-  overallRating,
-  prepTimeMinutes,
-  ingredients,
-}: RecipeViewProps) {
+interface IngredientItemProps {
+  ingredient: FragmentType<typeof RecipeViewIngredientFragmentDoc>;
+}
+
+function IngredientItem({ ingredient }: IngredientItemProps) {
+  const data = useFragment(RecipeViewIngredientFragmentDoc, ingredient);
+
+  return (
+    <li className={styles.ingredientItem}>
+      <span className={styles.ingredientQuantity}>
+        {data.quantity} {data.unit}
+      </span>
+      <span className={styles.ingredientName}>{data.ingredient.name}</span>
+      {data.notes && (
+        <span className={styles.ingredientNotes}>({data.notes})</span>
+      )}
+      {data.optional && <span className={styles.optionalBadge}>Optional</span>}
+    </li>
+  );
+}
+
+export default function RecipeView({ recipe }: RecipeViewProps) {
+  const { name, servings, tags, overallRating, prepTimeMinutes, ingredients } =
+    useFragment(RecipeViewFragmentDoc, recipe);
+
   return (
     <div className={styles.recipeView}>
       <div className={styles.header}>
@@ -60,23 +110,8 @@ export default function RecipeView({
       <div className={styles.ingredientsSection}>
         <h3 className={styles.sectionTitle}>Ingredients</h3>
         <ul className={styles.ingredientsList}>
-          {ingredients.map((ingredient) => (
-            <li key={ingredient.id} className={styles.ingredientItem}>
-              <span className={styles.ingredientQuantity}>
-                {ingredient.quantity} {ingredient.unit}
-              </span>
-              <span className={styles.ingredientName}>
-                {ingredient.ingredient.name}
-              </span>
-              {ingredient.notes && (
-                <span className={styles.ingredientNotes}>
-                  ({ingredient.notes})
-                </span>
-              )}
-              {ingredient.optional && (
-                <span className={styles.optionalBadge}>Optional</span>
-              )}
-            </li>
+          {ingredients.map((ingredient, index) => (
+            <IngredientItem key={index} ingredient={ingredient} />
           ))}
         </ul>
       </div>

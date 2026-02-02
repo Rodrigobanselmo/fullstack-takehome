@@ -10,8 +10,7 @@ import styles from "./page.module.css";
 
 export default function AddRecipeGroupPage() {
   const router = useRouter();
-  const [createRecipeGroup, { loading }] =
-    useCreateRecipeGroupMutation();
+  const [createRecipeGroup, { loading }] = useCreateRecipeGroupMutation();
 
   const handleSubmit = async (data: CreateRecipeGroupFormData) => {
     const result = await createRecipeGroup({

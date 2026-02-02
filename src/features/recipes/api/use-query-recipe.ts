@@ -2,32 +2,20 @@
 
 import { gql, useQuery } from "@apollo/client";
 import type { RecipeQuery, RecipeQueryVariables } from "generated/gql/graphql";
+import { RECIPE_VIEW_FRAGMENT } from "../components/recipe-view/recipe-view";
+import { RECIPE_FORM_FRAGMENT } from "../components/recipe-form/recipe-form";
 
 const RECIPE_QUERY = gql`
   query Recipe($id: ID!) {
     recipe(id: $id) {
       id
       name
-      servings
-      tags
-      overallRating
-      prepTimeMinutes
-      ingredients {
-        id
-        ingredientId
-        quantity
-        unit
-        notes
-        optional
-        ingredient {
-          id
-          name
-        }
-      }
-      createdAt
-      updatedAt
+      ...RecipeView
+      ...RecipeForm
     }
   }
+  ${RECIPE_VIEW_FRAGMENT}
+  ${RECIPE_FORM_FRAGMENT}
 `;
 
 export function useQueryRecipe(id: string) {

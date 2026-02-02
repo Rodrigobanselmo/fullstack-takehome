@@ -1,7 +1,15 @@
-import { RecipeTag } from "generated/gql/graphql";
+import { gql } from "@apollo/client";
+import type { FragmentType } from "generated/gql/fragment-masking";
+import { useFragment } from "generated/gql/fragment-masking";
+import {
+  type RecipeTag,
+  RecipeFormFragmentDoc,
+  RecipeFormIngredientFragmentDoc,
+} from "generated/gql/graphql";
 import { useState } from "react";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
+import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
@@ -14,8 +22,34 @@ import {
 } from "../../schemas/create-recipe-schema";
 import styles from "./recipe-form.module.css";
 
+export const RECIPE_FORM_INGREDIENT_FRAGMENT = gql`
+  fragment RecipeFormIngredient on RecipeIngredient {
+    id
+    ingredientId
+    quantity
+    unit
+    notes
+    optional
+  }
+`;
+
+export const RECIPE_FORM_FRAGMENT = gql`
+  fragment RecipeForm on Recipe {
+    id
+    name
+    servings
+    tags
+    overallRating
+    prepTimeMinutes
+    ingredients {
+      ...RecipeFormIngredient
+    }
+  }
+  ${RECIPE_FORM_INGREDIENT_FRAGMENT}
+`;
+
 export interface RecipeFormProps {
-  initialData?: CreateRecipeFormData;
+  recipe?: FragmentType<typeof RecipeFormFragmentDoc>;
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateRecipeFormData) => Promise<void>;
@@ -41,8 +75,44 @@ const initialIngredient: RecipeIngredientFormData = {
   optional: false,
 };
 
+function getInitialData(
+  recipeData:
+    | {
+        name: string;
+        servings: number;
+        tags: RecipeTag[];
+        overallRating?: number | null;
+        prepTimeMinutes?: number | null;
+      }
+    | undefined,
+  ingredientsData: ReadonlyArray<{
+    ingredientId: string;
+    quantity: number;
+    unit: string;
+    notes?: string | null;
+    optional?: boolean | null;
+  }>,
+): CreateRecipeFormData {
+  if (!recipeData) return initialRecipeData;
+
+  return {
+    name: recipeData.name,
+    servings: recipeData.servings.toString(),
+    tags: recipeData.tags,
+    overallRating: recipeData.overallRating?.toString() || "",
+    prepTimeMinutes: recipeData.prepTimeMinutes?.toString() || "",
+    ingredients: ingredientsData.map((ing) => ({
+      ingredientId: ing.ingredientId,
+      quantity: ing.quantity.toString(),
+      unit: ing.unit,
+      notes: ing.notes || "",
+      optional: ing.optional || false,
+    })),
+  };
+}
+
 export default function RecipeForm({
-  initialData = initialRecipeData,
+  recipe,
   loading = false,
   error = "",
   onSubmit,
@@ -50,9 +120,16 @@ export default function RecipeForm({
   loadingText = "Creating Recipe...",
   onCancel,
 }: RecipeFormProps) {
+  const recipeData = useFragment(RecipeFormFragmentDoc, recipe);
+  const recipeIngredientsData = useFragment(
+    RecipeFormIngredientFragmentDoc,
+    recipeData?.ingredients ?? [],
+  );
+  const initialData = getInitialData(recipeData, recipeIngredientsData);
+
   const [formData, setFormData] = useState<CreateRecipeFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
-  const { data: ingredientsData, loading: ingredientsLoading } =
+  const { data: ingredientsQueryData, loading: ingredientsLoading } =
     useQueryIngredients();
 
   const handleInputChange =
@@ -69,14 +146,10 @@ export default function RecipeForm({
       setFormError("");
     };
 
-  const handleTagsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value as RecipeTag,
-    );
+  const handleTagsChange = (selectedTags: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      tags: selectedOptions,
+      tags: selectedTags as RecipeTag[],
     }));
     setFormError("");
   };
@@ -131,7 +204,7 @@ export default function RecipeForm({
   };
 
   const ingredientOptions =
-    ingredientsData?.ingredients?.map((ingredient) => ({
+    ingredientsQueryData?.ingredients?.map((ingredient) => ({
       value: ingredient.id,
       label: ingredient.name,
     })) ?? [];
@@ -172,14 +245,13 @@ export default function RecipeForm({
           onChange={handleInputChange("overallRating")}
           placeholder="Enter rating..."
         />
-        <SelectField
+        <MultiSelectField
           label="Tags"
           name="tags"
-          value={formData.tags?.[0] || ""}
+          value={formData.tags ?? []}
           onChange={handleTagsChange}
           options={RECIPE_TAG_OPTIONS}
           placeholder="Select tags..."
-          multiple={true}
         />
       </div>
 

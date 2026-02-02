@@ -9,6 +9,14 @@ export const RECIPE_GROUPS_QUERY = gql`
       id
       name
       description
+      recipes {
+        id
+        name
+        servings
+        tags
+        overallRating
+        prepTimeMinutes
+      }
       createdAt
       updatedAt
     }

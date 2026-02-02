@@ -53,7 +53,9 @@ export function LoginForm() {
           e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
         ) => setPassword(e.target.value)}
       />
-      <FormError error={error ? extractGraphQLErrorMessage(error) : undefined} />
+      <FormError
+        error={error ? extractGraphQLErrorMessage(error) : undefined}
+      />
 
       <Button
         type="submit"

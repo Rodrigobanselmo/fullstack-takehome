@@ -51,6 +51,9 @@ export async function createRecipe({
     name: input.name,
     servings: input.servings,
     userId,
+    tags: input.tags ?? undefined,
+    overallRating: input.overallRating ?? undefined,
+    prepTimeMinutes: input.prepTimeMinutes ?? undefined,
     ingredients: input.ingredients.map((ingredient) => ({
       ingredientId: ingredient.ingredientId,
       quantity: ingredient.quantity,
@@ -78,6 +81,9 @@ export async function updateRecipe({
     userId,
     name: input.name ?? undefined,
     servings: input.servings ?? undefined,
+    tags: input.tags ?? undefined,
+    overallRating: input.overallRating ?? undefined,
+    prepTimeMinutes: input.prepTimeMinutes ?? undefined,
     ingredients: input.ingredients?.map((ingredient) => ({
       ingredientId: ingredient.ingredientId,
       quantity: ingredient.quantity,
