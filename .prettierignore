@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Generated files
+generated
+
+# Database
+*.db
+*.db-journal
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env*.local
+
+# Cache
+.cache
+*.tsbuildinfo
+.eslintcache
+
+# OS files
+.DS_Store
+
