@@ -5,14 +5,19 @@ import type { Ingredient } from "generated/gql/graphql";
 /**
  * DataLoader for batch loading ingredients by ID
  * Prevents N+1 query problem when loading ingredients for multiple recipe ingredients
+ *
+ * NOTE: This loader does NOT filter by deletedAt because it's used to load
+ * ingredients for existing recipes. Soft-deleted ingredients should still be
+ * visible in recipes that already use them. The ingredients list query
+ * handles the filtering separately.
  */
 export function createIngredientByIdLoader() {
   return new DataLoader<string, Ingredient | null>(async (ingredientIds) => {
-    // Fetch all ingredients for the requested IDs
+    // Fetch all ingredients for the requested IDs (including soft-deleted ones)
+    // This allows recipes to still show ingredients that have been deleted
     const ingredients = await prisma.ingredients.findMany({
       where: {
         id: { in: [...ingredientIds] },
-        deletedAt: null,
       },
     });
 

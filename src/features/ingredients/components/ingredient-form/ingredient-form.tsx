@@ -4,6 +4,7 @@ import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import { useToast } from "~/components/ui/toast/toast-context";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { INGREDIENT_CATEGORY_OPTIONS } from "../../constants/ingredient-category-map";
 import {
@@ -17,9 +18,12 @@ export interface IngredientFormProps {
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateIngredientFormData) => Promise<void>;
+  onSuccess?: () => void;
   submitButtonText?: string;
   loadingText?: string;
   onCancel?: () => void;
+  successMessage?: string;
+  errorMessage?: string;
 }
 
 const initialIngredientData: CreateIngredientFormData = {
@@ -37,13 +41,17 @@ export default function IngredientForm({
   loading = false,
   error = "",
   onSubmit,
+  onSuccess,
   submitButtonText = "Create Ingredient",
   loadingText = "Creating Ingredient...",
   onCancel,
+  successMessage = "Ingredient saved successfully!",
+  errorMessage = "Failed to save ingredient",
 }: IngredientFormProps) {
   const [formData, setFormData] =
     useState<CreateIngredientFormData>(initialData);
   const [formError, setFormError] = useState<string>(error);
+  const toast = useToast();
 
   const handleInputChange =
     (name: keyof CreateIngredientFormData) =>
@@ -83,8 +91,12 @@ export default function IngredientForm({
 
     try {
       await onSubmit(validationResult.data);
+      toast.success(successMessage);
+      onSuccess?.();
     } catch (error) {
-      setFormError(extractGraphQLErrorMessage(error));
+      const errorMsg = extractGraphQLErrorMessage(error);
+      setFormError(errorMsg);
+      toast.error(errorMessage, errorMsg);
     }
   };
 

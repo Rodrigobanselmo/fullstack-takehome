@@ -127,6 +127,13 @@ class PrismaRecipeGroupRepository {
     userId: string;
   }): Promise<RecipeGroupEntity> {
     const db = getPrismaClient();
+
+    // Remove all recipe links from this group (recipes themselves are NOT deleted)
+    await db.recipe_group_recipes.deleteMany({
+      where: { groupId },
+    });
+
+    // Soft delete the group
     const group = await db.recipe_groups.update({
       where: { id: groupId, userId },
       data: { deletedAt: new Date() },

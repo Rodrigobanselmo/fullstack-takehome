@@ -66,9 +66,6 @@ export const paths = {
       add: {
         getHref: () => "/dashboard/ingredients/add",
       },
-      edit: {
-        getHref: (id: string) => `/dashboard/ingredients/${id}/edit`,
-      },
     },
     recipeGroups: {
       getHref: () => "/dashboard/recipe-groups",
