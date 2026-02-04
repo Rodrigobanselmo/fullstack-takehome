@@ -1,6 +1,7 @@
 import { DateTimeResolver } from "graphql-scalars";
 import { GraphQLScalarType, Kind } from "graphql";
 import { Prisma } from "generated/prisma";
+import { aiResolvers } from "./ai/ai.resolvers";
 import { authResolvers } from "./auth/auth.resolvers";
 import { chatResolvers } from "./chat/chat.resolvers";
 import { jobResolvers } from "./job/job.resolvers";
@@ -52,6 +53,7 @@ export const resolvers = {
   RecipeGroup: recipeGroupResolvers.RecipeGroup,
   Ingredient: ingredientResolvers.Ingredient,
   Mutation: {
+    ...aiResolvers.Mutation,
     ...authResolvers.Mutation,
     ...jobResolvers.Mutation,
     ...chatResolvers.Mutation,

@@ -1,4 +1,5 @@
 import { gql } from "graphql-tag";
+import { aiTypeDefs } from "./ai/ai.schema";
 import { authTypeDefs } from "./auth/auth.schema";
 import { chatTypeDefs } from "./chat/chat.schema";
 import { jobTypeDefs } from "./job/job.schema";
@@ -23,6 +24,7 @@ const baseTypeDefs = gql`
 
 export const typeDefs = [
   baseTypeDefs,
+  aiTypeDefs,
   authTypeDefs,
   chatTypeDefs,
   jobTypeDefs,

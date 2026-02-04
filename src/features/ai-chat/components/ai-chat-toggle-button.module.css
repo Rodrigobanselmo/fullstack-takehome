@@ -1,0 +1,30 @@
+.button {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.2s ease;
+  z-index: 998;
+}
+
+.button:hover {
+  transform: scale(1.05);
+  background: var(--color-primary-hover);
+}
+
+.buttonActive {
+  opacity: 0;
+  pointer-events: none;
+}
+

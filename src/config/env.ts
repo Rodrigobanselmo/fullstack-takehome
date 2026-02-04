@@ -17,6 +17,10 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: z.string().min(1),
     AWS_REGION: z.string().default("us-east-1"),
     AWS_S3_BUCKET: z.string().min(1),
+
+    // LLM API Keys
+    OPENAI_API_KEY: z.string().optional(),
+    GOOGLE_API_KEY: z.string().optional(),
   },
 
   /**
@@ -41,6 +45,10 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
+
+    // LLM API Keys
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
 
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
