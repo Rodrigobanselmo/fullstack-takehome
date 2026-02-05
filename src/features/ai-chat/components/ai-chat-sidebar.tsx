@@ -1,21 +1,64 @@
 "use client";
 
-import { useRef, useEffect, type FormEvent } from "react";
+import type React from "react";
+import { useRef, useEffect } from "react";
 import { useAIChat } from "../context/ai-chat-context";
 import { useAIChatStream } from "../hooks/use-ai-chat-stream";
+import {
+  useQueryAIThreads,
+  useQueryAIThreadMessages,
+} from "../api/ai-thread.queries";
+import {
+  useCreateAIThreadMutation,
+  useDeleteAIThreadMutation,
+} from "../api/ai-thread.mutations";
 import styles from "./ai-chat-sidebar.module.css";
 
 export function AIChatSidebar() {
-  const { isOpen, close } = useAIChat();
-  const { messages, isLoading, error, sendMessage, clearMessages } =
-    useAIChatStream();
+  const {
+    isOpen,
+    close,
+    currentThreadId,
+    setCurrentThreadId,
+    showThreadList,
+    toggleThreadList,
+  } = useAIChat();
+
+  const { data: threadsData, loading: threadsLoading } = useQueryAIThreads();
+  const { data: messagesData } = useQueryAIThreadMessages(currentThreadId);
+  const [createThread] = useCreateAIThreadMutation();
+  const [deleteThread] = useDeleteAIThreadMutation();
+
+  const {
+    messages: streamMessages,
+    isLoading,
+    error,
+    sendMessage,
+    clearMessages,
+    setMessages,
+  } = useAIChatStream();
+
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync messages from GraphQL when thread changes
+  useEffect(() => {
+    if (messagesData?.aiThreadMessages) {
+      const mapped = messagesData.aiThreadMessages.map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
+      setMessages(mapped);
+    } else if (!currentThreadId) {
+      clearMessages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messagesData, currentThreadId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [streamMessages]);
 
   // Focus input when sidebar opens
   useEffect(() => {
@@ -24,14 +67,47 @@ export function AIChatSidebar() {
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleCreateThread = async () => {
+    const result = await createThread({
+      variables: { input: { title: "New Chat" } },
+    });
+    if (result.data?.createAIThread) {
+      setCurrentThreadId(result.data.createAIThread.id);
+    }
+  };
+
+  const handleSelectThread = (threadId: string) => {
+    setCurrentThreadId(threadId);
+  };
+
+  const handleDeleteThread = async (threadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteThread({ variables: { id: threadId } });
+    if (currentThreadId === threadId) {
+      setCurrentThreadId(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const input = inputRef.current;
     if (!input?.value.trim()) return;
 
-    void sendMessage(input.value);
+    // If no thread selected, create one first
+    if (!currentThreadId) {
+      const result = await createThread({
+        variables: { input: { title: input.value.slice(0, 50) } },
+      });
+      if (result.data?.createAIThread) {
+        setCurrentThreadId(result.data.createAIThread.id);
+      }
+    }
+
+    void sendMessage(input.value, currentThreadId);
     input.value = "";
   };
+
+  const threads = threadsData?.aiThreads ?? [];
 
   return (
     <>
@@ -42,53 +118,100 @@ export function AIChatSidebar() {
       />
 
       {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
+      <aside
+        className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}
+      >
         {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.headerTitle}>
-            <span>🤖</span>
-            AI Assistant
-          </h2>
+          <div className={styles.headerLeft}>
+            <button
+              className={styles.iconButton}
+              onClick={toggleThreadList}
+              title="Toggle threads"
+            >
+              ☰
+            </button>
+            <h2 className={styles.headerTitle}>
+              <span>🤖</span>
+              AI Assistant
+            </h2>
+          </div>
           <div className={styles.headerActions}>
             <button
               className={styles.iconButton}
-              onClick={clearMessages}
-              title="Clear chat"
+              onClick={handleCreateThread}
+              title="New chat"
             >
-              🗑️
+              ➕
             </button>
-            <button
-              className={styles.iconButton}
-              onClick={close}
-              title="Close"
-            >
+            <button className={styles.iconButton} onClick={close} title="Close">
               ✕
             </button>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className={styles.messages}>
-          {messages.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyStateIcon}>💬</div>
-              <p>Start a conversation with the AI assistant</p>
-            </div>
-          ) : (
-            messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`${styles.message} ${
-                  msg.role === "user"
-                    ? styles.messageUser
-                    : styles.messageAssistant
-                }`}
-              >
-                {msg.content || (isLoading && index === messages.length - 1 ? "..." : "")}
+        <div className={styles.content}>
+          {/* Thread List */}
+          {showThreadList && (
+            <div className={styles.threadList}>
+              <div className={styles.threadListHeader}>
+                <span>Conversations</span>
               </div>
-            ))
+              {threadsLoading ? (
+                <div className={styles.threadListLoading}>Loading...</div>
+              ) : threads.length === 0 ? (
+                <div className={styles.threadListEmpty}>No conversations</div>
+              ) : (
+                threads.map((thread) => (
+                  <div
+                    key={thread.id}
+                    className={`${styles.threadItem} ${
+                      thread.id === currentThreadId
+                        ? styles.threadItemActive
+                        : ""
+                    }`}
+                    onClick={() => handleSelectThread(thread.id)}
+                  >
+                    <span className={styles.threadTitle}>{thread.title}</span>
+                    <button
+                      className={styles.threadDeleteBtn}
+                      onClick={(e) => handleDeleteThread(thread.id, e)}
+                      title="Delete"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           )}
-          <div ref={messagesEndRef} />
+
+          {/* Messages */}
+          <div className={styles.messages}>
+            {streamMessages.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyStateIcon}>💬</div>
+                <p>Start a conversation with the AI assistant</p>
+              </div>
+            ) : (
+              streamMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`${styles.message} ${
+                    msg.role === "user"
+                      ? styles.messageUser
+                      : styles.messageAssistant
+                  }`}
+                >
+                  {msg.content ||
+                    (isLoading && index === streamMessages.length - 1
+                      ? "..."
+                      : "")}
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
         {/* Error */}

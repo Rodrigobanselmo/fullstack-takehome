@@ -63,6 +63,7 @@ export const resolvers = {
     ...ingredientResolvers.Mutation,
   },
   Query: {
+    ...aiResolvers.Query,
     ...jobResolvers.Query,
     ...userResolvers.Query,
     ...chatResolvers.Query,

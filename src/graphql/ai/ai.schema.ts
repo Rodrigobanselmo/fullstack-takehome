@@ -1,28 +1,51 @@
 import { gql } from "graphql-tag";
 
 export const aiTypeDefs = gql`
-  type AIChatMessage {
-    role: String!
-    content: String!
+  type AIThread {
+    id: ID!
+    title: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
-  input AIChatMessageInput {
+  type AIMessage {
+    id: ID!
+    threadId: ID!
     role: String!
     content: String!
+    createdAt: DateTime!
   }
 
-  input SendAIMessageInput {
+  input CreateAIThreadInput {
+    title: String
+  }
+
+  input UpdateAIThreadInput {
+    threadId: ID!
+    title: String!
+  }
+
+  input SendAIThreadMessageInput {
+    threadId: ID!
     message: String!
-    history: [AIChatMessageInput!]
   }
 
-  type AIChatResponse {
-    response: String!
-    messages: [AIChatMessage!]!
+  type SendAIThreadMessageResponse {
+    message: AIMessage!
+    response: AIMessage!
+  }
+
+  extend type Query {
+    aiThreads: [AIThread!]!
+    aiThread(id: ID!): AIThread
+    aiThreadMessages(threadId: ID!): [AIMessage!]!
   }
 
   extend type Mutation {
-    sendAIMessage(input: SendAIMessageInput!): AIChatResponse!
+    createAIThread(input: CreateAIThreadInput): AIThread!
+    updateAIThread(input: UpdateAIThreadInput!): AIThread
+    deleteAIThread(id: ID!): Boolean!
+    sendAIThreadMessage(input: SendAIThreadMessageInput!): SendAIThreadMessageResponse!
   }
 `;
 

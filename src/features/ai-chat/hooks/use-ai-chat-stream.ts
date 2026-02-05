@@ -11,8 +11,9 @@ interface UseAIChatStreamReturn {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string, threadId?: string | null) => Promise<void>;
   clearMessages: () => void;
+  setMessages: (messages: ChatMessage[]) => void;
 }
 
 export function useAIChatStream(): UseAIChatStreamReturn {
@@ -21,7 +22,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: string, threadId?: string | null) => {
     if (!message.trim() || isLoading) return;
 
     setError(null);
@@ -46,7 +47,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
       const response = await fetch("/api/ai/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, threadId }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -111,6 +112,6 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     setError(null);
   };
 
-  return { messages, isLoading, error, sendMessage, clearMessages };
+  return { messages, isLoading, error, sendMessage, clearMessages, setMessages };
 }
 

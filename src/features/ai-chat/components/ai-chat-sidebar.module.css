@@ -42,6 +42,12 @@
   background: var(--color-paper);
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .headerTitle {
   margin: 0;
   font-size: 1rem;
@@ -57,6 +63,12 @@
   gap: 0.5rem;
 }
 
+.content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
 .iconButton {
   background: none;
   border: none;
@@ -70,6 +82,74 @@
 .iconButton:hover {
   background: var(--color-gray-10);
   color: var(--color-text-primary);
+}
+
+/* Thread List */
+.threadList {
+  width: 200px;
+  min-width: 200px;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-gray-10);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.threadListHeader {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.threadListLoading,
+.threadListEmpty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.threadItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.threadItem:hover {
+  background: var(--color-gray-20);
+}
+
+.threadItemActive {
+  background: var(--color-primary-10);
+  border-left: 3px solid var(--color-primary);
+}
+
+.threadTitle {
+  flex: 1;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.threadDeleteBtn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.threadItem:hover .threadDeleteBtn {
+  opacity: 1;
 }
 
 .messages {

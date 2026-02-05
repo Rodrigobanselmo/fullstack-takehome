@@ -1,47 +1,192 @@
+import { z } from "zod";
 import { canUseAI } from "./ai.auth";
-import { schemaValidation } from "~/lib/validation";
 import type { GraphQLContext } from "../context";
 import { InvalidInputError, UnauthorizedError } from "../errors";
-import { sendAIMessageInputSchema } from "./ai.validators";
-import { invokeChatAgent, type ChatMessage } from "~/server/ai";
+import { invokeChatAgent } from "~/server/ai";
+import {
+  aiThreadRepository,
+  type AIThread,
+  type AIMessage,
+} from "~/server/repositories/ai-thread.repository";
 
-interface SendAIMessageInput {
-  message: string;
-  history?: Array<{ role: string; content: string }>;
-}
+// Inline validation schemas for better type inference
+const aiThreadIdSchema = z.object({
+  id: z.string().min(1, "Thread ID is required"),
+});
 
-interface AIChatResponse {
-  response: string;
-  messages: ChatMessage[];
+const aiThreadMessagesSchema = z.object({
+  threadId: z.string().min(1, "Thread ID is required"),
+});
+
+const createAIThreadInputSchema = z.object({
+  title: z.string().optional(),
+});
+
+const updateAIThreadInputSchema = z.object({
+  threadId: z.string().min(1, "Thread ID is required"),
+  title: z.string().min(1, "Title is required"),
+});
+
+const sendAIThreadMessageInputSchema = z.object({
+  threadId: z.string().min(1, "Thread ID is required"),
+  message: z.string().min(1, "Message is required"),
+});
+
+function formatZodError(error: z.ZodError): string {
+  return error.errors.map((e) => e.message).join(", ");
 }
 
 export const aiResolvers = {
-  Mutation: {
-    sendAIMessage: async (
+  Query: {
+    aiThreads: async (
       _: unknown,
-      { input }: { input: SendAIMessageInput },
+      __: unknown,
       context: GraphQLContext,
-    ): Promise<AIChatResponse> => {
-      const isUnauthorized = !canUseAI(context.user);
-      if (isUnauthorized) {
+    ): Promise<AIThread[]> => {
+      if (!canUseAI(context.user)) {
         throw UnauthorizedError();
       }
+      return aiThreadRepository.findByUser(context.user!.id);
+    },
 
-      const validation = schemaValidation(sendAIMessageInputSchema, input);
-      if (validation.success === false) {
-        throw InvalidInputError(validation.error);
+    aiThread: async (
+      _: unknown,
+      args: { id: string },
+      context: GraphQLContext,
+    ): Promise<AIThread | null> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = aiThreadIdSchema.safeParse(args);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.findById(result.data.id, context.user!.id);
+    },
+
+    aiThreadMessages: async (
+      _: unknown,
+      args: { threadId: string },
+      context: GraphQLContext,
+    ): Promise<AIMessage[]> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = aiThreadMessagesSchema.safeParse(args);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.getMessages(
+        result.data.threadId,
+        context.user!.id,
+      );
+    },
+  },
+
+  Mutation: {
+    createAIThread: async (
+      _: unknown,
+      { input }: { input?: { title?: string } },
+      context: GraphQLContext,
+    ): Promise<AIThread> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = createAIThreadInputSchema.safeParse(input ?? {});
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.create(context.user!.id, result.data.title);
+    },
+
+    updateAIThread: async (
+      _: unknown,
+      { input }: { input: { threadId: string; title: string } },
+      context: GraphQLContext,
+    ): Promise<AIThread | null> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = updateAIThreadInputSchema.safeParse(input);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.updateTitle(
+        result.data.threadId,
+        context.user!.id,
+        result.data.title,
+      );
+    },
+
+    deleteAIThread: async (
+      _: unknown,
+      args: { id: string },
+      context: GraphQLContext,
+    ): Promise<boolean> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = aiThreadIdSchema.safeParse(args);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.delete(result.data.id, context.user!.id);
+    },
+
+    sendAIThreadMessage: async (
+      _: unknown,
+      { input }: { input: { threadId: string; message: string } },
+      context: GraphQLContext,
+    ): Promise<{ message: AIMessage; response: AIMessage }> => {
+      if (!canUseAI(context.user)) {
+        throw UnauthorizedError();
+      }
+      const result = sendAIThreadMessageInputSchema.safeParse(input);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
       }
 
-      const { message, history } = validation.data;
+      const { threadId, message } = result.data;
 
-      const result = await invokeChatAgent({
+      // Verify thread exists and belongs to user
+      const thread = await aiThreadRepository.findById(
+        threadId,
+        context.user!.id,
+      );
+      if (!thread) {
+        throw InvalidInputError("Thread not found");
+      }
+
+      // Save user message
+      const userMessage = await aiThreadRepository.addMessage(
+        threadId,
+        "user",
         message,
-        history: history as ChatMessage[] | undefined,
+      );
+
+      // Get recent history for context
+      const history = await aiThreadRepository.getLastMessages(threadId, 20);
+      const historyForAI = history.slice(0, -1).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      // Get AI response
+      const aiResult = await invokeChatAgent({
+        message,
+        history: historyForAI,
       });
 
+      // Save AI response
+      const aiMessage = await aiThreadRepository.addMessage(
+        threadId,
+        "assistant",
+        aiResult.response,
+      );
+
       return {
-        response: result.response,
-        messages: result.messages,
+        message: userMessage,
+        response: aiMessage,
       };
     },
   },

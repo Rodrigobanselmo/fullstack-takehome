@@ -8,6 +8,7 @@ import {
   AIMessage,
 } from "@langchain/core/messages";
 import type { BaseMessage } from "@langchain/core/messages";
+import { aiThreadRepository } from "~/server/repositories/ai-thread.repository";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ interface ChatMessage {
 interface ChatRequestBody {
   message: string;
   history?: ChatMessage[];
+  threadId?: string;
 }
 
 const SYSTEM_PROMPT = `You are a helpful assistant. You help users with their questions and provide helpful, accurate, and concise responses. Be friendly and professional.`;
@@ -59,11 +61,24 @@ export async function POST(req: NextRequest) {
       new HumanMessage(body.message),
     ];
 
+    // If threadId is provided, verify and save user message
+    if (body.threadId) {
+      const thread = await aiThreadRepository.findById(body.threadId, user.id);
+      if (!thread) {
+        return new Response(JSON.stringify({ error: "Thread not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      await aiThreadRepository.addMessage(body.threadId, "user", body.message);
+    }
+
     // Create LLM and stream response
     const llm = createLLM({ temperature: 0.7 });
     const stream = await llm.stream(messages);
 
     const encoder = new TextEncoder();
+    let fullResponse = "";
 
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -75,11 +90,22 @@ export async function POST(req: NextRequest) {
                 : JSON.stringify(chunk.content);
 
             if (content) {
+              fullResponse += content;
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ content })}\n\n`),
               );
             }
           }
+
+          // Save assistant message to database if threadId provided
+          if (body.threadId && fullResponse) {
+            await aiThreadRepository.addMessage(
+              body.threadId,
+              "assistant",
+              fullResponse,
+            );
+          }
+
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         } catch (error) {
