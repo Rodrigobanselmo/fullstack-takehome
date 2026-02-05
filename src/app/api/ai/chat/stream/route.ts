@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getUserFromCookie } from "~/lib/auth";
 import { captureException } from "~/lib/error-reporting";
-import { streamRecipeAgent } from "~/server/ai";
+import { streamRecipeAgent, type StreamEvent } from "~/server/ai";
 import { aiThreadRepository } from "~/server/repositories/ai-thread.repository";
 
 export const maxDuration = 60;
@@ -64,12 +64,15 @@ export async function POST(req: NextRequest) {
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const content of agentStream) {
-            if (content) {
-              fullResponse += content;
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ content })}\n\n`),
-              );
+          for await (const event of agentStream) {
+            // Send the event to the client
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(event)}\n\n`)
+            );
+
+            // Accumulate content for saving to database
+            if (event.type === "content") {
+              fullResponse += event.content;
             }
           }
 
@@ -78,7 +81,7 @@ export async function POST(req: NextRequest) {
             await aiThreadRepository.addMessage(
               body.threadId,
               "assistant",
-              fullResponse,
+              fullResponse
             );
           }
 
@@ -86,7 +89,17 @@ export async function POST(req: NextRequest) {
           controller.close();
         } catch (error) {
           captureException(error, { context: "AI Chat Stream" });
-          controller.error(error);
+          // Send error event to client
+          const errorEvent: StreamEvent = {
+            type: "error",
+            message:
+              error instanceof Error ? error.message : "Unknown error occurred",
+          };
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(errorEvent)}\n\n`)
+          );
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
         }
       },
     });
@@ -107,7 +120,7 @@ export async function POST(req: NextRequest) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 }

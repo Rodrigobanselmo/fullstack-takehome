@@ -3,9 +3,40 @@
 import { useState, useRef } from "react";
 
 export interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "tool";
   content: string;
+  toolName?: string;
+  toolStatus?: "running" | "success" | "error";
 }
+
+// Stream event types from the backend
+type StreamEvent =
+  | { type: "content"; content: string }
+  | { type: "tool_start"; tool: string; args: Record<string, unknown> }
+  | { type: "tool_end"; tool: string; result: string; success: boolean }
+  | { type: "error"; message: string };
+
+// Human-readable tool names
+const TOOL_DISPLAY_NAMES: Record<string, string> = {
+  list_recipes: "Listing recipes",
+  get_recipe: "Getting recipe details",
+  create_recipe: "Creating recipe",
+  update_recipe: "Updating recipe",
+  delete_recipe: "Deleting recipe",
+  list_ingredients: "Listing ingredients",
+  get_ingredient: "Getting ingredient details",
+  create_ingredient: "Creating ingredient",
+  update_ingredient: "Updating ingredient",
+  delete_ingredient: "Deleting ingredient",
+  search_similar_ingredients: "Searching for similar ingredients",
+  list_recipe_groups: "Listing recipe groups",
+  get_recipe_group: "Getting recipe group",
+  create_recipe_group: "Creating recipe group",
+  update_recipe_group: "Updating recipe group",
+  delete_recipe_group: "Deleting recipe group",
+  add_recipes_to_group: "Adding recipes to group",
+  remove_recipes_from_group: "Removing recipes from group",
+};
 
 interface UseAIChatStreamReturn {
   messages: ChatMessage[];
@@ -32,14 +63,13 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     const userMessage: ChatMessage = { role: "user", content: message };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Prepare history (exclude the message we just added)
-    const history = messages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    }));
-
-    // Add placeholder for assistant response
-    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+    // Prepare history (only user/assistant messages, not tool messages)
+    const history = messages
+      .filter((msg) => msg.role !== "tool")
+      .map((msg) => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+      }));
 
     try {
       abortControllerRef.current = new AbortController();
@@ -60,6 +90,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
 
       const decoder = new TextDecoder();
       let assistantContent = "";
+      let hasAssistantMessage = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -74,20 +105,75 @@ export function useAIChatStream(): UseAIChatStreamReturn {
             if (data === "[DONE]") continue;
 
             try {
-              const parsed = JSON.parse(data) as { content: string };
-              assistantContent += parsed.content;
+              const event = JSON.parse(data) as StreamEvent;
 
-              setMessages((prev) => {
-                const updated = [...prev];
-                const lastIndex = updated.length - 1;
-                if (updated[lastIndex]?.role === "assistant") {
-                  updated[lastIndex] = {
-                    role: "assistant",
-                    content: assistantContent,
-                  };
+              if (event.type === "tool_start") {
+                // Add tool status message
+                const displayName =
+                  TOOL_DISPLAY_NAMES[event.tool] || event.tool;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: "tool",
+                    content: `${displayName}...`,
+                    toolName: event.tool,
+                    toolStatus: "running",
+                  },
+                ]);
+              } else if (event.type === "tool_end") {
+                // Update tool status message
+                const displayName =
+                  TOOL_DISPLAY_NAMES[event.tool] || event.tool;
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  // Find the last tool message with this tool name
+                  for (let i = updated.length - 1; i >= 0; i--) {
+                    const msg = updated[i];
+                    if (
+                      msg?.role === "tool" &&
+                      msg.toolName === event.tool &&
+                      msg.toolStatus === "running"
+                    ) {
+                      updated[i] = {
+                        role: "tool",
+                        content: event.success
+                          ? `✓ ${displayName}`
+                          : `✗ ${displayName}: ${event.result}`,
+                        toolName: msg.toolName,
+                        toolStatus: event.success ? "success" : "error",
+                      };
+                      break;
+                    }
+                  }
+                  return updated;
+                });
+              } else if (event.type === "content") {
+                assistantContent += event.content;
+
+                if (!hasAssistantMessage) {
+                  // Add assistant message placeholder
+                  setMessages((prev) => [
+                    ...prev,
+                    { role: "assistant", content: assistantContent },
+                  ]);
+                  hasAssistantMessage = true;
+                } else {
+                  // Update assistant message
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastIndex = updated.length - 1;
+                    if (updated[lastIndex]?.role === "assistant") {
+                      updated[lastIndex] = {
+                        role: "assistant",
+                        content: assistantContent,
+                      };
+                    }
+                    return updated;
+                  });
                 }
-                return updated;
-              });
+              } else if (event.type === "error") {
+                setError(event.message);
+              }
             } catch {
               // Skip invalid JSON
             }
@@ -97,8 +183,6 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
         setError("Failed to get response");
-        // Remove the empty assistant message on error
-        setMessages((prev) => prev.slice(0, -1));
       }
     } finally {
       setIsLoading(false);
@@ -112,6 +196,13 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     setError(null);
   };
 
-  return { messages, isLoading, error, sendMessage, clearMessages, setMessages };
+  return {
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    clearMessages,
+    setMessages,
+  };
 }
 

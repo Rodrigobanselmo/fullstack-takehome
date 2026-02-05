@@ -210,21 +210,44 @@ export function AIChatSidebar() {
                 <p>Start a conversation with the AI assistant</p>
               </div>
             ) : (
-              streamMessages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`${styles.message} ${
-                    msg.role === "user"
-                      ? styles.messageUser
-                      : styles.messageAssistant
-                  }`}
-                >
-                  {msg.content ||
-                    (isLoading && index === streamMessages.length - 1
-                      ? "..."
-                      : "")}
-                </div>
-              ))
+              streamMessages.map((msg, index) => {
+                // Tool messages have special styling
+                if (msg.role === "tool") {
+                  return (
+                    <div
+                      key={index}
+                      className={`${styles.toolMessage} ${
+                        msg.toolStatus === "running"
+                          ? styles.toolRunning
+                          : msg.toolStatus === "success"
+                            ? styles.toolSuccess
+                            : styles.toolError
+                      }`}
+                    >
+                      {msg.toolStatus === "running" && (
+                        <span className={styles.toolSpinner}>⏳</span>
+                      )}
+                      {msg.content}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className={`${styles.message} ${
+                      msg.role === "user"
+                        ? styles.messageUser
+                        : styles.messageAssistant
+                    }`}
+                  >
+                    {msg.content ||
+                      (isLoading && index === streamMessages.length - 1
+                        ? "..."
+                        : "")}
+                  </div>
+                );
+              })
             )}
             <div ref={messagesEndRef} />
           </div>

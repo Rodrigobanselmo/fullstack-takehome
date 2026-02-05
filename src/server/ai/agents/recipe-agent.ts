@@ -176,13 +176,20 @@ export async function invokeRecipeAgent(
   };
 }
 
+// Event types for streaming
+export type StreamEvent =
+  | { type: "content"; content: string }
+  | { type: "tool_start"; tool: string; args: Record<string, unknown> }
+  | { type: "tool_end"; tool: string; result: string; success: boolean }
+  | { type: "error"; message: string };
+
 /**
  * Streams the recipe agent response
- * Returns an async generator that yields content chunks
+ * Returns an async generator that yields StreamEvent objects
  */
 export async function* streamRecipeAgent(
   input: RecipeAgentInput
-): AsyncGenerator<string, string, undefined> {
+): AsyncGenerator<StreamEvent, void, undefined> {
   const tools = createRecipeTools(input.userId);
   const baseLLM = createLLM({ temperature: 0.7 });
   const llm = baseLLM.bindTools!(tools);
@@ -201,13 +208,12 @@ export async function* streamRecipeAgent(
   ];
 
   let currentMessages = messagesWithSystem;
-  let fullResponse = "";
   let iterations = 0;
   const maxIterations = 20; // Prevent infinite loops
 
   while (iterations < maxIterations) {
     iterations++;
-    const response = await llm.invoke(currentMessages)
+    const response = await llm.invoke(currentMessages);
 
     // Check if there are tool calls
     if (
@@ -221,14 +227,47 @@ export async function* streamRecipeAgent(
       for (const toolCall of response.tool_calls) {
         const tool = tools.find((t) => t.name === toolCall.name);
         if (tool) {
-           
-          const toolResult = await (tool.invoke as (args: unknown) => Promise<string>)(toolCall.args);
-          currentMessages.push({
-            role: "tool",
-            content: typeof toolResult === "string" ? toolResult : JSON.stringify(toolResult),
-            tool_call_id: toolCall.id,
-            name: toolCall.name,
-          } as unknown as BaseMessage);
+          // Emit tool start event
+          yield {
+            type: "tool_start",
+            tool: toolCall.name,
+            args: toolCall.args as Record<string, unknown>,
+          };
+
+          try {
+            const toolResult = await (
+              tool.invoke as (args: unknown) => Promise<string>
+            )(toolCall.args);
+            const resultStr =
+              typeof toolResult === "string"
+                ? toolResult
+                : JSON.stringify(toolResult);
+
+            // Emit tool end event
+            yield {
+              type: "tool_end",
+              tool: toolCall.name,
+              result: resultStr,
+              success: !resultStr.toLowerCase().startsWith("failed"),
+            };
+
+            currentMessages.push({
+              role: "tool",
+              content: resultStr,
+              tool_call_id: toolCall.id,
+              name: toolCall.name,
+            } as unknown as BaseMessage);
+          } catch (error) {
+            const errorMsg =
+              error instanceof Error ? error.message : "Unknown error";
+            yield {
+              type: "tool_end",
+              tool: toolCall.name,
+              result: errorMsg,
+              success: false,
+            };
+            yield { type: "error", message: errorMsg };
+          }
         }
       }
       // Continue loop to get final response
@@ -243,21 +282,20 @@ export async function* streamRecipeAgent(
         typeof chunk.content === "string"
           ? chunk.content
           : Array.isArray(chunk.content)
-          ? chunk.content
-              .filter((c): c is { type: "text"; text: string } => c.type === "text")
-              .map((c) => c.text)
-              .join("")
-          : "";
+            ? chunk.content
+                .filter(
+                  (c): c is { type: "text"; text: string } => c.type === "text"
+                )
+                .map((c) => c.text)
+                .join("")
+            : "";
 
       if (content) {
-        fullResponse += content;
-        yield content;
+        yield { type: "content", content };
       }
     }
 
     break;
   }
-
-  return fullResponse;
 }
 

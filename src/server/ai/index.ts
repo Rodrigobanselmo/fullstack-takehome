@@ -10,6 +10,7 @@ export {
   streamRecipeAgent,
   type RecipeAgentInput,
   type RecipeAgentOutput,
+  type StreamEvent,
 } from "./agents/recipe-agent";
 export { createRecipeTools } from "./tools/recipe.tools";
 export {
