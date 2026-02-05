@@ -5,6 +5,8 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./src/config/env");
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  output: "standalone",
+};
 
 export default config;

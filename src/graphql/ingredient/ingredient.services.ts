@@ -1,5 +1,6 @@
 import type {
   CreateIngredientInput,
+  IngredientConnection,
   UpdateIngredientInput,
 } from "generated/gql/graphql";
 import {
@@ -15,13 +16,31 @@ import { withTransaction } from "~/server/database/transaction";
 import { env } from "~/config/env";
 import { generatePresignedPost } from "~/lib/s3";
 import { type Prisma } from "generated/prisma";
+import { formatToGQLConnection } from "~/lib/pagination";
+
+export const DEFAULT_INGREDIENTS_PAGE_SIZE = 50;
 
 export async function getIngredientsByUserId({
   userId,
+  first,
+  after,
 }: {
   userId: string;
-}): Promise<IngredientEntity[]> {
-  return ingredientRepository.findManyByUserId({ userId });
+  first?: number | null;
+  after?: string | null;
+}): Promise<IngredientConnection> {
+  const limit = first ?? DEFAULT_INGREDIENTS_PAGE_SIZE;
+  // Fetch one extra to determine if there's a next page
+  const ingredients = await ingredientRepository.findManyByUserId({
+    userId,
+    limit: limit + 1,
+    cursor: after ?? undefined,
+  });
+
+  const hasNextPage = ingredients.length > limit;
+  const items = hasNextPage ? ingredients.slice(0, limit) : ingredients;
+
+  return formatToGQLConnection(items, hasNextPage, (item) => item.id);
 }
 
 export async function getIngredientById({

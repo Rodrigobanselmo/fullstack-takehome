@@ -16,7 +16,11 @@ import {
   recipeGroupRepository,
   type RecipeGroupEntity,
 } from "~/server/repositories/recipe-group.repository";
-import { RecipeGroupNotFoundError } from "./recipe-group.errors";
+import { recipeRepository } from "~/server/repositories/recipe.repository";
+import {
+  RecipeGroupNotFoundError,
+  RecipeRequiresGroupError,
+} from "./recipe-group.errors";
 
 export async function getRecipeGroupsByUserId({
   userId,
@@ -131,6 +135,29 @@ export async function removeRecipesFromGroup({
 }): Promise<RecipeGroupEntity> {
   // Verify group exists and belongs to user
   await getRecipeGroupById({ groupId: input.groupId, userId });
+
+  // Check if any recipe would be left without a group
+  const groupCounts = await recipeGroupRepository.countGroupsForRecipes({
+    recipeIds: input.recipeIds,
+    userId,
+  });
+
+  const recipesWithOnlyOneGroup: string[] = [];
+  for (const recipeId of input.recipeIds) {
+    const count = groupCounts.get(recipeId) ?? 0;
+    if (count <= 1) {
+      recipesWithOnlyOneGroup.push(recipeId);
+    }
+  }
+
+  if (recipesWithOnlyOneGroup.length > 0) {
+    // Get recipe names for better error message
+    const recipes = await recipeRepository.findManyByUserId({ userId });
+    const recipeNames = recipesWithOnlyOneGroup
+      .map((id) => recipes.find((r) => r.id === id)?.name ?? id)
+      .filter(Boolean);
+    throw RecipeRequiresGroupError(recipeNames);
+  }
 
   return recipeGroupRepository.removeRecipes({
     groupId: input.groupId,

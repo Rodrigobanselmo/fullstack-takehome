@@ -5,7 +5,10 @@ import type {
   CreateIngredientMutation,
   CreateIngredientMutationVariables,
 } from "generated/gql/graphql";
-import { INGREDIENTS_QUERY } from "./use-query-ingredients";
+import {
+  DEFAULT_INGREDIENTS_PAGE_SIZE,
+  INGREDIENTS_QUERY,
+} from "./use-query-ingredients";
 
 const CREATE_INGREDIENT_MUTATION = gql`
   mutation CreateIngredient($input: CreateIngredientInput!) {
@@ -30,6 +33,11 @@ export function useCreateIngredientMutation() {
     CreateIngredientMutation,
     CreateIngredientMutationVariables
   >(CREATE_INGREDIENT_MUTATION, {
-    refetchQueries: [{ query: INGREDIENTS_QUERY }],
+    refetchQueries: [
+      {
+        query: INGREDIENTS_QUERY,
+        variables: { first: DEFAULT_INGREDIENTS_PAGE_SIZE },
+      },
+    ],
   });
 }

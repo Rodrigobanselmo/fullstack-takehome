@@ -23,6 +23,12 @@
   min-height: 400px;
 }
 
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;

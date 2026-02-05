@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useRef, useEffect } from "react";
 import { useAIChat } from "../context/ai-chat-context";
 import { useAIChatStream } from "../hooks/use-ai-chat-stream";
@@ -41,19 +40,32 @@ export function AIChatSidebar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Sync messages from GraphQL when thread changes
+  // Track previous thread to detect thread changes
+  const prevThreadIdRef = useRef<string | null>(null);
+
+  // Clear messages when thread changes (separate effect to avoid race conditions)
   useEffect(() => {
-    if (messagesData?.aiThreadMessages) {
+    if (prevThreadIdRef.current !== null && prevThreadIdRef.current !== currentThreadId) {
+      // Thread changed - clear messages immediately
+      clearMessages();
+    }
+    prevThreadIdRef.current = currentThreadId;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentThreadId]);
+
+  // Sync messages from GraphQL when data arrives
+  useEffect(() => {
+    if (isLoading) return; // Don't overwrite while streaming
+
+    if (messagesData?.aiThreadMessages && messagesData.aiThreadMessages.length > 0) {
       const mapped = messagesData.aiThreadMessages.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       }));
       setMessages(mapped);
-    } else if (!currentThreadId) {
-      clearMessages();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesData, currentThreadId]);
+  }, [messagesData, isLoading]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -88,23 +100,27 @@ export function AIChatSidebar() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const input = inputRef.current;
     if (!input?.value.trim()) return;
 
+    const messageText = input.value;
+    input.value = "";
+
     // If no thread selected, create one first
-    if (!currentThreadId) {
+    let threadIdToUse = currentThreadId;
+    if (!threadIdToUse) {
       const result = await createThread({
-        variables: { input: { title: input.value.slice(0, 50) } },
+        variables: { input: { title: messageText.slice(0, 50) } },
       });
       if (result.data?.createAIThread) {
-        setCurrentThreadId(result.data.createAIThread.id);
+        threadIdToUse = result.data.createAIThread.id;
+        setCurrentThreadId(threadIdToUse);
       }
     }
 
-    void sendMessage(input.value, currentThreadId);
-    input.value = "";
+    void sendMessage(messageText, threadIdToUse);
   };
 
   const threads = threadsData?.aiThreads ?? [];

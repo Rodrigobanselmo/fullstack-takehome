@@ -1,13 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getUserFromCookie } from "~/lib/auth";
 import { captureException } from "~/lib/error-reporting";
-import { createLLM } from "~/server/ai";
-import {
-  SystemMessage,
-  HumanMessage,
-  AIMessage,
-} from "@langchain/core/messages";
-import type { BaseMessage } from "@langchain/core/messages";
+import { streamRecipeAgent } from "~/server/ai";
 import { aiThreadRepository } from "~/server/repositories/ai-thread.repository";
 
 export const maxDuration = 60;
@@ -23,8 +17,6 @@ interface ChatRequestBody {
   history?: ChatMessage[];
   threadId?: string;
 }
-
-const SYSTEM_PROMPT = `You are a helpful assistant. You help users with their questions and provide helpful, accurate, and concise responses. Be friendly and professional.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,20 +39,6 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Convert history to LangChain messages
-    const historyMessages: BaseMessage[] = (body.history ?? []).map((msg) =>
-      msg.role === "user"
-        ? new HumanMessage(msg.content)
-        : new AIMessage(msg.content),
-    );
-
-    // Build messages array with system prompt
-    const messages = [
-      new SystemMessage(SYSTEM_PROMPT),
-      ...historyMessages,
-      new HumanMessage(body.message),
-    ];
-
     // If threadId is provided, verify and save user message
     if (body.threadId) {
       const thread = await aiThreadRepository.findById(body.threadId, user.id);
@@ -73,9 +51,12 @@ export async function POST(req: NextRequest) {
       await aiThreadRepository.addMessage(body.threadId, "user", body.message);
     }
 
-    // Create LLM and stream response
-    const llm = createLLM({ temperature: 0.7 });
-    const stream = await llm.stream(messages);
+    // Stream response using the recipe agent
+    const agentStream = streamRecipeAgent({
+      message: body.message,
+      history: body.history,
+      userId: user.id,
+    });
 
     const encoder = new TextEncoder();
     let fullResponse = "";
@@ -83,12 +64,7 @@ export async function POST(req: NextRequest) {
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of stream) {
-            const content =
-              typeof chunk.content === "string"
-                ? chunk.content
-                : JSON.stringify(chunk.content);
-
+          for await (const content of agentStream) {
             if (content) {
               fullResponse += content;
               controller.enqueue(

@@ -5,7 +5,10 @@ import type {
   DeleteIngredientMutation,
   DeleteIngredientMutationVariables,
 } from "generated/gql/graphql";
-import { INGREDIENTS_QUERY } from "./use-query-ingredients";
+import {
+  DEFAULT_INGREDIENTS_PAGE_SIZE,
+  INGREDIENTS_QUERY,
+} from "./use-query-ingredients";
 
 const DELETE_INGREDIENT_MUTATION = gql`
   mutation DeleteIngredient($id: ID!) {
@@ -18,6 +21,11 @@ export function useDeleteIngredientMutation() {
     DeleteIngredientMutation,
     DeleteIngredientMutationVariables
   >(DELETE_INGREDIENT_MUTATION, {
-    refetchQueries: [{ query: INGREDIENTS_QUERY }],
+    refetchQueries: [
+      {
+        query: INGREDIENTS_QUERY,
+        variables: { first: DEFAULT_INGREDIENTS_PAGE_SIZE },
+      },
+    ],
   });
 }

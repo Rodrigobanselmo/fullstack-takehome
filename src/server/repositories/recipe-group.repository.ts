@@ -268,6 +268,70 @@ class PrismaRecipeGroupRepository {
 
     return groupFiles.map((gf) => gf.fileId);
   }
+
+  async countGroupsForRecipes({
+    recipeIds,
+    userId,
+  }: {
+    recipeIds: string[];
+    userId: string;
+  }): Promise<Map<string, number>> {
+    const db = getPrismaClient();
+    const counts = await db.recipe_group_recipes.groupBy({
+      by: ["recipeId"],
+      where: {
+        recipeId: { in: recipeIds },
+        group: {
+          userId,
+          deletedAt: null,
+        },
+      },
+      _count: { recipeId: true },
+    });
+
+    const result = new Map<string, number>();
+    for (const count of counts) {
+      result.set(count.recipeId, count._count.recipeId);
+    }
+    return result;
+  }
+
+  /**
+   * Set the groups for a recipe (replaces all existing group associations).
+   */
+  async setGroupsForRecipe({
+    recipeId,
+    userId,
+    groupIds,
+  }: {
+    recipeId: string;
+    userId: string;
+    groupIds: string[];
+  }): Promise<void> {
+    const db = getPrismaClient();
+
+    // Delete all existing group associations for this recipe
+    await db.recipe_group_recipes.deleteMany({
+      where: {
+        recipeId,
+        group: {
+          userId,
+          deletedAt: null,
+        },
+      },
+    });
+
+    // Add new group associations
+    if (groupIds.length > 0) {
+      await db.recipe_group_recipes.createMany({
+        data: groupIds.map((groupId) => ({
+          recipeId,
+          groupId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
 }
 
 export const recipeGroupRepository = new PrismaRecipeGroupRepository();

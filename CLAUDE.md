@@ -66,6 +66,20 @@ feature/
 - Streaming endpoint at `/api/ai/chat/stream`
 - Thread/message persistence in `ai_threads` and `ai_messages` tables
 
+### AI Tools & Repository Pattern
+- AI tools are in `src/server/ai/tools/`
+- Tools should use repositories directly (e.g., `ingredientRepository`)
+- **Ingredient repository** (`src/server/repositories/ingredient.repository.ts`):
+  - `create()` and `update()` automatically generate vector embeddings for the name
+  - `findSimilarByName()` searches ingredients using vector similarity (pgvector)
+  - All ingredients are searchable - embeddings are always in sync
+- **When adding new fields to entities**:
+  1. Update Prisma schema and run `npm run db:generate`
+  2. Update GraphQL schema and validators in `src/graphql/<feature>/`
+  3. Update repository methods if needed
+  4. Update AI tool schemas in `src/server/ai/tools/` to match
+- Tool schemas should mirror the Zod validators but add `.describe()` for AI context
+
 ## Conventions
 
 ### Database

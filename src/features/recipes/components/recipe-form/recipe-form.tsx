@@ -136,9 +136,9 @@ export default function RecipeForm({
   };
 
   const ingredientOptions =
-    ingredientsQueryData?.ingredients?.map((ingredient) => ({
-      value: ingredient.id,
-      label: ingredient.name,
+    ingredientsQueryData?.ingredients?.edges.map((edge) => ({
+      value: edge.node.id,
+      label: edge.node.name,
     })) ?? [];
 
   const firstError = errors

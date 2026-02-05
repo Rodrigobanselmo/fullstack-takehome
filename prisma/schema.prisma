@@ -167,6 +167,9 @@ model ingredients {
     priceUnit     String?  @map("price_unit") // Unidade do preço (ex: "litro", "kg", "unidade")
     priceCurrency String?  @default("BRL") @map("price_currency") // Moeda (BRL, USD, etc)
 
+    // Vector embedding for semantic search (1536 dimensions for OpenAI text-embedding-3-small)
+    embedding Unsupported("vector(1536)")?
+
     userId            String               @map("user_id") // Ingrediente pertence ao usuário
     createdAt         DateTime             @default(now()) @map("created_at")
     updatedAt         DateTime             @default(now()) @map("updated_at")

@@ -18,13 +18,35 @@ export default function IngredientsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, loading, error } = useQueryIngredients();
+  const { data, loading, error, fetchMore } = useQueryIngredients();
 
-  const ingredients = data?.ingredients ?? [];
+  const ingredients =
+    data?.ingredients.edges.map((edge) => edge.node) ?? [];
+  const pageInfo = data?.ingredients.pageInfo;
 
   const filteredIngredients = ingredients.filter((ingredient) =>
     ingredient.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const handleLoadMore = () => {
+    if (pageInfo?.endCursor) {
+      fetchMore({
+        variables: { after: pageInfo.endCursor },
+        updateQuery: (prev, { fetchMoreResult }) => {
+          if (!fetchMoreResult) return prev;
+          return {
+            ingredients: {
+              ...fetchMoreResult.ingredients,
+              edges: [
+                ...prev.ingredients.edges,
+                ...fetchMoreResult.ingredients.edges,
+              ],
+            },
+          };
+        },
+      });
+    }
+  };
 
   const handleAddIngredient = () => {
     router.push(paths.dashboard.ingredients.add.getHref());
@@ -78,21 +100,34 @@ export default function IngredientsPage() {
             />
           )}
         {!loading && !error && filteredIngredients.length > 0 && (
-          <IngredientsGrid>
-            {filteredIngredients.map((ingredient) => (
-              <IngredientCard
-                key={ingredient.id}
-                name={ingredient.name}
-                description={ingredient.description}
-                category={ingredient.category}
-                defaultUnit={ingredient.defaultUnit}
-                averagePrice={ingredient.averagePrice}
-                priceUnit={ingredient.priceUnit}
-                priceCurrency={ingredient.priceCurrency}
-                onClick={() => handleIngredientClick(ingredient.id)}
-              />
-            ))}
-          </IngredientsGrid>
+          <>
+            <IngredientsGrid>
+              {filteredIngredients.map((ingredient) => (
+                <IngredientCard
+                  key={ingredient.id}
+                  name={ingredient.name}
+                  description={ingredient.description}
+                  category={ingredient.category}
+                  defaultUnit={ingredient.defaultUnit}
+                  averagePrice={ingredient.averagePrice}
+                  priceUnit={ingredient.priceUnit}
+                  priceCurrency={ingredient.priceCurrency}
+                  onClick={() => handleIngredientClick(ingredient.id)}
+                />
+              ))}
+            </IngredientsGrid>
+            {pageInfo?.hasNextPage && (
+              <div className={styles.loadMoreContainer}>
+                <Button
+                  onClick={handleLoadMore}
+                  variant="outline"
+                  color="primary"
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

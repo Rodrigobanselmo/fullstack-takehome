@@ -39,6 +39,16 @@ export const ingredientTypeDefs = gql`
     image: File
   }
 
+  type IngredientEdge {
+    cursor: String!
+    node: Ingredient!
+  }
+
+  type IngredientConnection {
+    edges: [IngredientEdge!]!
+    pageInfo: PageInfo!
+  }
+
   input CreateIngredientInput {
     name: String!
     description: String
@@ -71,7 +81,7 @@ export const ingredientTypeDefs = gql`
   }
 
   type Query {
-    ingredients: [Ingredient!]!
+    ingredients(first: Int, after: String): IngredientConnection!
     ingredient(id: ID!): Ingredient
   }
 

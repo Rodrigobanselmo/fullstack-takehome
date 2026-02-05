@@ -1,10 +1,12 @@
 import type {
+  IngredientConnection,
   MutationCreateIngredientArgs,
   MutationDeleteIngredientArgs,
   MutationUpdateIngredientArgs,
   MutationUploadIngredientImageArgs,
   MutationDeleteIngredientImageArgs,
   QueryIngredientArgs,
+  QueryIngredientsArgs,
 } from "generated/gql/graphql";
 import { canManageIngredients, canViewIngredients } from "./ingredient.auth";
 import { schemaValidation } from "~/lib/validation";
@@ -43,9 +45,9 @@ export const ingredientResolvers = {
   Query: {
     ingredients: async (
       _: unknown,
-      __: unknown,
+      args: QueryIngredientsArgs,
       context: GraphQLContext,
-    ): Promise<IngredientEntity[]> => {
+    ): Promise<IngredientConnection> => {
       const isUnauthorized = !canViewIngredients(context.user);
       if (isUnauthorized) {
         throw UnauthorizedError();
@@ -55,7 +57,11 @@ export const ingredientResolvers = {
         throw UnauthorizedError();
       }
 
-      return getIngredientsByUserId({ userId: context.user.id });
+      return getIngredientsByUserId({
+        userId: context.user.id,
+        first: args.first,
+        after: args.after,
+      });
     },
 
     ingredient: async (

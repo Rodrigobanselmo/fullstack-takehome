@@ -5,7 +5,10 @@ import type {
   UpdateIngredientMutation,
   UpdateIngredientMutationVariables,
 } from "generated/gql/graphql";
-import { INGREDIENTS_QUERY } from "./use-query-ingredients";
+import {
+  DEFAULT_INGREDIENTS_PAGE_SIZE,
+  INGREDIENTS_QUERY,
+} from "./use-query-ingredients";
 
 const UPDATE_INGREDIENT_MUTATION = gql`
   mutation UpdateIngredient($id: ID!, $input: UpdateIngredientInput!) {
@@ -30,6 +33,11 @@ export function useUpdateIngredientMutation() {
     UpdateIngredientMutation,
     UpdateIngredientMutationVariables
   >(UPDATE_INGREDIENT_MUTATION, {
-    refetchQueries: [{ query: INGREDIENTS_QUERY }],
+    refetchQueries: [
+      {
+        query: INGREDIENTS_QUERY,
+        variables: { first: DEFAULT_INGREDIENTS_PAGE_SIZE },
+      },
+    ],
   });
 }
