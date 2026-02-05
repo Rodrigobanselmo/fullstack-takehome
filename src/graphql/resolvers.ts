@@ -4,9 +4,7 @@ import { Prisma } from "generated/prisma";
 import { aiResolvers } from "./ai/ai.resolvers";
 import { authResolvers } from "./auth/auth.resolvers";
 import { chatResolvers } from "./chat/chat.resolvers";
-import { jobResolvers } from "./job/job.resolvers";
 import { userResolvers } from "./user/user.resolvers";
-import { subtaskResolvers } from "./subtask/subtask.resolvers";
 import { recipeResolvers } from "./recipe/recipe.resolvers";
 import { recipeGroupResolvers } from "./recipe-group/recipe-group.resolvers";
 import { ingredientResolvers } from "./ingredient/ingredient.resolvers";
@@ -55,19 +53,15 @@ export const resolvers = {
   Mutation: {
     ...aiResolvers.Mutation,
     ...authResolvers.Mutation,
-    ...jobResolvers.Mutation,
     ...chatResolvers.Mutation,
-    ...subtaskResolvers.Mutation,
     ...recipeResolvers.Mutation,
     ...recipeGroupResolvers.Mutation,
     ...ingredientResolvers.Mutation,
   },
   Query: {
     ...aiResolvers.Query,
-    ...jobResolvers.Query,
     ...userResolvers.Query,
     ...chatResolvers.Query,
-    ...subtaskResolvers.Query,
     ...recipeResolvers.Query,
     ...recipeGroupResolvers.Query,
     ...ingredientResolvers.Query,

@@ -2,9 +2,7 @@ import { gql } from "graphql-tag";
 import { aiTypeDefs } from "./ai/ai.schema";
 import { authTypeDefs } from "./auth/auth.schema";
 import { chatTypeDefs } from "./chat/chat.schema";
-import { jobTypeDefs } from "./job/job.schema";
 import { userTypeDefs } from "./user/user.schema";
-import { subtaskSchema } from "./subtask/subtask.schema";
 import { recipeTypeDefs } from "./recipe/recipe.schema";
 import { recipeGroupTypeDefs } from "./recipe-group/recipe-group.schema";
 import { ingredientTypeDefs } from "./ingredient/ingredient.schema";
@@ -27,9 +25,7 @@ export const typeDefs = [
   aiTypeDefs,
   authTypeDefs,
   chatTypeDefs,
-  jobTypeDefs,
   userTypeDefs,
-  subtaskSchema,
   fileTypeDefs,
   recipeTypeDefs,
   recipeGroupTypeDefs,

@@ -1,6 +1,5 @@
 import "dotenv/config";
-import type { User } from "generated/gql/graphql";
-import { JobStatus, PrismaClient, UserRole } from "../generated/prisma/client";
+import { PrismaClient, UserRole } from "../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcrypt";
@@ -47,7 +46,6 @@ async function main() {
     { username: "guest.homeowner5", name: "Guest Homeowner 5" },
   ];
 
-  const homeownerUsers: User[] = [];
   for (const { username, name } of moreHomeowners) {
     const user = await prisma.users.upsert({
       where: { username },
@@ -59,75 +57,10 @@ async function main() {
         name,
       },
     });
-    homeownerUsers.push(user);
 
     console.log(
       `Created/updated homeowner user: ${user.username} with ID: ${user.id}`,
     );
-  }
-
-  const jobs = [
-    {
-      id: "seed-job-planning",
-      description: "Kitchen Renovation Project",
-      location: "123 Main St, Anytown, USA",
-      status: JobStatus.planning,
-      cost: 25000.0,
-      homeownerId: homeownerUsers[0]!.id,
-    },
-    {
-      id: "seed-job-in-progress",
-      description: "Bathroom Remodel",
-      location: "456 Oak Ave, Somewhere, USA",
-      status: JobStatus.in_progress,
-      cost: 15000.0,
-      homeownerId: homeownerUsers[1]!.id,
-    },
-    {
-      id: "seed-job-completed",
-      description: "Deck Construction",
-      location: "789 Pine Rd, Elsewhere, USA",
-      status: JobStatus.completed,
-      cost: 8000.0,
-      homeownerId: homeownerUsers[2]!.id,
-    },
-    {
-      id: "seed-job-canceled",
-      description: "Basement Finishing",
-      location: "321 Elm St, Nowhere, USA",
-      status: JobStatus.canceled,
-      cost: 30000.0,
-      homeownerId: homeownerUsers[3]!.id,
-    },
-  ];
-
-  const createdJobs = [];
-  for (const jobData of jobs) {
-    const job = await prisma.jobs.upsert({
-      where: { id: jobData.id },
-      update: {},
-      create: {
-        ...jobData,
-        contractorId: contractorUser.id,
-      },
-    });
-
-    await prisma.conversations.upsert({
-      where: {
-        contractorId_homeownerId: {
-          contractorId: contractorUser.id,
-          homeownerId: jobData.homeownerId,
-        },
-      },
-      update: {},
-      create: {
-        contractorId: contractorUser.id,
-        homeownerId: jobData.homeownerId,
-      },
-    });
-
-    createdJobs.push(job);
-    console.log(`Created/updated job: ${job.description} with ID: ${job.id}`);
   }
 
   console.log(`Seeding finished.`);

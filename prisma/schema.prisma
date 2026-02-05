@@ -23,27 +23,7 @@ model conversations {
     @@index([homeownerId], map: "conversations_homeowner_id_idx")
 }
 
-model jobs {
-    id           String     @id @default(cuid())
-    description  String
-    location     String
-    status       JobStatus  @default(planning)
-    cost         Decimal
-    contractorId String     @map("contractor_id")
-    homeownerId  String     @map("homeowner_id")
-    createdAt    DateTime   @default(now()) @map("created_at")
-    updatedAt    DateTime   @default(now()) @map("updated_at")
-    deletedAt    DateTime?  @map("deleted_at")
-    contractor   users      @relation("jobs_contractor_idTousers", fields: [contractorId], references: [id])
-    homeowner    users      @relation("jobs_homeowner_idTousers", fields: [homeownerId], references: [id])
-    subtasks     subtasks[]
 
-    @@index([contractorId], map: "jobs_contractor_id_idx")
-    @@index([createdAt], map: "jobs_created_at_idx")
-    @@index([deletedAt], map: "jobs_deleted_at_idx")
-    @@index([homeownerId], map: "jobs_homeowner_id_idx")
-    @@index([status], map: "jobs_status_idx")
-}
 
 model messages {
     id             String        @id @default(cuid())
@@ -58,21 +38,7 @@ model messages {
     @@index([createdAt], map: "messages_created_at_idx")
 }
 
-model subtasks {
-    id          String        @id @default(cuid())
-    description String
-    deadline    DateTime?
-    cost        Decimal
-    status      SubtaskStatus @default(pending)
-    jobId       String        @map("job_id")
-    createdAt   DateTime      @default(now()) @map("created_at")
-    updatedAt   DateTime      @default(now()) @map("updated_at")
-    deletedAt   DateTime?     @map("deleted_at")
-    job         jobs          @relation(fields: [jobId], references: [id])
 
-    @@index([createdAt], map: "subtasks_created_at_idx")
-    @@index([deletedAt, jobId], map: "subtasks_deleted_at_job_id_idx")
-}
 
 model users {
     id                      String          @id @default(cuid())
@@ -84,8 +50,6 @@ model users {
     role                    UserRole
     contractorConversations conversations[] @relation("conversations_contractor_idTousers")
     homeownerConversations  conversations[] @relation("conversations_homeowner_idTousers")
-    contractorJobs          jobs[]          @relation("jobs_contractor_idTousers")
-    homeownerJobs           jobs[]          @relation("jobs_homeowner_idTousers")
     messages                messages[]
     recipes                 recipes[]
     recipeGroups            recipe_groups[]
@@ -292,20 +256,6 @@ model ingredient_files {
     @@unique([ingredientId, fileId], map: "ingredient_files_ingredient_id_file_id_key")
     @@index([ingredientId], map: "ingredient_files_ingredient_id_idx")
     @@index([fileId], map: "ingredient_files_file_id_idx")
-}
-
-enum JobStatus {
-    planning
-    in_progress
-    completed
-    canceled
-}
-
-enum SubtaskStatus {
-    pending
-    in_progress
-    completed
-    canceled
 }
 
 enum UserRole {

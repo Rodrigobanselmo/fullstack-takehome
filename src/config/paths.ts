@@ -12,36 +12,6 @@ export const paths = {
   },
   dashboard: {
     getHref: () => "/dashboard",
-    contractor: {
-      getHref: () => "/dashboard/contractor",
-      jobs: {
-        view: {
-          getHref: (id: string) => `/dashboard/contractor/jobs/${id}/view`,
-        },
-        add: {
-          getHref: () => "/dashboard/contractor/jobs/add",
-        },
-        edit: {
-          getHref: (id: string) => `/dashboard/contractor/jobs/${id}/edit`,
-        },
-        subtasks: {
-          add: {
-            getHref: (jobId: string) =>
-              `/dashboard/contractor/jobs/${jobId}/subtasks/add`,
-          },
-          edit: {
-            getHref: (jobId: string, subtaskId: string) =>
-              `/dashboard/contractor/jobs/${jobId}/subtasks/${subtaskId}/edit`,
-          },
-        },
-      },
-    },
-    homeowner: {
-      getHref: () => "/dashboard/homeowner",
-      view: {
-        getHref: (id: string) => `/dashboard/homeowner/projects/${id}/view`,
-      },
-    },
     chat: {
       getHref: () => "/dashboard/chat",
       conversation: {
@@ -65,6 +35,9 @@ export const paths = {
       },
       add: {
         getHref: () => "/dashboard/ingredients/add",
+      },
+      edit: {
+        getHref: (id: string) => `/dashboard/ingredients/${id}/edit`,
       },
     },
     recipeGroups: {

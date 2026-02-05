@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
+import { paths } from "~/config/paths";
 import { getUserFromCookie } from "~/lib/auth";
-import { getAuthenticatedRoute } from "~/lib/navigation";
 
 export default async function LoginLayout({
   children,
@@ -10,8 +10,7 @@ export default async function LoginLayout({
   const user = await getUserFromCookie();
 
   if (user) {
-    const dashboardRoute = getAuthenticatedRoute(user.role);
-    redirect(dashboardRoute);
+    redirect(paths.dashboard.chat.getHref());
   }
 
   return children;
