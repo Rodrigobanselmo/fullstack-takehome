@@ -27,6 +27,19 @@
   flex-shrink: 0;
 }
 
+.systemBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-gray-100, #f3f4f6);
+  color: var(--color-gray, #6b7280);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
 .description {
   font-size: 1rem;
   color: var(--color-text-secondary);
@@ -71,9 +84,24 @@
 }
 
 .detailValue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
   font-size: 1rem;
   font-weight: 500;
   color: var(--color-text-primary);
+}
+
+.categoryTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  background: var(--color-primary-5);
+  color: var(--color-primary);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

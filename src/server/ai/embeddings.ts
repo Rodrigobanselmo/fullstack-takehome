@@ -57,4 +57,3 @@ export function formatEmbeddingForPostgres(embedding: number[]): string {
 }
 
 export { EMBEDDING_DIMENSIONS };
-

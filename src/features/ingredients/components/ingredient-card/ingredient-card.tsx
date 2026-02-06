@@ -6,33 +6,38 @@ import { INGREDIENT_CATEGORY_MAP } from "../../constants/ingredient-category-map
 interface IngredientCardProps {
   name: string;
   description?: string | null;
-  category?: IngredientCategory | null;
+  categories?: IngredientCategory[] | null;
   defaultUnit?: string | null;
   averagePrice?: number | null;
   priceUnit?: string | null;
   priceCurrency?: string | null;
+  isSystem?: boolean;
   onClick?: () => void;
 }
 
 const IngredientCard: React.FC<IngredientCardProps> = ({
   name,
   description,
-  category,
+  categories,
   defaultUnit,
   averagePrice,
   priceUnit,
   priceCurrency,
+  isSystem,
   onClick,
 }) => {
+  const firstCategory = categories?.[0];
+
   return (
     <div className={styles.ingredientCard} onClick={onClick}>
       <div className={styles.ingredientHeader}>
         <h3 className={styles.ingredientTitle}>{name}</h3>
-        {category && (
+        {firstCategory && (
           <span className={styles.category}>
-            {INGREDIENT_CATEGORY_MAP[category]?.emoji}
+            {INGREDIENT_CATEGORY_MAP[firstCategory]?.emoji}
           </span>
         )}
+        {isSystem && <span className={styles.systemBadge}>System</span>}
       </div>
 
       {description && (
@@ -58,10 +63,14 @@ const IngredientCard: React.FC<IngredientCardProps> = ({
           </div>
         )}
 
-        {category && (
-          <div className={styles.categoryBadge}>
-            {INGREDIENT_CATEGORY_MAP[category]?.emoji}{" "}
-            {INGREDIENT_CATEGORY_MAP[category]?.label}
+        {categories && categories.length > 0 && (
+          <div className={styles.categoriesContainer}>
+            {categories.map((cat) => (
+              <div key={cat} className={styles.categoryBadge}>
+                {INGREDIENT_CATEGORY_MAP[cat]?.emoji}{" "}
+                {INGREDIENT_CATEGORY_MAP[cat]?.label}
+              </div>
+            ))}
           </div>
         )}
       </div>

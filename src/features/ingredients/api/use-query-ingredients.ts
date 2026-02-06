@@ -15,11 +15,12 @@ export const INGREDIENTS_QUERY = gql`
           id
           name
           description
-          category
+          categories
           defaultUnit
           averagePrice
           priceUnit
           priceCurrency
+          isSystem
           createdAt
           updatedAt
         }

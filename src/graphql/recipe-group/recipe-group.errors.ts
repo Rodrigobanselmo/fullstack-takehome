@@ -10,5 +10,5 @@ export const RecipeRequiresGroupError = (recipeNames: string[]) =>
     `Cannot remove recipe(s) from their only group: ${recipeNames.join(", ")}. Recipes must belong to at least one group.`,
     {
       extensions: { code: "RECIPE_REQUIRES_GROUP" },
-    }
+    },
   );

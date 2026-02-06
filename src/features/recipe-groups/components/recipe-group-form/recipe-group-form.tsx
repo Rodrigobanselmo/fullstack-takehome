@@ -106,9 +106,7 @@ export default function RecipeGroupForm({
       label: recipe.name,
     })) ?? [];
 
-  const firstError = errors
-    ? Object.entries(errors)[0]?.[1]?.message
-    : null;
+  const firstError = errors ? Object.entries(errors)[0]?.[1]?.message : null;
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>

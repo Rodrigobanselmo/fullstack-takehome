@@ -28,12 +28,13 @@ export const ingredientTypeDefs = gql`
     id: ID!
     name: String!
     description: String
-    category: IngredientCategory
+    categories: [IngredientCategory!]!
     defaultUnit: String
     averagePrice: Decimal
     priceUnit: String
     priceCurrency: String
-    userId: ID!
+    userId: ID
+    isSystem: Boolean!
     createdAt: DateTime!
     updatedAt: DateTime!
     image: File
@@ -52,7 +53,7 @@ export const ingredientTypeDefs = gql`
   input CreateIngredientInput {
     name: String!
     description: String
-    category: IngredientCategory
+    categories: [IngredientCategory!]
     defaultUnit: String
     averagePrice: Decimal
     priceUnit: String
@@ -62,7 +63,7 @@ export const ingredientTypeDefs = gql`
   input UpdateIngredientInput {
     name: String
     description: String
-    category: IngredientCategory
+    categories: [IngredientCategory!]
     defaultUnit: String
     averagePrice: Decimal
     priceUnit: String

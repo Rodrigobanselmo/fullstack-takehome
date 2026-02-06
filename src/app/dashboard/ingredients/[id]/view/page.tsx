@@ -44,7 +44,10 @@ export default function ViewIngredientPage({
         input: {
           name: formData.name,
           description: formData.description || undefined,
-          category: formData.category || undefined,
+          categories:
+            formData.categories && formData.categories.length > 0
+              ? formData.categories
+              : undefined,
           defaultUnit: formData.defaultUnit || undefined,
           averagePrice:
             parsedPrice !== undefined && !isNaN(parsedPrice)
@@ -122,7 +125,7 @@ export default function ViewIngredientPage({
           initialData={{
             name: ingredient.name,
             description: ingredient.description || "",
-            category: ingredient.category || undefined,
+            categories: ingredient.categories ?? [],
             defaultUnit: ingredient.defaultUnit || "",
             averagePrice: ingredient.averagePrice?.toString() || "",
             priceUnit: ingredient.priceUnit || "",
@@ -138,4 +141,3 @@ export default function ViewIngredientPage({
     </div>
   );
 }
-

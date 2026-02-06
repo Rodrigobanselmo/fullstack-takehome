@@ -66,4 +66,3 @@ export function useQueryAIThreadMessages(threadId: string | null) {
     },
   );
 }
-

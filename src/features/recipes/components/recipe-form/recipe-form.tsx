@@ -356,7 +356,7 @@ export default function RecipeForm({
         ))}
       </div>
 
-      <FormError error={formError || (firstError!) || ""} />
+      <FormError error={formError || firstError! || ""} />
       <FormActions
         primaryAction={{
           text: loading ? loadingText : submitButtonText,

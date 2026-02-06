@@ -12,12 +12,13 @@ const INGREDIENT_QUERY = gql`
       id
       name
       description
-      category
+      categories
       defaultUnit
       averagePrice
       priceUnit
       priceCurrency
       userId
+      isSystem
       createdAt
       updatedAt
     }

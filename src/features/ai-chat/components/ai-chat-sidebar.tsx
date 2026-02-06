@@ -45,7 +45,10 @@ export function AIChatSidebar() {
 
   // Clear messages when thread changes (separate effect to avoid race conditions)
   useEffect(() => {
-    if (prevThreadIdRef.current !== null && prevThreadIdRef.current !== currentThreadId) {
+    if (
+      prevThreadIdRef.current !== null &&
+      prevThreadIdRef.current !== currentThreadId
+    ) {
       // Thread changed - clear messages immediately
       clearMessages();
     }
@@ -57,7 +60,10 @@ export function AIChatSidebar() {
   useEffect(() => {
     if (isLoading) return; // Don't overwrite while streaming
 
-    if (messagesData?.aiThreadMessages && messagesData.aiThreadMessages.length > 0) {
+    if (
+      messagesData?.aiThreadMessages &&
+      messagesData.aiThreadMessages.length > 0
+    ) {
       const mapped = messagesData.aiThreadMessages.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -279,4 +285,3 @@ export function AIChatSidebar() {
     </>
   );
 }
-

@@ -12,4 +12,3 @@ export {
   useDeleteAIThreadMutation,
   useSendAIThreadMessageMutation,
 } from "./api/ai-thread.mutations";
-

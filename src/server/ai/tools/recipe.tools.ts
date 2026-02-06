@@ -1,5 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import { IngredientCategory } from "generated/gql/graphql";
 
 // Import services
 import {
@@ -43,7 +44,7 @@ export function createRecipeTools(userId: string) {
       description:
         "List all recipes for the current user. Returns an array of recipes with their id, name, servings, tags, rating, and prep time.",
       schema: z.object({}),
-    }
+    },
   );
 
   const getRecipeTool = tool(
@@ -61,7 +62,7 @@ export function createRecipeTools(userId: string) {
       schema: z.object({
         recipeId: z.string().describe("The ID of the recipe to retrieve"),
       }),
-    }
+    },
   );
 
   const createRecipeTool = tool(
@@ -97,7 +98,7 @@ export function createRecipeTools(userId: string) {
             groupId,
           },
           null,
-          2
+          2,
         );
       } catch (error) {
         return `Failed to create recipe: ${error instanceof Error ? error.message : "Unknown error"}`;
@@ -110,18 +111,30 @@ export function createRecipeTools(userId: string) {
       schema: z.object({
         name: z.string().describe("Name of the recipe"),
         servings: z.number().describe("Number of servings"),
-        groupId: z.string().describe("ID of the recipe group to add this recipe to (use list_recipe_groups to find existing groups or create_recipe_group to create one)"),
+        groupId: z
+          .string()
+          .describe(
+            "ID of the recipe group to add this recipe to (use list_recipe_groups to find existing groups or create_recipe_group to create one)",
+          ),
         ingredients: z
           .array(
             z.object({
-              ingredientId: z.string().describe("The ID of an existing ingredient (use search_similar_ingredients to find or create_ingredient_with_embedding to create)"),
+              ingredientId: z
+                .string()
+                .describe(
+                  "The ID of an existing ingredient (use search_similar_ingredients to find or create_ingredient_with_embedding to create)",
+                ),
               quantity: z.number().describe("Quantity of the ingredient"),
-              unit: z.string().describe("Unit of measurement (e.g., 'cups', 'grams', 'pieces')"),
-            })
+              unit: z
+                .string()
+                .describe(
+                  "Unit of measurement (e.g., 'cups', 'grams', 'pieces')",
+                ),
+            }),
           )
           .describe("List of ingredients with their IDs"),
       }),
-    }
+    },
   );
 
   const updateRecipeTool = tool(
@@ -159,7 +172,7 @@ export function createRecipeTools(userId: string) {
             ...(groupIds && { groupIds }),
           },
           null,
-          2
+          2,
         );
       } catch (error) {
         return `Failed to update recipe: ${error instanceof Error ? error.message : "Recipe may not exist."}`;
@@ -176,19 +189,25 @@ export function createRecipeTools(userId: string) {
         groupIds: z
           .array(z.string())
           .optional()
-          .describe("List of group IDs this recipe should belong to (replaces all current groups). Must have at least one group."),
+          .describe(
+            "List of group IDs this recipe should belong to (replaces all current groups). Must have at least one group.",
+          ),
         ingredients: z
           .array(
             z.object({
-              ingredientId: z.string().describe("The ID of an existing ingredient"),
+              ingredientId: z
+                .string()
+                .describe("The ID of an existing ingredient"),
               quantity: z.number().describe("Quantity of the ingredient"),
               unit: z.string().describe("Unit of measurement"),
-            })
+            }),
           )
           .optional()
-          .describe("New list of ingredients with IDs (replaces all existing ingredients)"),
+          .describe(
+            "New list of ingredients with IDs (replaces all existing ingredients)",
+          ),
       }),
-    }
+    },
   );
 
   const deleteRecipeTool = tool(
@@ -206,7 +225,7 @@ export function createRecipeTools(userId: string) {
       schema: z.object({
         recipeId: z.string().describe("The ID of the recipe to delete"),
       }),
-    }
+    },
   );
 
   // ============ INGREDIENT TOOLS ============
@@ -218,21 +237,33 @@ export function createRecipeTools(userId: string) {
         first: first ?? 100,
         after,
       });
-      return JSON.stringify({
-        ingredients: connection.edges.map((e) => e.node),
-        pageInfo: connection.pageInfo,
-        total: connection.edges.length,
-      }, null, 2);
+      return JSON.stringify(
+        {
+          ingredients: connection.edges.map((e) => e.node),
+          pageInfo: connection.pageInfo,
+          total: connection.edges.length,
+        },
+        null,
+        2,
+      );
     },
     {
       name: "list_ingredients",
       description:
         "List ingredients for the current user with pagination. Returns ingredients with their id, name, description, category, default unit, and price info. Use 'after' cursor for pagination.",
       schema: z.object({
-        first: z.number().optional().describe("Number of ingredients to return (default: 100)"),
-        after: z.string().optional().describe("Cursor for pagination - use endCursor from previous response"),
+        first: z
+          .number()
+          .optional()
+          .describe("Number of ingredients to return (default: 100)"),
+        after: z
+          .string()
+          .optional()
+          .describe(
+            "Cursor for pagination - use endCursor from previous response",
+          ),
       }),
-    }
+    },
   );
 
   const getIngredientTool = tool(
@@ -248,18 +279,29 @@ export function createRecipeTools(userId: string) {
       name: "get_ingredient",
       description: "Get a specific ingredient by its ID",
       schema: z.object({
-        ingredientId: z.string().describe("The ID of the ingredient to retrieve"),
+        ingredientId: z
+          .string()
+          .describe("The ID of the ingredient to retrieve"),
       }),
-    }
+    },
   );
 
   const createIngredientTool = tool(
-    async ({ name, description, defaultUnit, averagePrice, priceUnit, priceCurrency }) => {
+    async ({
+      name,
+      description,
+      categories,
+      defaultUnit,
+      averagePrice,
+      priceUnit,
+      priceCurrency,
+    }) => {
       const ingredient = await createIngredient({
         userId,
         input: {
           name,
           description,
+          categories: categories as IngredientCategory[] | undefined,
           defaultUnit,
           averagePrice,
           priceUnit,
@@ -270,25 +312,62 @@ export function createRecipeTools(userId: string) {
     },
     {
       name: "create_ingredient",
-      description: "Create a new ingredient",
+      description:
+        "Create a new ingredient. This creates a user-specific ingredient.",
       schema: z.object({
         name: z.string().describe("Name of the ingredient"),
-        description: z.string().optional().describe("Description of the ingredient"),
-        defaultUnit: z.string().optional().describe("Default unit of measurement"),
-        averagePrice: z.number().optional().describe("Average price of the ingredient"),
-        priceUnit: z.string().optional().describe("Unit for the price (e.g., 'kg', 'unit')"),
-        priceCurrency: z.string().optional().describe("Currency for the price (e.g., 'USD', 'BRL')"),
+        description: z
+          .string()
+          .optional()
+          .describe("Description of the ingredient"),
+        categories: z
+          .array(z.nativeEnum(IngredientCategory))
+          .optional()
+          .describe("Categories for the ingredient"),
+        defaultUnit: z
+          .string()
+          .optional()
+          .describe("Default unit of measurement"),
+        averagePrice: z
+          .number()
+          .optional()
+          .describe("Average price of the ingredient"),
+        priceUnit: z
+          .string()
+          .optional()
+          .describe("Unit for the price (e.g., 'kg', 'unit')"),
+        priceCurrency: z
+          .string()
+          .optional()
+          .describe("Currency for the price (e.g., 'USD', 'BRL')"),
       }),
-    }
+    },
   );
 
   const updateIngredientTool = tool(
-    async ({ ingredientId, name, description, defaultUnit, averagePrice, priceUnit, priceCurrency }) => {
+    async ({
+      ingredientId,
+      name,
+      description,
+      categories,
+      defaultUnit,
+      averagePrice,
+      priceUnit,
+      priceCurrency,
+    }) => {
       try {
         const ingredient = await updateIngredient({
           userId,
           ingredientId,
-          input: { name, description, defaultUnit, averagePrice, priceUnit, priceCurrency },
+          input: {
+            name,
+            description,
+            categories: categories as IngredientCategory[] | undefined,
+            defaultUnit,
+            averagePrice,
+            priceUnit,
+            priceCurrency,
+          },
         });
         return JSON.stringify(ingredient, null, 2);
       } catch {
@@ -297,17 +376,42 @@ export function createRecipeTools(userId: string) {
     },
     {
       name: "update_ingredient",
-      description: "Update an existing ingredient. All fields are optional.",
+      description:
+        "Update an existing ingredient. All fields are optional. Note: If updating a system ingredient, a user-specific copy will be created automatically.",
       schema: z.object({
         ingredientId: z.string().describe("The ID of the ingredient to update"),
         name: z.string().optional().describe("New name for the ingredient"),
         description: z.string().optional().describe("New description"),
+        categories: z
+          .array(
+            z.enum([
+              "VEGETABLES",
+              "FRUITS",
+              "GRAINS",
+              "PROTEINS",
+              "DAIRY",
+              "OILS_FATS",
+              "SPICES_HERBS",
+              "CONDIMENTS",
+              "BAKING",
+              "BEVERAGES",
+              "SNACKS",
+              "FROZEN",
+              "CANNED",
+              "PASTA_NOODLES",
+              "NUTS_SEEDS",
+              "SWEETENERS",
+              "OTHER",
+            ]),
+          )
+          .optional()
+          .describe("New categories array"),
         defaultUnit: z.string().optional().describe("New default unit"),
         averagePrice: z.number().optional().describe("New average price"),
         priceUnit: z.string().optional().describe("New price unit"),
         priceCurrency: z.string().optional().describe("New price currency"),
       }),
-    }
+    },
   );
 
   const deleteIngredientTool = tool(
@@ -316,16 +420,17 @@ export function createRecipeTools(userId: string) {
         await deleteIngredient({ userId, ingredientId });
         return "Ingredient deleted successfully";
       } catch {
-        return "Failed to delete ingredient. Ingredient may not exist.";
+        return "Failed to delete ingredient. Ingredient may not exist or is a system ingredient (cannot be deleted).";
       }
     },
     {
       name: "delete_ingredient",
-      description: "Delete an ingredient by its ID",
+      description:
+        "Delete an ingredient by its ID. Note: System ingredients cannot be deleted.",
       schema: z.object({
         ingredientId: z.string().describe("The ID of the ingredient to delete"),
       }),
-    }
+    },
   );
 
   // ============ RECIPE GROUP TOOLS ============
@@ -340,7 +445,7 @@ export function createRecipeTools(userId: string) {
       description:
         "List all recipe groups for the current user. Recipe groups are collections of recipes.",
       schema: z.object({}),
-    }
+    },
   );
 
   const getRecipeGroupTool = tool(
@@ -358,7 +463,7 @@ export function createRecipeTools(userId: string) {
       schema: z.object({
         groupId: z.string().describe("The ID of the recipe group to retrieve"),
       }),
-    }
+    },
   );
 
   const createRecipeGroupTool = tool(
@@ -380,7 +485,7 @@ export function createRecipeTools(userId: string) {
           .optional()
           .describe("Initial list of recipe IDs to add to the group"),
       }),
-    }
+    },
   );
 
   const updateRecipeGroupTool = tool(
@@ -404,7 +509,7 @@ export function createRecipeTools(userId: string) {
         name: z.string().optional().describe("New name for the group"),
         description: z.string().optional().describe("New description"),
       }),
-    }
+    },
   );
 
   const deleteRecipeGroupTool = tool(
@@ -422,7 +527,7 @@ export function createRecipeTools(userId: string) {
       schema: z.object({
         groupId: z.string().describe("The ID of the recipe group to delete"),
       }),
-    }
+    },
   );
 
   // ============ SMART INGREDIENT SEARCH TOOLS ============
@@ -442,15 +547,19 @@ export function createRecipeTools(userId: string) {
             results: [],
           });
         }
-        return JSON.stringify({
-          searchTerm: ingredientName,
-          results: results.map((r) => ({
-            id: r.id,
-            name: r.name,
-            distance: r.distance.toFixed(4),
-          })),
-          hint: "Lower distance = more similar. If none match well, use create_ingredient to create a new one.",
-        }, null, 2);
+        return JSON.stringify(
+          {
+            searchTerm: ingredientName,
+            results: results.map((r) => ({
+              id: r.id,
+              name: r.name,
+              distance: r.distance.toFixed(4),
+            })),
+            hint: "Lower distance = more similar. If none match well, use create_ingredient to create a new one.",
+          },
+          null,
+          2,
+        );
       } catch (error) {
         return `Failed to search ingredients: ${error instanceof Error ? error.message : "Unknown error"}`;
       }
@@ -460,10 +569,15 @@ export function createRecipeTools(userId: string) {
       description:
         "Search for existing ingredients by name using vector similarity. Returns the most similar ingredients. Use this BEFORE creating a recipe to find ingredient IDs. If no good match is found, use create_ingredient to create a new ingredient.",
       schema: z.object({
-        ingredientName: z.string().describe("The ingredient name to search for"),
-        limit: z.number().optional().describe("Maximum number of results to return (default: 5)"),
+        ingredientName: z
+          .string()
+          .describe("The ingredient name to search for"),
+        limit: z
+          .number()
+          .optional()
+          .describe("Maximum number of results to return (default: 5)"),
       }),
-    }
+    },
   );
 
   // Return all tools
@@ -490,4 +604,3 @@ export function createRecipeTools(userId: string) {
     deleteRecipeGroupTool,
   ];
 }
-

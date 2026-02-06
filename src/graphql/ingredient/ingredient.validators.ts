@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createIngredientInputSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
   description: z.string().optional(),
-  category: z.string().optional(),
+  categories: z.array(z.string()).optional(),
   defaultUnit: z.string().optional(),
   averagePrice: z
     .number({ invalid_type_error: "Average price must be a number" })
@@ -16,7 +16,7 @@ export const createIngredientInputSchema = z.object({
 export const updateIngredientInputSchema = z.object({
   name: z.string().min(1, "Ingredient name is required").optional(),
   description: z.string().optional(),
-  category: z.string().optional(),
+  categories: z.array(z.string()).optional(),
   defaultUnit: z.string().optional(),
   averagePrice: z
     .number({ invalid_type_error: "Average price must be a number" })

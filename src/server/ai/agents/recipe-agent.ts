@@ -65,7 +65,7 @@ function shouldContinue(state: RecipeAgentStateType): "tools" | typeof END {
  * Agent node - processes messages and decides on actions
  */
 async function agentNode(
-  state: RecipeAgentStateType
+  state: RecipeAgentStateType,
 ): Promise<Partial<RecipeAgentStateType>> {
   const tools = createRecipeTools(state.userId);
   const baseLLM = createLLM({ temperature: 0.7 });
@@ -118,7 +118,7 @@ export interface RecipeAgentOutput {
  * Invokes the recipe agent with a message and history
  */
 export async function invokeRecipeAgent(
-  input: RecipeAgentInput
+  input: RecipeAgentInput,
 ): Promise<RecipeAgentOutput> {
   const agent = createRecipeAgentGraph(input.userId);
 
@@ -126,7 +126,7 @@ export async function invokeRecipeAgent(
   const historyMessages: BaseMessage[] = (input.history ?? []).map((msg) =>
     msg.role === "user"
       ? new HumanMessage(msg.content)
-      : new AIMessage(msg.content)
+      : new AIMessage(msg.content),
   );
 
   // Add the new user message
@@ -143,7 +143,7 @@ export async function invokeRecipeAgent(
       msg instanceof AIMessage &&
       (!("tool_calls" in msg) ||
         !Array.isArray(msg.tool_calls) ||
-        msg.tool_calls.length === 0)
+        msg.tool_calls.length === 0),
   );
   const lastAiMessage = aiMessages[aiMessages.length - 1];
   const responseText = lastAiMessage
@@ -160,10 +160,13 @@ export async function invokeRecipeAgent(
         (msg instanceof AIMessage &&
           (!("tool_calls" in msg) ||
             !Array.isArray(msg.tool_calls) ||
-            msg.tool_calls.length === 0))
+            msg.tool_calls.length === 0)),
     )
     .map((msg: BaseMessage) => ({
-      role: msg instanceof HumanMessage ? ("user" as const) : ("assistant" as const),
+      role:
+        msg instanceof HumanMessage
+          ? ("user" as const)
+          : ("assistant" as const),
       content:
         typeof msg.content === "string"
           ? msg.content
@@ -188,7 +191,7 @@ export type StreamEvent =
  * Returns an async generator that yields StreamEvent objects
  */
 export async function* streamRecipeAgent(
-  input: RecipeAgentInput
+  input: RecipeAgentInput,
 ): AsyncGenerator<StreamEvent, void, undefined> {
   const tools = createRecipeTools(input.userId);
   const baseLLM = createLLM({ temperature: 0.7 });
@@ -198,7 +201,7 @@ export async function* streamRecipeAgent(
   const historyMessages: BaseMessage[] = (input.history ?? []).map((msg) =>
     msg.role === "user"
       ? new HumanMessage(msg.content)
-      : new AIMessage(msg.content)
+      : new AIMessage(msg.content),
   );
 
   const messagesWithSystem = [
@@ -209,7 +212,7 @@ export async function* streamRecipeAgent(
 
   let currentMessages = messagesWithSystem;
   let iterations = 0;
-  const maxIterations = 20; // Prevent infinite loops
+  const maxIterations = 100; // Prevent infinite loops
 
   while (iterations < maxIterations) {
     iterations++;
@@ -284,7 +287,7 @@ export async function* streamRecipeAgent(
           : Array.isArray(chunk.content)
             ? chunk.content
                 .filter(
-                  (c): c is { type: "text"; text: string } => c.type === "text"
+                  (c): c is { type: "text"; text: string } => c.type === "text",
                 )
                 .map((c) => c.text)
                 .join("")
@@ -298,4 +301,3 @@ export async function* streamRecipeAgent(
     break;
   }
 }
-

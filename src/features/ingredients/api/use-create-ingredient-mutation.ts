@@ -16,12 +16,13 @@ const CREATE_INGREDIENT_MUTATION = gql`
       id
       name
       description
-      category
+      categories
       defaultUnit
       averagePrice
       priceUnit
       priceCurrency
       userId
+      isSystem
       createdAt
       updatedAt
     }

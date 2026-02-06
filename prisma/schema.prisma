@@ -119,12 +119,15 @@ model recipes {
 }
 
 // Tabela de ingredientes base (reutilizável entre receitas)
+// userId = null means system ingredient (visible to all users)
+// userId = user.id means user's own ingredient
+// When querying, use DISTINCT ON (name) with user's ingredients taking precedence
 model ingredients {
-    id          String  @id @default(cuid())
-    name        String  @unique // Nome do ingrediente (ex: "Tomate", "Arroz")
+    id          String   @id @default(cuid())
+    name        String // Nome do ingrediente (ex: "Tomate", "Arroz")
     description String? // Descrição opcional
-    category    String? // Categoria do ingrediente (validated by GraphQL enum)
-    defaultUnit String? @map("default_unit") // Unidade padrão para uso em receitas (ex: "g", "ml", "unidade")
+    categories  String[] @default([]) // Array de categorias (validated by GraphQL enum)
+    defaultUnit String?  @map("default_unit") // Unidade padrão para uso em receitas (ex: "g", "ml", "unidade")
 
     // Preço: "R$ 5,00 por litro" ou "R$ 0,10 por ml"
     averagePrice  Decimal? @map("average_price") // Valor do preço (ex: 5.00)
@@ -134,17 +137,20 @@ model ingredients {
     // Vector embedding for semantic search (1536 dimensions for OpenAI text-embedding-3-small)
     embedding Unsupported("vector(1536)")?
 
-    userId            String               @map("user_id") // Ingrediente pertence ao usuário
+    // NULL = system ingredient (visible to all users), otherwise user's ingredient
+    userId            String?              @map("user_id")
     createdAt         DateTime             @default(now()) @map("created_at")
     updatedAt         DateTime             @default(now()) @map("updated_at")
     deletedAt         DateTime?            @map("deleted_at")
-    user              users                @relation(fields: [userId], references: [id])
+    user              users?               @relation(fields: [userId], references: [id])
     recipeIngredients recipe_ingredients[] // Receitas que usam este ingrediente
     files             ingredient_files[] // Fotos do ingrediente
 
+    // Unique name per user (null userId = system level)
+    @@unique([name, userId], name: "ingredients_name_user_unique")
     @@index([userId], map: "ingredients_user_id_idx")
     @@index([name], map: "ingredients_name_idx")
-    @@index([category], map: "ingredients_category_idx")
+    @@index([categories], map: "ingredients_categories_idx")
 }
 
 // Relacionamento entre receita e ingrediente (com quantidade específica)

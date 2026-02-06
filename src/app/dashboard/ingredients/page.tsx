@@ -20,8 +20,7 @@ export default function IngredientsPage() {
 
   const { data, loading, error, fetchMore } = useQueryIngredients();
 
-  const ingredients =
-    data?.ingredients.edges.map((edge) => edge.node) ?? [];
+  const ingredients = data?.ingredients.edges.map((edge) => edge.node) ?? [];
   const pageInfo = data?.ingredients.pageInfo;
 
   const filteredIngredients = ingredients.filter((ingredient) =>
@@ -107,11 +106,12 @@ export default function IngredientsPage() {
                   key={ingredient.id}
                   name={ingredient.name}
                   description={ingredient.description}
-                  category={ingredient.category}
+                  categories={ingredient.categories}
                   defaultUnit={ingredient.defaultUnit}
                   averagePrice={ingredient.averagePrice}
                   priceUnit={ingredient.priceUnit}
                   priceCurrency={ingredient.priceCurrency}
+                  isSystem={ingredient.isSystem}
                   onClick={() => handleIngredientClick(ingredient.id)}
                 />
               ))}

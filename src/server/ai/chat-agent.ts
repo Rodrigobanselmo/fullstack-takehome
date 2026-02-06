@@ -111,11 +111,11 @@ export async function invokeChatAgent(
   const outputMessages: ChatMessage[] = result.messages.map(
     (msg: BaseMessage) => ({
       role:
-        msg._getType() === "human"
-          ? ("user" as const)
-          : ("assistant" as const),
+        msg._getType() === "human" ? ("user" as const) : ("assistant" as const),
       content:
-        typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content),
+        typeof msg.content === "string"
+          ? msg.content
+          : JSON.stringify(msg.content),
     }),
   );
 
@@ -124,4 +124,3 @@ export async function invokeChatAgent(
     messages: outputMessages,
   };
 }
-

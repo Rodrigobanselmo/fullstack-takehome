@@ -32,17 +32,23 @@ export default function MarkdownEditor({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = value.substring(start, end);
-    const newText = value.substring(0, start) + before + selectedText + after + value.substring(end);
+    const newText =
+      value.substring(0, start) +
+      before +
+      selectedText +
+      after +
+      value.substring(end);
 
     onChange(newText);
 
     // Restore cursor position
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = start + before.length + selectedText.length + after.length;
+      const newCursorPos =
+        start + before.length + selectedText.length + after.length;
       textarea.setSelectionRange(
         selectedText ? newCursorPos : start + before.length,
-        selectedText ? newCursorPos : start + before.length
+        selectedText ? newCursorPos : start + before.length,
       );
     }, 0);
   };
@@ -66,7 +72,8 @@ export default function MarkdownEditor({
       // If line only has the list marker (empty item), remove it
       if (currentLine.trim() === `${currentNumber}.`) {
         e.preventDefault();
-        const newText = value.substring(0, lastLineStart) + value.substring(cursorPos);
+        const newText =
+          value.substring(0, lastLineStart) + value.substring(cursorPos);
         onChange(newText);
         setTimeout(() => {
           textarea.setSelectionRange(lastLineStart, lastLineStart);
@@ -76,7 +83,8 @@ export default function MarkdownEditor({
       e.preventDefault();
       const nextNumber = currentNumber + 1;
       const insertion = `\n${indent}${nextNumber}. `;
-      const newText = value.substring(0, cursorPos) + insertion + value.substring(cursorPos);
+      const newText =
+        value.substring(0, cursorPos) + insertion + value.substring(cursorPos);
       onChange(newText);
       setTimeout(() => {
         const newPos = cursorPos + insertion.length;
@@ -93,7 +101,8 @@ export default function MarkdownEditor({
       // If line only has the bullet (empty item), remove it
       if (currentLine.trim() === bullet) {
         e.preventDefault();
-        const newText = value.substring(0, lastLineStart) + value.substring(cursorPos);
+        const newText =
+          value.substring(0, lastLineStart) + value.substring(cursorPos);
         onChange(newText);
         setTimeout(() => {
           textarea.setSelectionRange(lastLineStart, lastLineStart);
@@ -102,7 +111,8 @@ export default function MarkdownEditor({
       }
       e.preventDefault();
       const insertion = `\n${indent}${bullet} `;
-      const newText = value.substring(0, cursorPos) + insertion + value.substring(cursorPos);
+      const newText =
+        value.substring(0, cursorPos) + insertion + value.substring(cursorPos);
       onChange(newText);
       setTimeout(() => {
         const newPos = cursorPos + insertion.length;
@@ -117,13 +127,25 @@ export default function MarkdownEditor({
     { icon: "I", title: "Italic", action: () => insertText("*", "*") },
     { icon: "H1", title: "Heading 1", action: () => insertText("\n# ", "\n") },
     { icon: "H2", title: "Heading 2", action: () => insertText("\n## ", "\n") },
-    { icon: "H3", title: "Heading 3", action: () => insertText("\n### ", "\n") },
+    {
+      icon: "H3",
+      title: "Heading 3",
+      action: () => insertText("\n### ", "\n"),
+    },
     { divider: true },
     { icon: "•", title: "Bullet List", action: () => insertText("\n- ", "\n") },
-    { icon: "1.", title: "Numbered List", action: () => insertText("\n1. ", "\n") },
+    {
+      icon: "1.",
+      title: "Numbered List",
+      action: () => insertText("\n1. ", "\n"),
+    },
     { icon: ">", title: "Quote", action: () => insertText("\n> ", "\n") },
     { icon: "</>", title: "Code", action: () => insertText("`", "`") },
-    { icon: "—", title: "Divider", action: () => insertText("\n\n---\n\n", "") },
+    {
+      icon: "—",
+      title: "Divider",
+      action: () => insertText("\n\n---\n\n", ""),
+    },
   ];
 
   return (
@@ -144,7 +166,7 @@ export default function MarkdownEditor({
               >
                 {item.icon}
               </button>
-            )
+            ),
           )}
           <div className={styles.tabs}>
             <button
@@ -191,4 +213,3 @@ export default function MarkdownEditor({
     </div>
   );
 }
-

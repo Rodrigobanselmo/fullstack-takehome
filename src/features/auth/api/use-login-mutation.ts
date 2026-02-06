@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { gql, useMutation } from "@apollo/client";
-import type { LoginMutation, LoginMutationVariables } from "generated/gql/graphql";
+import type {
+  LoginMutation,
+  LoginMutationVariables,
+} from "generated/gql/graphql";
 import { paths } from "~/config/paths";
 
 const LOGIN_MUTATION = gql`

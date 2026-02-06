@@ -19,4 +19,3 @@ export {
   formatEmbeddingForPostgres,
   EMBEDDING_DIMENSIONS,
 } from "./embeddings";
-

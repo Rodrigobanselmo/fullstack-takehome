@@ -15,7 +15,7 @@ import {
 import { withTransaction } from "~/server/database/transaction";
 import { env } from "~/config/env";
 import { generatePresignedPost } from "~/lib/s3";
-import { type Prisma } from "generated/prisma";
+import { Prisma } from "generated/prisma";
 import { formatToGQLConnection } from "~/lib/pagination";
 
 export const DEFAULT_INGREDIENTS_PAGE_SIZE = 50;
@@ -72,7 +72,7 @@ export async function createIngredient({
   return ingredientRepository.create({
     name: input.name,
     description: input.description ?? undefined,
-    category: (input.category as string) ?? undefined,
+    categories: (input.categories as string[]) ?? undefined,
     defaultUnit: input.defaultUnit ?? undefined,
     averagePrice: input.averagePrice as Prisma.Decimal | undefined,
     priceUnit: input.priceUnit ?? undefined,
@@ -90,15 +90,41 @@ export async function updateIngredient({
   ingredientId: string;
   input: UpdateIngredientInput;
 }): Promise<IngredientEntity> {
-  // Verify ingredient exists and belongs to user
-  await getIngredientById({ ingredientId, userId });
+  // Verify ingredient exists and is accessible by user
+  const existing = await getIngredientById({ ingredientId, userId });
+
+  // If it's a system ingredient, create a user-specific copy instead of editing
+  if (existing.isSystem) {
+    // Determine the average price value
+    let averagePrice: Prisma.Decimal | undefined;
+    if (input.averagePrice !== undefined && input.averagePrice !== null) {
+      averagePrice = new Prisma.Decimal(input.averagePrice);
+    } else if (
+      existing.averagePrice !== undefined &&
+      existing.averagePrice !== null
+    ) {
+      averagePrice = new Prisma.Decimal(existing.averagePrice);
+    }
+
+    return ingredientRepository.create({
+      name: input.name ?? existing.name,
+      description: input.description ?? existing.description ?? undefined,
+      categories:
+        (input.categories as string[]) ?? existing.categories ?? undefined,
+      defaultUnit: input.defaultUnit ?? existing.defaultUnit ?? undefined,
+      averagePrice,
+      priceUnit: input.priceUnit ?? existing.priceUnit ?? undefined,
+      priceCurrency: input.priceCurrency ?? existing.priceCurrency ?? undefined,
+      userId,
+    });
+  }
 
   const updated = await ingredientRepository.update({
     ingredientId,
     userId,
     name: input.name ?? undefined,
     description: input.description ?? undefined,
-    category: (input.category as string) ?? undefined,
+    categories: (input.categories as string[]) ?? undefined,
     defaultUnit: input.defaultUnit ?? undefined,
     averagePrice: input.averagePrice as Prisma.Decimal | undefined,
     priceUnit: input.priceUnit ?? undefined,
@@ -119,8 +145,13 @@ export async function deleteIngredient({
   userId: string;
   ingredientId: string;
 }): Promise<boolean> {
-  // Verify ingredient exists and belongs to user
-  await getIngredientById({ ingredientId, userId });
+  // Verify ingredient exists and is accessible by user
+  const existing = await getIngredientById({ ingredientId, userId });
+
+  // Cannot delete system ingredients
+  if (existing.isSystem) {
+    throw IngredientNotFoundError();
+  }
 
   await ingredientRepository.delete({ ingredientId, userId });
   return true;

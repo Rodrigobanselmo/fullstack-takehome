@@ -2,7 +2,7 @@ import { IngredientCategory } from "generated/gql/graphql";
 import { useState } from "react";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
-import SelectField from "~/components/ui/forms/select-field/select-field";
+import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
 import { useToast } from "~/components/ui/toast/toast-context";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
@@ -29,7 +29,7 @@ export interface IngredientFormProps {
 const initialIngredientData: CreateIngredientFormData = {
   name: "",
   description: "",
-  category: undefined,
+  categories: [],
   defaultUnit: "",
   averagePrice: "",
   priceUnit: "",
@@ -67,10 +67,10 @@ export default function IngredientForm({
       setFormError("");
     };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategoriesChange = (values: string[]) => {
     setFormData((prev) => ({
       ...prev,
-      category: e.target.value as IngredientCategory,
+      categories: values as IngredientCategory[],
     }));
     setFormError("");
   };
@@ -120,13 +120,13 @@ export default function IngredientForm({
           multiline={true}
           maxLines={3}
         />
-        <SelectField
-          label="Category"
-          name="category"
-          value={formData.category || ""}
-          onChange={handleCategoryChange}
+        <MultiSelectField
+          label="Categories"
+          name="categories"
+          value={formData.categories ?? []}
+          onChange={handleCategoriesChange}
           options={INGREDIENT_CATEGORY_OPTIONS}
-          placeholder="Select category..."
+          placeholder="Select categories..."
         />
         <TextField
           label="Default Unit"

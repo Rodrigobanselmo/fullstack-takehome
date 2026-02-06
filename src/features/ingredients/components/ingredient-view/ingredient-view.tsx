@@ -5,31 +5,36 @@ import styles from "./ingredient-view.module.css";
 interface IngredientViewProps {
   name: string;
   description?: string | null;
-  category?: IngredientCategory | null;
+  categories?: IngredientCategory[] | null;
   defaultUnit?: string | null;
   averagePrice?: number | null;
   priceUnit?: string | null;
   priceCurrency?: string | null;
+  isSystem?: boolean;
 }
 
 export default function IngredientView({
   name,
   description,
-  category,
+  categories,
   defaultUnit,
   averagePrice,
   priceUnit,
   priceCurrency,
+  isSystem,
 }: IngredientViewProps) {
+  const firstCategory = categories?.[0];
+
   return (
     <div className={styles.ingredientView}>
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
-        {category && (
+        {firstCategory && (
           <span className={styles.categoryIcon}>
-            {INGREDIENT_CATEGORY_MAP[category]?.emoji}
+            {INGREDIENT_CATEGORY_MAP[firstCategory]?.emoji}
           </span>
         )}
+        {isSystem && <span className={styles.systemBadge}>System</span>}
       </div>
 
       {description && <p className={styles.description}>{description}</p>}
@@ -37,12 +42,16 @@ export default function IngredientView({
       <div className={styles.detailsSection}>
         <h3 className={styles.sectionTitle}>Details</h3>
         <div className={styles.detailsGrid}>
-          {category && (
+          {categories && categories.length > 0 && (
             <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Category:</span>
+              <span className={styles.detailLabel}>Categories:</span>
               <span className={styles.detailValue}>
-                {INGREDIENT_CATEGORY_MAP[category]?.emoji}{" "}
-                {INGREDIENT_CATEGORY_MAP[category]?.label}
+                {categories.map((cat) => (
+                  <span key={cat} className={styles.categoryTag}>
+                    {INGREDIENT_CATEGORY_MAP[cat]?.emoji}{" "}
+                    {INGREDIENT_CATEGORY_MAP[cat]?.label}
+                  </span>
+                ))}
               </span>
             </div>
           )}

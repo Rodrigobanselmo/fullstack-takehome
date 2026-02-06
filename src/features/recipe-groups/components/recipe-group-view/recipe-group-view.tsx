@@ -46,9 +46,7 @@ function RecipeItem({ recipe }: RecipeItemProps) {
     <li className={styles.recipeItem}>
       <span className={styles.recipeName}>{data.name}</span>
       <div className={styles.recipeDetails}>
-        <span className={styles.recipeDetail}>
-          🍽️ {data.servings} servings
-        </span>
+        <span className={styles.recipeDetail}>🍽️ {data.servings} servings</span>
         {data.prepTimeMinutes && (
           <span className={styles.recipeDetail}>
             ⏱️ {data.prepTimeMinutes} min

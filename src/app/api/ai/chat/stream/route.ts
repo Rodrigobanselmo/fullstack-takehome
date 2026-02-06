@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           for await (const event of agentStream) {
             // Send the event to the client
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(event)}\n\n`)
+              encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
             );
 
             // Accumulate content for saving to database
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
             await aiThreadRepository.addMessage(
               body.threadId,
               "assistant",
-              fullResponse
+              fullResponse,
             );
           }
 
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
               error instanceof Error ? error.message : "Unknown error occurred",
           };
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(errorEvent)}\n\n`)
+            encoder.encode(`data: ${JSON.stringify(errorEvent)}\n\n`),
           );
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
@@ -120,8 +120,7 @@ export async function POST(req: NextRequest) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }
-

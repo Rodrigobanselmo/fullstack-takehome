@@ -45,7 +45,8 @@ export const aiTypeDefs = gql`
     createAIThread(input: CreateAIThreadInput): AIThread!
     updateAIThread(input: UpdateAIThreadInput!): AIThread
     deleteAIThread(id: ID!): Boolean!
-    sendAIThreadMessage(input: SendAIThreadMessageInput!): SendAIThreadMessageResponse!
+    sendAIThreadMessage(
+      input: SendAIThreadMessageInput!
+    ): SendAIThreadMessageResponse!
   }
 `;
-

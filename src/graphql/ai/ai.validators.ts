@@ -15,7 +15,9 @@ export const sendAIThreadMessageInputSchema = z.object({
   threadId: z.string().min(1, "Thread ID is required"),
   message: z.string().min(1, "Message is required"),
 });
-export type SendAIThreadMessageInput = z.infer<typeof sendAIThreadMessageInputSchema>;
+export type SendAIThreadMessageInput = z.infer<
+  typeof sendAIThreadMessageInputSchema
+>;
 
 export const aiThreadIdSchema = z.object({
   id: z.string().min(1, "Thread ID is required"),
@@ -26,4 +28,3 @@ export const aiThreadMessagesSchema = z.object({
   threadId: z.string().min(1, "Thread ID is required"),
 });
 export type AIThreadMessagesArgs = z.infer<typeof aiThreadMessagesSchema>;
-

@@ -34,7 +34,13 @@ const variantIcons: Record<ToastVariant, string> = {
   info: "ℹ",
 };
 
-function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
+function ToastItem({
+  toast,
+  onRemove,
+}: {
+  toast: Toast;
+  onRemove: () => void;
+}) {
   useEffect(() => {
     const duration = toast.duration ?? 4000;
     const exitTime = duration - 200;
@@ -123,7 +129,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               />
             ))}
           </div>,
-          document.body
+          document.body,
         )}
     </ToastContext.Provider>
   );
@@ -136,4 +142,3 @@ export function useToast() {
   }
   return context;
 }
-

@@ -22,7 +22,10 @@ export default function AddIngredientPage() {
         input: {
           name: formData.name,
           description: formData.description || undefined,
-          category: formData.category || undefined,
+          categories:
+            formData.categories && formData.categories.length > 0
+              ? formData.categories
+              : undefined,
           defaultUnit: formData.defaultUnit || undefined,
           averagePrice:
             parsedPrice !== undefined && !isNaN(parsedPrice)
@@ -36,7 +39,9 @@ export default function AddIngredientPage() {
 
     if (result.data?.createIngredient) {
       router.push(
-        paths.dashboard.ingredients.view.getHref(result.data.createIngredient.id),
+        paths.dashboard.ingredients.view.getHref(
+          result.data.createIngredient.id,
+        ),
       );
     }
   };
@@ -60,4 +65,3 @@ export default function AddIngredientPage() {
     </div>
   );
 }
-

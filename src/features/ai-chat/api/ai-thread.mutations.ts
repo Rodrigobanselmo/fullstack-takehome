@@ -129,4 +129,3 @@ export function useSendAIThreadMessageMutation(threadId: string | null) {
     },
   );
 }
-

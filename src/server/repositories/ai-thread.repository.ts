@@ -126,14 +126,11 @@ class PrismaAIThreadRepository {
       take: limit,
     });
 
-    return messages
-      .reverse()
-      .map((m) => ({
-        ...m,
-        role: m.role as "user" | "assistant",
-      }));
+    return messages.reverse().map((m) => ({
+      ...m,
+      role: m.role as "user" | "assistant",
+    }));
   }
 }
 
 export const aiThreadRepository = new PrismaAIThreadRepository();
-
