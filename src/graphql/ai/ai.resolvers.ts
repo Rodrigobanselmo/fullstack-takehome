@@ -33,7 +33,7 @@ const sendAIThreadMessageInputSchema = z.object({
 });
 
 function formatZodError(error: z.ZodError): string {
-  return error.errors.map((e) => e.message).join(", ");
+  return error.issues.map((e) => e.message).join(", ");
 }
 
 export const aiResolvers = {

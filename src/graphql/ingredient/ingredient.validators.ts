@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isNil } from "~/lib/utils";
 
 export const createIngredientInputSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
@@ -6,7 +7,10 @@ export const createIngredientInputSchema = z.object({
   categories: z.array(z.string()).optional(),
   defaultUnit: z.string().optional(),
   averagePrice: z
-    .number({ invalid_type_error: "Average price must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Average price must be a number",
+    })
     .nonnegative("Average price must be non-negative")
     .optional(),
   priceUnit: z.string().optional(),
@@ -19,7 +23,10 @@ export const updateIngredientInputSchema = z.object({
   categories: z.array(z.string()).optional(),
   defaultUnit: z.string().optional(),
   averagePrice: z
-    .number({ invalid_type_error: "Average price must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Average price must be a number",
+    })
     .nonnegative("Average price must be non-negative")
     .optional(),
   priceUnit: z.string().optional(),

@@ -1,4 +1,4 @@
-import { IngredientCategory } from "generated/gql/graphql";
+import type { IngredientCategory } from "generated/gql/graphql";
 import { useState } from "react";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
 import FormError from "~/components/ui/forms/form-error/form-error";
@@ -75,12 +75,12 @@ export default function IngredientForm({
     setFormError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError("");
     const validationResult = createIngredientSchema.safeParse(formData);
     if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
+      const firstError = validationResult.error.issues[0];
       const message = firstError
         ? `${firstError.path.join(".")}: ${firstError.message}`
         : "Validation failed";

@@ -1,4 +1,4 @@
-import type { ZodEffects, ZodSchema } from "zod";
+import type { ZodType } from "zod";
 
 type ValidationResult<T> =
   | {
@@ -11,12 +11,12 @@ type ValidationResult<T> =
     };
 
 export function schemaValidation<T>(
-  schema: ZodSchema<T> | ZodEffects<ZodSchema<T>, T, unknown>,
+  schema: ZodType<T>,
   data: unknown,
 ): ValidationResult<T> {
   const result = schema.safeParse(data);
   if (!result.success) {
-    const errorMessage = result.error.errors
+    const errorMessage = result.error.issues
       .map((e) =>
         e.path.length ? `${e.path.join(".")}: ${e.message}` : e.message,
       )

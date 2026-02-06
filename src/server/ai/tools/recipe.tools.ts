@@ -321,7 +321,7 @@ export function createRecipeTools(userId: string) {
           .optional()
           .describe("Description of the ingredient"),
         categories: z
-          .array(z.nativeEnum(IngredientCategory))
+          .array(z.enum(IngredientCategory))
           .optional()
           .describe("Categories for the ingredient"),
         defaultUnit: z
@@ -383,27 +383,7 @@ export function createRecipeTools(userId: string) {
         name: z.string().optional().describe("New name for the ingredient"),
         description: z.string().optional().describe("New description"),
         categories: z
-          .array(
-            z.enum([
-              "VEGETABLES",
-              "FRUITS",
-              "GRAINS",
-              "PROTEINS",
-              "DAIRY",
-              "OILS_FATS",
-              "SPICES_HERBS",
-              "CONDIMENTS",
-              "BAKING",
-              "BEVERAGES",
-              "SNACKS",
-              "FROZEN",
-              "CANNED",
-              "PASTA_NOODLES",
-              "NUTS_SEEDS",
-              "SWEETENERS",
-              "OTHER",
-            ]),
-          )
+          .array(z.enum(IngredientCategory))
           .optional()
           .describe("New categories array"),
         defaultUnit: z.string().optional().describe("New default unit"),

@@ -1,16 +1,25 @@
 import { z } from "zod";
 import { RecipeTag } from "generated/gql/graphql";
+import { isNil } from "~/lib/utils";
 
 export const recipeIngredientInputSchema = z.object({
   ingredientId: z.string().min(1, "Ingredient ID is required"),
   quantity: z
-    .number({ invalid_type_error: "Quantity must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input)
+          ? "Quantity is required"
+          : "Quantity must be a number",
+    })
     .positive("Quantity must be positive"),
   unit: z.string().min(1, "Unit is required"),
   notes: z.string().optional(),
   optional: z.boolean().optional(),
   price: z
-    .number({ invalid_type_error: "Price must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Price must be a number",
+    })
     .nonnegative("Price must be non-negative")
     .optional(),
 });
@@ -18,18 +27,27 @@ export const recipeIngredientInputSchema = z.object({
 export const createRecipeInputSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
   servings: z
-    .number({ invalid_type_error: "Servings must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? "Servings is required" : "Servings must be a number",
+    })
     .int("Servings must be an integer")
     .positive("Servings must be positive"),
-  tags: z.array(z.nativeEnum(RecipeTag)).optional(),
+  tags: z.array(z.enum(RecipeTag)).optional(),
   overallRating: z
-    .number({ invalid_type_error: "Overall rating must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Overall rating must be a number",
+    })
     .int("Overall rating must be an integer")
     .min(1, "Overall rating must be at least 1")
     .max(5, "Overall rating must be at most 5")
     .optional(),
   prepTimeMinutes: z
-    .number({ invalid_type_error: "Prep time must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Prep time must be a number",
+    })
     .int("Prep time must be an integer")
     .positive("Prep time must be positive")
     .optional(),
@@ -42,19 +60,28 @@ export const createRecipeInputSchema = z.object({
 export const updateRecipeInputSchema = z.object({
   name: z.string().min(1, "Recipe name is required").optional(),
   servings: z
-    .number({ invalid_type_error: "Servings must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Servings must be a number",
+    })
     .int("Servings must be an integer")
     .positive("Servings must be positive")
     .optional(),
-  tags: z.array(z.nativeEnum(RecipeTag)).optional(),
+  tags: z.array(z.enum(RecipeTag)).optional(),
   overallRating: z
-    .number({ invalid_type_error: "Overall rating must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Overall rating must be a number",
+    })
     .int("Overall rating must be an integer")
     .min(1, "Overall rating must be at least 1")
     .max(5, "Overall rating must be at most 5")
     .optional(),
   prepTimeMinutes: z
-    .number({ invalid_type_error: "Prep time must be a number" })
+    .number({
+      error: (issue: { input: unknown }) =>
+        isNil(issue.input) ? undefined : "Prep time must be a number",
+    })
     .int("Prep time must be an integer")
     .positive("Prep time must be positive")
     .optional(),
