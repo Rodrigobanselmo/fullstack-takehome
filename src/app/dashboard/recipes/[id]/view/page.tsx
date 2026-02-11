@@ -10,6 +10,11 @@ import RecipeForm from "~/features/recipes/components/recipe-form/recipe-form";
 import { useQueryRecipe } from "~/features/recipes/api/use-query-recipe";
 import { useUpdateRecipeMutation } from "~/features/recipes/api/use-update-recipe-mutation";
 import { useDeleteRecipeMutation } from "~/features/recipes/api/use-delete-recipe-mutation";
+import {
+  useUploadFileMutation,
+  uploadToS3,
+  FileUploadType,
+} from "~/features/files/api/use-upload-file-mutation";
 import { useModal } from "~/components/ui/modal/modal-context";
 import { ConfirmDialog } from "~/components/ui/modal/confirm-dialog";
 import type { CreateRecipeFormData } from "~/features/recipes/schemas/create-recipe-schema";
@@ -28,9 +33,33 @@ export default function ViewRecipePage({
   const [updateRecipe, { loading: updateLoading, error: updateError }] =
     useUpdateRecipeMutation();
   const [deleteRecipe, { loading: deleteLoading }] = useDeleteRecipeMutation();
+  const [uploadFile] = useUploadFileMutation();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const recipe = data?.recipe;
+
+  const handleImageUpload = async (file: File): Promise<string> => {
+    // Get presigned URL from backend
+    const { data } = await uploadFile({
+      variables: {
+        input: {
+          filename: file.name,
+          mimeType: file.type,
+          type: FileUploadType.Recipe,
+        },
+      },
+    });
+
+    if (!data?.uploadFile.presignedPost) {
+      throw new Error("Failed to get upload URL");
+    }
+
+    // Upload file to S3
+    await uploadToS3(file, data.uploadFile.presignedPost);
+
+    // Return the file ID
+    return data.uploadFile.file.id;
+  };
 
   const handleSubmit = async (formData: CreateRecipeFormData) => {
     await updateRecipe({
@@ -47,6 +76,7 @@ export default function ViewRecipePage({
             ? parseInt(formData.prepTimeMinutes)
             : undefined,
           instructions: formData.instructions || undefined,
+          imageFileId: formData.imageFileId || undefined,
           ingredients: formData.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
             quantity: parseFloat(ing.quantity),
@@ -124,6 +154,7 @@ export default function ViewRecipePage({
         <RecipeForm
           recipe={recipe}
           onSubmit={handleSubmit}
+          onImageUpload={handleImageUpload}
           onSuccess={() => router.back()}
           loading={updateLoading}
           error={updateError?.message}

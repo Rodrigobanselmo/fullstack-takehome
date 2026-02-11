@@ -6,7 +6,7 @@ export const fileTypeDefs = gql`
     key: String!
     bucket: String!
     region: String!
-    url: String!
+    url: String
     filename: String!
     mimeType: String!
     size: Int!
@@ -22,5 +22,32 @@ export const fileTypeDefs = gql`
 
   extend type RecipeGroup {
     image: File
+  }
+
+  enum FileUploadType {
+    RECIPE
+    RECIPE_GROUP
+    INGREDIENT
+  }
+
+  type PresignedPost {
+    url: String!
+    fields: String!
+    key: String!
+  }
+
+  type UploadFileResult {
+    file: File!
+    presignedPost: PresignedPost!
+  }
+
+  input UploadFileInput {
+    filename: String!
+    mimeType: String!
+    type: FileUploadType!
+  }
+
+  extend type Mutation {
+    uploadFile(input: UploadFileInput!): UploadFileResult!
   }
 `;

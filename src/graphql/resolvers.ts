@@ -8,6 +8,7 @@ import { userResolvers } from "./user/user.resolvers";
 import { recipeResolvers } from "./recipe/recipe.resolvers";
 import { recipeGroupResolvers } from "./recipe-group/recipe-group.resolvers";
 import { ingredientResolvers } from "./ingredient/ingredient.resolvers";
+import { fileResolvers } from "./file/file.resolvers";
 
 // Custom Decimal scalar for Prisma Decimal type
 // parseValue returns a plain number so Zod validators work correctly
@@ -46,6 +47,7 @@ const DecimalScalar = new GraphQLScalarType({
 export const resolvers = {
   DateTime: DateTimeResolver,
   Decimal: DecimalScalar,
+  File: fileResolvers.File,
   Recipe: recipeResolvers.Recipe,
   RecipeIngredient: recipeResolvers.RecipeIngredient,
   RecipeGroup: recipeGroupResolvers.RecipeGroup,
@@ -54,6 +56,7 @@ export const resolvers = {
     ...aiResolvers.Mutation,
     ...authResolvers.Mutation,
     ...chatResolvers.Mutation,
+    ...fileResolvers.Mutation,
     ...recipeResolvers.Mutation,
     ...recipeGroupResolvers.Mutation,
     ...ingredientResolvers.Mutation,

@@ -29,7 +29,9 @@ export const createRecipeInputSchema = z.object({
   servings: z
     .number({
       error: (issue: { input: unknown }) =>
-        isNil(issue.input) ? "Servings is required" : "Servings must be a number",
+        isNil(issue.input)
+          ? "Servings is required"
+          : "Servings must be a number",
     })
     .int("Servings must be an integer")
     .positive("Servings must be positive"),
@@ -55,6 +57,7 @@ export const createRecipeInputSchema = z.object({
   ingredients: z
     .array(recipeIngredientInputSchema)
     .min(1, "At least one ingredient is required"),
+  imageFileId: z.string().optional(),
 });
 
 export const updateRecipeInputSchema = z.object({
@@ -76,6 +79,7 @@ export const updateRecipeInputSchema = z.object({
     .int("Overall rating must be an integer")
     .min(1, "Overall rating must be at least 1")
     .max(5, "Overall rating must be at most 5")
+    .nullable()
     .optional(),
   prepTimeMinutes: z
     .number({
@@ -84,27 +88,19 @@ export const updateRecipeInputSchema = z.object({
     })
     .int("Prep time must be an integer")
     .positive("Prep time must be positive")
+    .nullable()
     .optional(),
-  instructions: z.string().optional(),
+  instructions: z.string().nullable().optional(),
   ingredients: z
     .array(recipeIngredientInputSchema)
     .min(1, "At least one ingredient is required")
     .optional(),
+  imageFileId: z.string().nullable().optional(),
 });
 
 export const updateRecipeArgsSchema = z.object({
   id: z.string().min(1, "Recipe ID is required"),
   input: updateRecipeInputSchema,
-});
-
-export const generatePresignedUrlInputSchema = z.object({
-  recipeId: z.string().min(1, "Recipe ID is required"),
-  filename: z.string().min(1, "Filename is required"),
-  mimeType: z.string().min(1, "MIME type is required"),
-});
-
-export const deleteRecipeImageArgsSchema = z.object({
-  recipeId: z.string().min(1, "Recipe ID is required"),
 });
 
 export const recipeArgsSchema = z.object({

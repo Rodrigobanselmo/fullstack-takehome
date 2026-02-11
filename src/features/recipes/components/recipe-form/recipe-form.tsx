@@ -14,6 +14,7 @@ import FormError from "~/components/ui/forms/form-error/form-error";
 import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
+import ImageUploadField from "~/components/ui/forms/image-upload-field/image-upload-field";
 import { useToast } from "~/components/ui/toast";
 import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryIngredients } from "~/features/ingredients/api/use-query-ingredients";
@@ -42,6 +43,11 @@ export const RECIPE_FORM_FRAGMENT = gql`
       optional
       price
     }
+    image {
+      id
+      url
+      filename
+    }
   }
 `;
 
@@ -50,6 +56,7 @@ export interface RecipeFormProps {
   loading?: boolean;
   error?: string;
   onSubmit: (data: CreateRecipeFormData) => Promise<void>;
+  onImageUpload: (file: File) => Promise<string>; // Returns fileId
   onSuccess?: () => void;
   submitButtonText?: string;
   loadingText?: string;
@@ -96,6 +103,7 @@ export default function RecipeForm({
   loading = false,
   error = "",
   onSubmit,
+  onImageUpload,
   onSuccess,
   submitButtonText = "Create Recipe",
   loadingText = "Creating Recipe...",
@@ -105,9 +113,18 @@ export default function RecipeForm({
 }: RecipeFormProps) {
   const recipeData = useFragment(RecipeFormFragmentDoc, recipe);
   const [formError, setFormError] = useState<string>(error);
+  const initialImageId = recipeData?.image?.id || null;
+  const [imageFileId, setImageFileId] = useState<string | null>(initialImageId);
+  const [imageChanged, setImageChanged] = useState(false);
   const { data: ingredientsQueryData, loading: ingredientsLoading } =
     useQueryIngredients();
   const toast = useToast();
+
+  // Track when image changes
+  const handleImageChange = (fileId: string | null) => {
+    setImageFileId(fileId);
+    setImageChanged(true);
+  };
 
   const {
     control,
@@ -125,7 +142,13 @@ export default function RecipeForm({
 
   const onFormSubmit = async (data: CreateRecipeFormData) => {
     try {
-      await onSubmit(data);
+      // Add imageFileId to the data
+      // Only include imageFileId if it was changed
+      const submitData = {
+        ...data,
+        imageFileId: imageChanged ? imageFileId : undefined,
+      };
+      await onSubmit(submitData);
       toast.success(successMessage);
       onSuccess?.();
     } catch (err) {
@@ -234,6 +257,15 @@ export default function RecipeForm({
             placeholder="Write your recipe instructions here...&#10;&#10;# Example&#10;&#10;1. Preheat oven to 350°F&#10;2. Mix ingredients&#10;&#10;**Tips:** Use fresh ingredients for best results."
           />
         )}
+      />
+
+      <ImageUploadField
+        label="Recipe Image"
+        name="recipeImage"
+        value={recipeData?.image?.url || null}
+        onChange={handleImageChange}
+        onUpload={onImageUpload}
+        disabled={loading}
       />
 
       <div className={styles.ingredientsSection}>

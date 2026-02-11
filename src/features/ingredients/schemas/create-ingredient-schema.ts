@@ -11,7 +11,7 @@ export const createIngredientSchema = z.object({
     .string()
     .max(500, "Description must be less than 500 characters")
     .optional(),
-  categories: z.array(z.nativeEnum(IngredientCategory)).optional(),
+  categories: z.array(z.enum(IngredientCategory)).optional(),
   defaultUnit: z.string().optional(),
   averagePrice: z
     .string()

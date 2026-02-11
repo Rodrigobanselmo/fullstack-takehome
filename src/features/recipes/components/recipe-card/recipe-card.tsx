@@ -9,6 +9,7 @@ interface RecipeCardProps {
   tags?: RecipeTag[];
   overallRating?: number | null;
   prepTimeMinutes?: number | null;
+  imageUrl?: string | null;
   onClick?: () => void;
 }
 
@@ -18,10 +19,16 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   tags = [],
   overallRating,
   prepTimeMinutes,
+  imageUrl,
   onClick,
 }) => {
   return (
     <div className={styles.recipeCard} onClick={onClick}>
+      {imageUrl && (
+        <div className={styles.recipeImage}>
+          <img src={imageUrl} alt={name} />
+        </div>
+      )}
       <div className={styles.recipeHeader}>
         <h3 className={styles.recipeTitle}>{name}</h3>
         {overallRating && (

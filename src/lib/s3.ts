@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -214,4 +215,31 @@ export async function getPresignedDownloadUrl(
   });
 
   return await getSignedUrl(s3Client, command, { expiresIn });
+}
+
+/**
+ * Check if a file exists in S3
+ *
+ * @param file - File data with key and optional bucket
+ * @returns True if file exists, false otherwise
+ */
+export async function checkFileExistsInS3(file: FileData): Promise<boolean> {
+  const bucket = file.bucket || BUCKET_NAME;
+
+  try {
+    const command = new HeadObjectCommand({
+      Bucket: bucket,
+      Key: file.key,
+    });
+
+    await s3Client.send(command);
+    return true;
+  } catch (error) {
+    // If error is NotFound, file doesn't exist
+    if ((error as { name?: string }).name === "NotFound") {
+      return false;
+    }
+    // Re-throw other errors (permissions, network, etc.)
+    throw error;
+  }
 }

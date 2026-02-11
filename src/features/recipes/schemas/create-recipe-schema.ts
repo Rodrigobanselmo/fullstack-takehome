@@ -25,7 +25,7 @@ export const createRecipeSchema = z.object({
     .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
       message: "Servings must be a positive number",
     }),
-  tags: z.array(z.nativeEnum(RecipeTag)).optional(),
+  tags: z.array(z.enum(RecipeTag)).optional(),
   overallRating: z
     .string()
     .optional()
@@ -53,6 +53,7 @@ export const createRecipeSchema = z.object({
       },
     ),
   instructions: z.string().optional(),
+  imageFileId: z.string().nullable().optional(),
   ingredients: z
     .array(recipeIngredientSchema)
     .min(1, "At least one ingredient is required"),

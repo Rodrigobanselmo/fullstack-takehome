@@ -34,6 +34,11 @@ export const RECIPE_VIEW_FRAGMENT = gql`
     ingredients {
       ...RecipeViewIngredient
     }
+    image {
+      id
+      url
+      filename
+    }
     createdAt
     updatedAt
   }
@@ -66,11 +71,27 @@ function IngredientItem({ ingredient }: IngredientItemProps) {
 }
 
 export default function RecipeView({ recipe }: RecipeViewProps) {
-  const { name, servings, tags, overallRating, prepTimeMinutes, ingredients } =
-    useFragment(RecipeViewFragmentDoc, recipe);
+  const {
+    name,
+    servings,
+    tags,
+    overallRating,
+    prepTimeMinutes,
+    ingredients,
+    image,
+  } = useFragment(RecipeViewFragmentDoc, recipe);
 
   return (
     <div className={styles.recipeView}>
+      {image?.url && (
+        <div className={styles.imageContainer}>
+          <img
+            src={image.url}
+            alt={name}
+            className={styles.recipeImage}
+          />
+        </div>
+      )}
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
         {overallRating && (

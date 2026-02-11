@@ -12,6 +12,11 @@ export const RECIPES_QUERY = gql`
       tags
       overallRating
       prepTimeMinutes
+      image {
+        id
+        url
+        filename
+      }
       createdAt
       updatedAt
     }

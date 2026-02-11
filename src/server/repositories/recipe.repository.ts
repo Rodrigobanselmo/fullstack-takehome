@@ -37,9 +37,9 @@ export interface UpdateRecipeData {
   name?: string;
   servings?: number;
   tags?: string[];
-  overallRating?: number;
-  prepTimeMinutes?: number;
-  instructions?: string;
+  overallRating?: number | null; // Nullable: can be set to null to clear
+  prepTimeMinutes?: number | null; // Nullable: can be set to null to clear
+  instructions?: string | null; // Nullable: can be set to null to clear
   ingredients?: RecipeIngredientData[];
 }
 
@@ -227,18 +227,22 @@ class PrismaRecipeRepository {
     });
   }
 
-  async detachFileFromRecipe({
+  async detachFilesFromRecipe({
     recipeId,
-    fileId,
+    fileIds,
   }: {
     recipeId: string;
-    fileId: string;
+    fileIds: string[];
   }): Promise<void> {
+    if (fileIds.length === 0) return;
+
     const db = getPrismaClient();
     await db.recipe_files.deleteMany({
       where: {
         recipeId,
-        fileId,
+        fileId: {
+          in: fileIds,
+        },
       },
     });
   }

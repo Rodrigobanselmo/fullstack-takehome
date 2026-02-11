@@ -4,6 +4,22 @@
   gap: 2rem;
 }
 
+.imageContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px var(--color-shadow);
+}
+
+.recipeImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

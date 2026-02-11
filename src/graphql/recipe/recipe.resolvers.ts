@@ -2,8 +2,6 @@ import type {
   MutationCreateRecipeArgs,
   MutationDeleteRecipeArgs,
   MutationUpdateRecipeArgs,
-  MutationUploadRecipeImageArgs,
-  MutationDeleteRecipeImageArgs,
   QueryRecipeArgs,
   Ingredient,
 } from "generated/gql/graphql";
@@ -17,8 +15,6 @@ import {
   getRecipeById,
   getRecipesByUserId,
   updateRecipe,
-  uploadRecipeImagePresigned,
-  deleteRecipeImage as deleteRecipeImageService,
 } from "./recipe.services";
 import type {
   RecipeEntity,
@@ -28,8 +24,6 @@ import {
   createRecipeInputSchema,
   recipeArgsSchema,
   updateRecipeArgsSchema,
-  generatePresignedUrlInputSchema,
-  deleteRecipeImageArgsSchema,
 } from "./recipe.validators";
 import type { FileEntity } from "~/server/repositories/file.repository";
 
@@ -186,72 +180,6 @@ export const recipeResolvers = {
         userId: context.user.id,
         recipeId: validation.data.id,
       });
-    },
-
-    uploadRecipeImage: async (
-      _: unknown,
-      args: MutationUploadRecipeImageArgs,
-      context: GraphQLContext,
-    ) => {
-      const isUnauthorized = !canManageRecipes(context.user);
-      if (isUnauthorized) {
-        throw UnauthorizedError();
-      }
-
-      if (!context.user) {
-        throw UnauthorizedError();
-      }
-
-      const validation = schemaValidation(
-        generatePresignedUrlInputSchema,
-        args.input,
-      );
-      if (validation.success === false) {
-        throw InvalidInputError(validation.error);
-      }
-
-      const result = await uploadRecipeImagePresigned({
-        recipeId: validation.data.recipeId,
-        userId: context.user.id,
-        filename: validation.data.filename,
-        mimeType: validation.data.mimeType,
-      });
-
-      return {
-        file: result.file,
-        presignedPost: {
-          url: result.presignedPost.url,
-          fields: JSON.stringify(result.presignedPost.fields),
-          key: result.presignedPost.key,
-        },
-      };
-    },
-
-    deleteRecipeImage: async (
-      _: unknown,
-      args: MutationDeleteRecipeImageArgs,
-      context: GraphQLContext,
-    ): Promise<boolean> => {
-      const isUnauthorized = !canManageRecipes(context.user);
-      if (isUnauthorized) {
-        throw UnauthorizedError();
-      }
-
-      if (!context.user) {
-        throw UnauthorizedError();
-      }
-
-      const validation = schemaValidation(deleteRecipeImageArgsSchema, args);
-      if (validation.success === false) {
-        throw InvalidInputError(validation.error);
-      }
-
-      await deleteRecipeImageService({
-        recipeId: validation.data.recipeId,
-        userId: context.user.id,
-      });
-
-      return true;
     },
   },
 };

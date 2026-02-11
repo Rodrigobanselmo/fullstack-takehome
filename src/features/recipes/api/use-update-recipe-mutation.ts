@@ -17,6 +17,11 @@ const UPDATE_RECIPE_MUTATION = gql`
       overallRating
       prepTimeMinutes
       instructions
+      image {
+        id
+        url
+        filename
+      }
       ingredients {
         id
         ingredientId

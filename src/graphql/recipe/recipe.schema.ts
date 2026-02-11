@@ -72,6 +72,7 @@ export const recipeTypeDefs = gql`
     prepTimeMinutes: Int
     instructions: String
     ingredients: [RecipeIngredientInput!]!
+    imageFileId: ID
   }
 
   input UpdateRecipeInput {
@@ -82,23 +83,7 @@ export const recipeTypeDefs = gql`
     prepTimeMinutes: Int
     instructions: String
     ingredients: [RecipeIngredientInput!]
-  }
-
-  type PresignedPost {
-    url: String!
-    fields: String!
-    key: String!
-  }
-
-  type UploadRecipeImageResult {
-    file: File!
-    presignedPost: PresignedPost!
-  }
-
-  input GeneratePresignedUrlInput {
-    recipeId: ID!
-    filename: String!
-    mimeType: String!
+    imageFileId: ID
   }
 
   type Query {
@@ -110,9 +95,5 @@ export const recipeTypeDefs = gql`
     createRecipe(input: CreateRecipeInput!): Recipe!
     updateRecipe(id: ID!, input: UpdateRecipeInput!): Recipe!
     deleteRecipe(id: ID!): Boolean!
-    uploadRecipeImage(
-      input: GeneratePresignedUrlInput!
-    ): UploadRecipeImageResult!
-    deleteRecipeImage(recipeId: ID!): Boolean!
   }
 `;

@@ -197,6 +197,7 @@ export default function RecipesPage() {
                               tags={recipe.tags}
                               overallRating={recipe.overallRating}
                               prepTimeMinutes={recipe.prepTimeMinutes}
+                              imageUrl={recipe.image?.url}
                               onClick={() => handleRecipeClick(recipe.id)}
                             />
                           ))}
