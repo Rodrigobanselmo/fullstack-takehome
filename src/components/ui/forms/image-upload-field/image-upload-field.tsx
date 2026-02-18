@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import styles from "./image-upload-field.module.css";
 
 interface ImageUploadFieldProps {
@@ -28,11 +29,28 @@ export default function ImageUploadField({
   const [error, setError] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync preview with value prop
   useEffect(() => {
     setPreview(value || null);
   }, [value]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isMenuOpen]);
 
   const validateFile = (file: File): string | null => {
     // Check file type
@@ -117,6 +135,12 @@ export default function ImageUploadField({
     setPreview(null);
     setError("");
     onChange(null);
+    setIsMenuOpen(false);
+  };
+
+  const handleEdit = () => {
+    setIsMenuOpen(false);
+    fileInputRef.current?.click();
   };
 
   const isDisabled = disabled || loading || isUploading;
@@ -130,15 +154,70 @@ export default function ImageUploadField({
 
       {preview ? (
         <div className={styles.previewContainer}>
-          <img src={preview} alt="Preview" className={styles.preview} />
-          <button
-            type="button"
-            onClick={handleRemove}
-            disabled={isDisabled}
-            className={styles.removeButton}
+          <div
+            className={`${styles.imageWrapper} ${isDragging ? styles.dragging : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            Remove Image
-          </button>
+            {/* Blurred background */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="" className={styles.imageBackground} aria-hidden="true" />
+            {/* Main preview image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="Preview" className={styles.preview} />
+            {/* Drag overlay */}
+            {isDragging && (
+              <div className={styles.dragOverlay}>
+                <div className={styles.dragOverlayContent}>
+                  <div className={styles.uploadIcon}>📷</div>
+                  <span className={styles.dragOverlayText}>Drop to replace image</span>
+                </div>
+              </div>
+            )}
+            <div className={styles.menuContainer} ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                disabled={isDisabled}
+                className={styles.menuButton}
+                aria-label="Image options"
+              >
+                <MoreVertical size={20} />
+              </button>
+              {isMenuOpen && (
+                <div className={styles.menu}>
+                  <button
+                    type="button"
+                    onClick={handleEdit}
+                    className={styles.menuItem}
+                    disabled={isDisabled}
+                  >
+                    <Pencil size={16} />
+                    <span>Edit Image</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                    disabled={isDisabled}
+                  >
+                    <Trash2 size={16} />
+                    <span>Delete Image</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Hidden file input for edit functionality */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleInputChange}
+            disabled={isDisabled}
+            className={styles.hiddenFileInput}
+          />
         </div>
       ) : (
         <div

@@ -53,6 +53,7 @@ export const recipeTypeDefs = gql`
     ingredients: [RecipeIngredient!]!
     createdAt: DateTime!
     updatedAt: DateTime!
+    image: File
   }
 
   input RecipeIngredientInput {

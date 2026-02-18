@@ -14,6 +14,7 @@ interface InputFieldProps {
   required?: boolean;
   multiline?: boolean;
   maxLines?: number;
+  error?: string;
 }
 
 const TextField: React.FC<InputFieldProps> = ({
@@ -27,18 +28,19 @@ const TextField: React.FC<InputFieldProps> = ({
   required = false,
   multiline = false,
   maxLines,
+  error,
 }) => (
   <div className={styles.inputGroup}>
     <label htmlFor={name} className={styles.inputLabel}>
       {label}
+      {!required && <span className={styles.optionalLabel}> (optional)</span>}
     </label>
     {multiline ? (
       <textarea
         id={name}
         name={name}
         autoComplete={autoComplete}
-        required={required}
-        className={styles.input}
+        className={`${styles.input} ${error ? styles.inputError : ""}`}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -51,13 +53,13 @@ const TextField: React.FC<InputFieldProps> = ({
         name={name}
         type={type}
         autoComplete={autoComplete}
-        required={required}
-        className={styles.input}
+        className={`${styles.input} ${error ? styles.inputError : ""}`}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
       />
     )}
+    {error && <span className={styles.errorMessage}>{error}</span>}
   </div>
 );
 

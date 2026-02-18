@@ -20,6 +20,7 @@ import { ConfirmDialog } from "~/components/ui/modal/confirm-dialog";
 import type { CreateRecipeFormData } from "~/features/recipes/schemas/create-recipe-schema";
 import { paths } from "~/config/paths";
 import styles from "./page.module.css";
+import { toNumberOrNull } from "~/lib/utils/number";
 
 export default function ViewRecipePage({
   params,
@@ -69,21 +70,17 @@ export default function ViewRecipePage({
           name: formData.name,
           servings: parseInt(formData.servings),
           tags: formData.tags,
-          overallRating: formData.overallRating
-            ? parseInt(formData.overallRating)
-            : undefined,
-          prepTimeMinutes: formData.prepTimeMinutes
-            ? parseInt(formData.prepTimeMinutes)
-            : undefined,
-          instructions: formData.instructions || undefined,
-          imageFileId: formData.imageFileId || undefined,
+          overallRating: toNumberOrNull(formData.overallRating),
+          prepTimeMinutes: toNumberOrNull(formData.prepTimeMinutes),
+          instructions: formData.instructions,
+          imageFileId: formData.imageFileId,
           ingredients: formData.ingredients.map((ing) => ({
             ingredientId: ing.ingredientId,
-            quantity: parseFloat(ing.quantity),
+            quantity: toNumberOrNull(ing.quantity) ?? 0,
             unit: ing.unit,
             notes: ing.notes,
             optional: ing.optional,
-            price: ing.price ? parseFloat(ing.price) : undefined,
+            price: toNumberOrNull(ing.price) ?? undefined,
           })),
         },
       },

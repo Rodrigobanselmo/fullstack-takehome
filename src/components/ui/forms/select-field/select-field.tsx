@@ -12,6 +12,7 @@ interface SelectFieldProps {
   disabled?: boolean;
   clearable?: boolean;
   multiple?: boolean;
+  error?: string;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -25,16 +26,17 @@ const SelectField: React.FC<SelectFieldProps> = ({
   disabled = false,
   clearable = false,
   multiple = false,
+  error,
 }) => (
   <div className={styles.inputGroup}>
     <label htmlFor={name} className={styles.inputLabel}>
       {label}
+      {!required && <span className={styles.optionalLabel}> (optional)</span>}
     </label>
     <select
       id={name}
       name={name}
-      required={required}
-      className={`${styles.input} ${multiple ? styles.multipleSelect : ""}`}
+      className={`${styles.input} ${multiple ? styles.multipleSelect : ""} ${error ? styles.inputError : ""}`}
       value={value}
       onChange={onChange}
       disabled={disabled}
@@ -51,6 +53,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         </option>
       ))}
     </select>
+    {error && <span className={styles.errorMessage}>{error}</span>}
   </div>
 );
 

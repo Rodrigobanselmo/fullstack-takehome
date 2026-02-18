@@ -4,20 +4,21 @@ import type { FragmentType } from "generated/gql/fragment-masking";
 import { useFragment } from "generated/gql/fragment-masking";
 import type { RecipeFormFragment, RecipeTag } from "generated/gql/graphql";
 import { RecipeFormFragmentDoc } from "generated/gql/graphql";
-import { useState } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useCallback, useState } from "react";
+import type { FieldErrors } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import Button from "~/components/ui/button/button";
 import CheckboxField from "~/components/ui/forms/checkbox-field/checkbox-field";
 import FormActions from "~/components/ui/forms/form-actions/form-actions";
-import MarkdownEditor from "~/components/ui/forms/markdown-editor/markdown-editor";
 import FormError from "~/components/ui/forms/form-error/form-error";
+import ImageUploadField from "~/components/ui/forms/image-upload-field/image-upload-field";
+import MarkdownEditor from "~/components/ui/forms/markdown-editor/markdown-editor";
 import MultiSelectField from "~/components/ui/forms/multi-select-field/multi-select-field";
 import SelectField from "~/components/ui/forms/select-field/select-field";
 import TextField from "~/components/ui/forms/text-field/text-field";
-import ImageUploadField from "~/components/ui/forms/image-upload-field/image-upload-field";
 import { useToast } from "~/components/ui/toast";
-import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { useQueryIngredients } from "~/features/ingredients/api/use-query-ingredients";
+import { extractGraphQLErrorMessage } from "~/lib/graphql-error";
 import { RECIPE_TAG_OPTIONS } from "../../constants/recipe-tag-map";
 import {
   createRecipeSchema,
@@ -77,6 +78,7 @@ function getDefaultValues(
       prepTimeMinutes: "",
       instructions: "",
       ingredients: [],
+      imageFileId: null,
     };
   }
 
@@ -95,6 +97,7 @@ function getDefaultValues(
       optional: ing.optional || false,
       price: ing.price?.toString() || "",
     })),
+    imageFileId: recipeData.image?.id || null,
   };
 }
 
@@ -113,18 +116,9 @@ export default function RecipeForm({
 }: RecipeFormProps) {
   const recipeData = useFragment(RecipeFormFragmentDoc, recipe);
   const [formError, setFormError] = useState<string>(error);
-  const initialImageId = recipeData?.image?.id || null;
-  const [imageFileId, setImageFileId] = useState<string | null>(initialImageId);
-  const [imageChanged, setImageChanged] = useState(false);
   const { data: ingredientsQueryData, loading: ingredientsLoading } =
     useQueryIngredients();
   const toast = useToast();
-
-  // Track when image changes
-  const handleImageChange = (fileId: string | null) => {
-    setImageFileId(fileId);
-    setImageChanged(true);
-  };
 
   const {
     control,
@@ -142,13 +136,7 @@ export default function RecipeForm({
 
   const onFormSubmit = async (data: CreateRecipeFormData) => {
     try {
-      // Add imageFileId to the data
-      // Only include imageFileId if it was changed
-      const submitData = {
-        ...data,
-        imageFileId: imageChanged ? imageFileId : undefined,
-      };
-      await onSubmit(submitData);
+      await onSubmit(data);
       toast.success(successMessage);
       onSuccess?.();
     } catch (err) {
@@ -157,6 +145,23 @@ export default function RecipeForm({
       toast.error(errorMessage, errorMsg);
     }
   };
+
+  const onFormError = useCallback(
+    (fieldErrors: FieldErrors<CreateRecipeFormData>) => {
+      const firstErrorKey = Object.keys(fieldErrors)[0];
+      if (firstErrorKey) {
+        const element = document.querySelector(`[name="${firstErrorKey}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Delay focus to allow smooth scroll to complete
+          setTimeout(() => {
+            (element as HTMLElement).focus?.();
+          }, 800);
+        }
+      }
+    },
+    [],
+  );
 
   const ingredientOptions =
     ingredientsQueryData?.ingredients?.edges.map((edge) => ({
@@ -170,12 +175,15 @@ export default function RecipeForm({
     : null;
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className={styles.form}>
+    <form
+      onSubmit={handleSubmit(onFormSubmit, onFormError)}
+      className={styles.form}
+    >
       <div className={styles.formSection}>
         <Controller
           name="name"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <TextField
               label="Recipe Name"
               name="name"
@@ -183,13 +191,14 @@ export default function RecipeForm({
               onChange={field.onChange}
               placeholder="Enter recipe name..."
               required={true}
+              error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           name="servings"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <TextField
               label="Servings"
               name="servings"
@@ -198,13 +207,14 @@ export default function RecipeForm({
               onChange={field.onChange}
               placeholder="Enter number of servings..."
               required={true}
+              error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           name="prepTimeMinutes"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <TextField
               label="Prep Time (minutes)"
               name="prepTimeMinutes"
@@ -212,13 +222,14 @@ export default function RecipeForm({
               value={field.value || ""}
               onChange={field.onChange}
               placeholder="Enter prep time..."
+              error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           name="overallRating"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <TextField
               label="Overall Rating (1-5)"
               name="overallRating"
@@ -226,13 +237,14 @@ export default function RecipeForm({
               value={field.value || ""}
               onChange={field.onChange}
               placeholder="Enter rating..."
+              error={fieldState.error?.message}
             />
           )}
         />
         <Controller
           name="tags"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <MultiSelectField
               label="Tags"
               name="tags"
@@ -240,6 +252,7 @@ export default function RecipeForm({
               onChange={(values) => field.onChange(values as RecipeTag[])}
               options={RECIPE_TAG_OPTIONS}
               placeholder="Select tags..."
+              error={fieldState.error?.message}
             />
           )}
         />
@@ -259,13 +272,19 @@ export default function RecipeForm({
         )}
       />
 
-      <ImageUploadField
-        label="Recipe Image"
-        name="recipeImage"
-        value={recipeData?.image?.url || null}
-        onChange={handleImageChange}
-        onUpload={onImageUpload}
-        disabled={loading}
+      <Controller
+        name="imageFileId"
+        control={control}
+        render={({ field }) => (
+          <ImageUploadField
+            label="Recipe Image"
+            name="recipeImage"
+            value={recipeData?.image?.url || null}
+            onChange={field.onChange}
+            onUpload={onImageUpload}
+            disabled={loading}
+          />
+        )}
       />
 
       <div className={styles.ingredientsSection}>
@@ -294,7 +313,7 @@ export default function RecipeForm({
             <Controller
               name={`ingredients.${index}.ingredientId`}
               control={control}
-              render={({ field: f }) => (
+              render={({ field: f, fieldState }) => (
                 <SelectField
                   label="Ingredient"
                   name={`ingredient-${index}`}
@@ -304,13 +323,14 @@ export default function RecipeForm({
                   placeholder="Select ingredient..."
                   required={true}
                   disabled={ingredientsLoading}
+                  error={fieldState.error?.message}
                 />
               )}
             />
             <Controller
               name={`ingredients.${index}.quantity`}
               control={control}
-              render={({ field: f }) => (
+              render={({ field: f, fieldState }) => (
                 <TextField
                   label="Quantity"
                   name={`quantity-${index}`}
@@ -319,13 +339,14 @@ export default function RecipeForm({
                   onChange={f.onChange}
                   placeholder="Amount..."
                   required={true}
+                  error={fieldState.error?.message}
                 />
               )}
             />
             <Controller
               name={`ingredients.${index}.unit`}
               control={control}
-              render={({ field: f }) => (
+              render={({ field: f, fieldState }) => (
                 <TextField
                   label="Unit"
                   name={`unit-${index}`}
@@ -333,26 +354,28 @@ export default function RecipeForm({
                   onChange={f.onChange}
                   placeholder="cups, tbsp, etc..."
                   required={true}
+                  error={fieldState.error?.message}
                 />
               )}
             />
             <Controller
               name={`ingredients.${index}.notes`}
               control={control}
-              render={({ field: f }) => (
+              render={({ field: f, fieldState }) => (
                 <TextField
                   label="Notes"
                   name={`notes-${index}`}
                   value={f.value || ""}
                   onChange={f.onChange}
                   placeholder="Optional notes..."
+                  error={fieldState.error?.message}
                 />
               )}
             />
             <Controller
               name={`ingredients.${index}.price`}
               control={control}
-              render={({ field: f }) => (
+              render={({ field: f, fieldState }) => (
                 <TextField
                   label="Price"
                   name={`price-${index}`}
@@ -360,6 +383,7 @@ export default function RecipeForm({
                   value={f.value || ""}
                   onChange={f.onChange}
                   placeholder="0.00"
+                  error={fieldState.error?.message}
                 />
               )}
             />

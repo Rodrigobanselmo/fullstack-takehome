@@ -11,6 +11,7 @@ interface MultiSelectFieldProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   disabled?: boolean;
+  error?: string;
 }
 
 const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
@@ -22,6 +23,7 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
   options,
   placeholder = "Select...",
   disabled = false,
+  error,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,10 +85,10 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
     <div className={styles.inputGroup} ref={containerRef}>
       <label htmlFor={name} className={styles.inputLabel}>
         {label}
-        {required && <span className={styles.required}>*</span>}
+        {!required && <span className={styles.optionalLabel}> (optional)</span>}
       </label>
       <div
-        className={`${styles.selectContainer} ${isOpen ? styles.focused : ""} ${disabled ? styles.disabled : ""}`}
+        className={`${styles.selectContainer} ${isOpen ? styles.focused : ""} ${disabled ? styles.disabled : ""} ${error ? styles.selectError : ""}`}
         onClick={() => {
           if (!disabled) {
             setIsOpen(true);
@@ -159,6 +161,7 @@ const MultiSelectField: React.FC<MultiSelectFieldProps> = ({
           <div className={styles.noResults}>No results found</div>
         </div>
       )}
+      {error && <span className={styles.errorMessage}>{error}</span>}
     </div>
   );
 };

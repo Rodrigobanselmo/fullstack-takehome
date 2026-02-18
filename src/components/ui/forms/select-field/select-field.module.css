@@ -46,3 +46,24 @@
   padding-right: 1rem;
   background-image: none;
 }
+
+.inputError {
+  border-color: var(--color-danger) !important;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: var(--color-danger, #ef4444);
+  margin-left: 0.25rem;
+  display: block;
+  font-weight: 500;
+}
+
+.optionalLabel {
+  font-weight: 400;
+  color: var(--color-gray, #6b7280);
+}
