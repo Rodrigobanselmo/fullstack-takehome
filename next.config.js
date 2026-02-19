@@ -7,6 +7,7 @@ jiti("./src/config/env");
 /** @type {import("next").NextConfig} */
 const config = {
   output: "standalone",
+  devIndicators: false,
 };
 
 export default config;

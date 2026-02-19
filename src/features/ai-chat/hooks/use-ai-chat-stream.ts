@@ -7,6 +7,7 @@ export interface ChatMessage {
   content: string;
   toolName?: string;
   toolStatus?: "running" | "success" | "error";
+  timestamp: Date;
 }
 
 // Stream event types from the backend
@@ -60,7 +61,11 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     setIsLoading(true);
 
     // Add user message
-    const userMessage: ChatMessage = { role: "user", content: message };
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: message,
+      timestamp: new Date(),
+    };
     setMessages((prev) => [...prev, userMessage]);
 
     // Prepare history (only user/assistant messages, not tool messages)
@@ -118,6 +123,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                     content: `${displayName}...`,
                     toolName: event.tool,
                     toolStatus: "running",
+                    timestamp: new Date(),
                   },
                 ]);
               } else if (event.type === "tool_end") {
@@ -141,6 +147,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                           : `✗ ${displayName}: ${event.result}`,
                         toolName: msg.toolName,
                         toolStatus: event.success ? "success" : "error",
+                        timestamp: msg.timestamp,
                       };
                       break;
                     }
@@ -154,7 +161,11 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                   // Add assistant message placeholder
                   setMessages((prev) => [
                     ...prev,
-                    { role: "assistant", content: assistantContent },
+                    {
+                      role: "assistant",
+                      content: assistantContent,
+                      timestamp: new Date(),
+                    },
                   ]);
                   hasAssistantMessage = true;
                 } else {
@@ -162,10 +173,12 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastIndex = updated.length - 1;
-                    if (updated[lastIndex]?.role === "assistant") {
+                    const lastMsg = updated[lastIndex];
+                    if (lastMsg?.role === "assistant") {
                       updated[lastIndex] = {
                         role: "assistant",
                         content: assistantContent,
+                        timestamp: lastMsg.timestamp,
                       };
                     }
                     return updated;

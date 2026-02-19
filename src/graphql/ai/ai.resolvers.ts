@@ -7,6 +7,8 @@ import {
   aiThreadRepository,
   type AIThread,
   type AIMessage,
+  type AIThreadConnection,
+  type AIMessageConnection,
 } from "~/server/repositories/ai-thread.repository";
 
 // Inline validation schemas for better type inference
@@ -16,6 +18,14 @@ const aiThreadIdSchema = z.object({
 
 const aiThreadMessagesSchema = z.object({
   threadId: z.string().min(1, "Thread ID is required"),
+  first: z.number().min(1).max(100).optional().default(20),
+  before: z.string().nullable().optional(),
+});
+
+const aiThreadsPaginatedSchema = z.object({
+  first: z.number().min(1).max(100).optional().default(20),
+  after: z.string().nullable().optional(),
+  search: z.string().nullable().optional(),
 });
 
 const createAIThreadInputSchema = z.object({
@@ -40,13 +50,22 @@ export const aiResolvers = {
   Query: {
     aiThreads: async (
       _: unknown,
-      __: unknown,
+      args: { first?: number; after?: string | null; search?: string | null },
       context: GraphQLContext,
-    ): Promise<AIThread[]> => {
+    ): Promise<AIThreadConnection> => {
       if (!canUseAI(context.user)) {
         throw UnauthorizedError();
       }
-      return aiThreadRepository.findByUser(context.user!.id);
+      const result = aiThreadsPaginatedSchema.safeParse(args);
+      if (!result.success) {
+        throw InvalidInputError(formatZodError(result.error));
+      }
+      return aiThreadRepository.findByUserPaginated({
+        userId: context.user!.id,
+        first: result.data.first,
+        after: result.data.after,
+        search: result.data.search,
+      });
     },
 
     aiThread: async (
@@ -66,9 +85,9 @@ export const aiResolvers = {
 
     aiThreadMessages: async (
       _: unknown,
-      args: { threadId: string },
+      args: { threadId: string; first?: number; before?: string | null },
       context: GraphQLContext,
-    ): Promise<AIMessage[]> => {
+    ): Promise<AIMessageConnection> => {
       if (!canUseAI(context.user)) {
         throw UnauthorizedError();
       }
@@ -79,6 +98,10 @@ export const aiResolvers = {
       return aiThreadRepository.getMessages(
         result.data.threadId,
         context.user!.id,
+        {
+          first: result.data.first,
+          before: result.data.before,
+        },
       );
     },
   },
@@ -164,17 +187,16 @@ export const aiResolvers = {
         message,
       );
 
-      // Get recent history for context
-      const history = await aiThreadRepository.getLastMessages(threadId, 20);
-      const historyForAI = history.slice(0, -1).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Get recent history for AI context (excludes tool messages)
+      const historyForAI =
+        await aiThreadRepository.getMessagesForAIHistory(threadId, 20);
+      // Remove the last message (the one we just added) from history
+      const historyWithoutCurrent = historyForAI.slice(0, -1);
 
       // Get AI response
       const aiResult = await invokeChatAgent({
         message,
-        history: historyForAI,
+        history: historyWithoutCurrent,
       });
 
       // Save AI response

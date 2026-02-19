@@ -15,8 +15,8 @@
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 20px 25px -5px var(--color-shadow), 0 10px 10px -5px var(--color-dark-10);
-  border: 1px solid var(--color-light-20);
+  box-shadow: 0 20px 25px -5px var(--color-shadow), 0 10px 10px -5px var(--color-shadow);
+  border: 1px solid var(--color-border);
 }
 
 .title {

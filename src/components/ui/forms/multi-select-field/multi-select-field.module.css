@@ -24,7 +24,7 @@
   padding: 0.5rem 0.75rem;
   border: 2px solid var(--color-border);
   border-radius: 8px;
-  background: var(--color-background, #fff);
+  background: var(--color-paper);
   cursor: text;
   transition: all 0.2s ease-in-out;
   gap: 0.5rem;
@@ -40,7 +40,7 @@
 }
 
 .selectContainer.disabled {
-  background: var(--color-gray-100, #f3f4f6);
+  background: var(--color-secondary);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -138,11 +138,11 @@
   left: 0;
   right: 0;
   margin-top: 0.25rem;
-  background: var(--color-background, #fff);
+  background: var(--color-paper);
   border: 2px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px var(--color-shadow),
+    0 8px 10px -6px var(--color-shadow);
   max-height: 200px;
   overflow-y: auto;
   z-index: 50;

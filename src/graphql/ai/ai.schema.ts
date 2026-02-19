@@ -8,12 +8,46 @@ export const aiTypeDefs = gql`
     updatedAt: DateTime!
   }
 
+  type AIThreadEdge {
+    cursor: String!
+    node: AIThread!
+  }
+
+  type AIThreadPageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
+  type AIThreadConnection {
+    edges: [AIThreadEdge!]!
+    pageInfo: AIThreadPageInfo!
+    totalCount: Int!
+  }
+
   type AIMessage {
     id: ID!
     threadId: ID!
     role: String!
     content: String!
+    toolName: String
+    toolStatus: String
     createdAt: DateTime!
+  }
+
+  type AIMessageEdge {
+    cursor: String!
+    node: AIMessage!
+  }
+
+  type AIMessagePageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
+  type AIMessageConnection {
+    edges: [AIMessageEdge!]!
+    pageInfo: AIMessagePageInfo!
+    totalCount: Int!
   }
 
   input CreateAIThreadInput {
@@ -36,9 +70,9 @@ export const aiTypeDefs = gql`
   }
 
   extend type Query {
-    aiThreads: [AIThread!]!
+    aiThreads(first: Int, after: String, search: String): AIThreadConnection!
     aiThread(id: ID!): AIThread
-    aiThreadMessages(threadId: ID!): [AIMessage!]!
+    aiThreadMessages(threadId: ID!, first: Int, before: String): AIMessageConnection!
   }
 
   extend type Mutation {

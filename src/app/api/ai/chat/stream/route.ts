@@ -61,6 +61,9 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     let fullResponse = "";
 
+    // Track tool messages for updating their status
+    const toolMessageIds = new Map<string, string>(); // toolName -> messageId
+
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
@@ -69,6 +72,33 @@ export async function POST(req: NextRequest) {
             controller.enqueue(
               encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
             );
+
+            // Save tool messages to database if threadId provided
+            if (body.threadId) {
+              if (event.type === "tool_start") {
+                // Save tool start message
+                const toolMsg = await aiThreadRepository.addToolMessage(
+                  body.threadId,
+                  `${event.tool}...`,
+                  event.tool,
+                  "running",
+                );
+                toolMessageIds.set(event.tool, toolMsg.id);
+              } else if (event.type === "tool_end") {
+                // Update tool message with final status
+                const messageId = toolMessageIds.get(event.tool);
+                if (messageId) {
+                  const content = event.success
+                    ? `✓ ${event.tool}`
+                    : `✗ ${event.tool}: ${event.result}`;
+                  await aiThreadRepository.updateToolMessage(
+                    messageId,
+                    content,
+                    event.success ? "success" : "error",
+                  );
+                }
+              }
+            }
 
             // Accumulate content for saving to database
             if (event.type === "content") {

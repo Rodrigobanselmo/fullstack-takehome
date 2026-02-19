@@ -78,12 +78,14 @@ model ai_threads {
 
 // AI Chat Messages - stores individual messages in AI threads
 model ai_messages {
-    id        String          @id @default(cuid())
-    threadId  String          @map("thread_id")
-    role      AIMessageRole
-    content   String          @db.Text
-    createdAt DateTime        @default(now()) @map("created_at")
-    thread    ai_threads      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    id         String          @id @default(cuid())
+    threadId   String          @map("thread_id")
+    role       AIMessageRole
+    content    String          @db.Text
+    toolName   String?         @map("tool_name") // For tool messages: name of the tool
+    toolStatus String?         @map("tool_status") // For tool messages: running, success, error
+    createdAt  DateTime        @default(now()) @map("created_at")
+    thread     ai_threads      @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
     @@index([threadId], map: "ai_messages_thread_id_idx")
     @@index([createdAt], map: "ai_messages_created_at_idx")
@@ -272,4 +274,5 @@ enum UserRole {
 enum AIMessageRole {
     user
     assistant
+    tool
 }

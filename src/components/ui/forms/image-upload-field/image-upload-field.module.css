@@ -192,10 +192,10 @@
 }
 
 .menuButton:hover:not(:disabled) {
-  background-color: white;
+  background-color: var(--color-paper);
   border-color: var(--color-primary);
   color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--color-shadow);
 }
 
 .menuButton:disabled {
@@ -207,10 +207,10 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  background: white;
+  background: var(--color-paper);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--color-shadow);
   min-width: 160px;
   overflow: hidden;
   z-index: 10;

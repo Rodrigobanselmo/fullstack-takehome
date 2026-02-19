@@ -68,8 +68,9 @@
 }
 
 .expandButton:hover {
-  border-color: var(--color-text-secondary);
+  border-color: var(--color-border-hover);
   color: var(--color-text-primary);
+  background: var(--color-gray-10);
 }
 
 .content {
@@ -91,12 +92,8 @@
   overflow: hidden;
 }
 
-.groupCard:hover {
-  border-color: var(--color-text-secondary);
-}
-
 .groupCardExpanded {
-  border-color: var(--color-text-secondary);
+  border-color: var(--color-border);
 }
 
 .groupHeader {

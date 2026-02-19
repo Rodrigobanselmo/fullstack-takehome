@@ -212,7 +212,7 @@ export async function* streamRecipeAgent(
 
   let currentMessages = messagesWithSystem;
   let iterations = 0;
-  const maxIterations = 100; // Prevent infinite loops
+  const maxIterations = 300; // Prevent infinite loops
 
   while (iterations < maxIterations) {
     iterations++;
