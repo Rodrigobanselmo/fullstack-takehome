@@ -19,9 +19,9 @@ import styles from "./page.module.css";
 export default function ViewRecipeGroupPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ recipeGroupId: string }>;
 }) {
-  const { id } = use(params);
+  const { recipeGroupId: id } = use(params);
   const router = useRouter();
   const { openModal, closeModal } = useModal();
   const { data, loading, error } = useQueryRecipeGroup(id);

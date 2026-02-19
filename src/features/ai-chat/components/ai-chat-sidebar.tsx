@@ -23,6 +23,7 @@ import {
   PANEL_MAX_WIDTH,
 } from "../context/ai-chat-context";
 import { useAIChatStream, type ChatMessage } from "../hooks/use-ai-chat-stream";
+import { usePageContext } from "../hooks/use-page-context";
 import { type AIMode, AI_MODE_LABELS, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import { useQueryAIThreadMessages } from "../api/ai-thread.queries";
 import { useCreateAIThreadMutation } from "../api/ai-thread.mutations";
@@ -65,6 +66,9 @@ export function AIChatSidebar() {
     setMessages,
     interrupt,
   } = useAIChatStream();
+
+  // Track current page context for AI context awareness
+  const pageContext = usePageContext();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [hasInput, setHasInput] = useState(false);
@@ -310,7 +314,12 @@ export function AIChatSidebar() {
       }
     }
 
-    void sendMessage({ message: messageText, threadId: threadIdToUse, mode: aiMode });
+    void sendMessage({
+      message: messageText,
+      threadId: threadIdToUse,
+      mode: aiMode,
+      pageContext,
+    });
   };
 
   // Handle Enter to submit, Shift+Enter for new line

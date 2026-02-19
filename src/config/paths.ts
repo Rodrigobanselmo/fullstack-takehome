@@ -22,28 +22,34 @@ export const paths = {
     recipes: {
       getHref: () => "/dashboard/recipes",
       view: {
-        getHref: (id: string) => `/dashboard/recipes/${id}/view`,
+        getHref: (recipeId: string) => `/dashboard/recipes/${recipeId}/view`,
       },
       add: {
         getHref: () => "/dashboard/recipes/add",
+      },
+      edit: {
+        getHref: (recipeId: string) => `/dashboard/recipes/${recipeId}/edit`,
       },
     },
     ingredients: {
       getHref: () => "/dashboard/ingredients",
       view: {
-        getHref: (id: string) => `/dashboard/ingredients/${id}/view`,
+        getHref: (ingredientId: string) =>
+          `/dashboard/ingredients/${ingredientId}/view`,
       },
       add: {
         getHref: () => "/dashboard/ingredients/add",
       },
       edit: {
-        getHref: (id: string) => `/dashboard/ingredients/${id}/edit`,
+        getHref: (ingredientId: string) =>
+          `/dashboard/ingredients/${ingredientId}/edit`,
       },
     },
     recipeGroups: {
       getHref: () => "/dashboard/recipe-groups",
       view: {
-        getHref: (id: string) => `/dashboard/recipe-groups/${id}/view`,
+        getHref: (recipeGroupId: string) =>
+          `/dashboard/recipe-groups/${recipeGroupId}/view`,
       },
       add: {
         getHref: () => "/dashboard/recipe-groups/add",

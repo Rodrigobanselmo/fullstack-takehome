@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { type AIMode, DEFAULT_AI_MODE } from "~/lib/ai-types";
+import { type AIMode, type PageContext, DEFAULT_AI_MODE } from "~/lib/ai-types";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "tool";
@@ -44,6 +44,7 @@ export interface SendMessageOptions {
   message: string;
   threadId?: string | null;
   mode?: AIMode;
+  pageContext?: PageContext;
 }
 
 interface UseAIChatStreamReturn {
@@ -63,7 +64,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = async (options: SendMessageOptions) => {
-    const { message, threadId, mode = DEFAULT_AI_MODE } = options;
+    const { message, threadId, mode = DEFAULT_AI_MODE, pageContext } = options;
     if (!message.trim() || isLoading) return;
 
     setError(null);
@@ -91,7 +92,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
       const response = await fetch("/api/ai/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, threadId, mode }),
+        body: JSON.stringify({ message, history, threadId, mode, pageContext }),
         signal: abortControllerRef.current.signal,
       });
 

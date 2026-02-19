@@ -25,9 +25,9 @@ import { toNumberOrNull } from "~/lib/utils/number";
 export default function ViewRecipePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ recipeId: string }>;
 }) {
-  const { id } = use(params);
+  const { recipeId: id } = use(params);
   const router = useRouter();
   const { openModal, closeModal } = useModal();
   const { data, loading, error } = useQueryRecipe(id);

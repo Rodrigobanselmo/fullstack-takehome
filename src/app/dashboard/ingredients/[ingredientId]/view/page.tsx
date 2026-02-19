@@ -19,9 +19,9 @@ import styles from "./page.module.css";
 export default function ViewIngredientPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ ingredientId: string }>;
 }) {
-  const { id } = use(params);
+  const { ingredientId: id } = use(params);
   const router = useRouter();
   const { openModal, closeModal } = useModal();
   const { data, loading, error } = useQueryIngredient(id);
