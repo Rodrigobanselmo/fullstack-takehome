@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server";
 import { getUserFromCookie } from "~/lib/auth";
 import { captureException } from "~/lib/error-reporting";
+import { type AIMode, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import { streamRecipeAgent, type StreamEvent } from "~/server/ai";
 import { aiThreadRepository } from "~/server/repositories/ai-thread.repository";
 
@@ -16,6 +17,7 @@ interface ChatRequestBody {
   message: string;
   history?: ChatMessage[];
   threadId?: string;
+  mode?: AIMode;
 }
 
 export async function POST(req: NextRequest) {
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest) {
       message: body.message,
       history: body.history,
       userId: user.id,
+      mode: body.mode ?? DEFAULT_AI_MODE,
     });
 
     const encoder = new TextEncoder();

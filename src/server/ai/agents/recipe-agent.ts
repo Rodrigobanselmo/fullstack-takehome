@@ -8,6 +8,7 @@ import {
 import type { BaseMessage } from "@langchain/core/messages";
 import { createLLM } from "../llm";
 import { createRecipeTools } from "../tools/recipe.tools";
+import { type AIMode, DEFAULT_AI_MODE } from "~/lib/ai-types";
 
 // System prompt for the recipe agent
 const RECIPE_SYSTEM_PROMPT = `You are a helpful recipe assistant. You help users manage their recipes, ingredients, and recipe groups (collections of recipes).
@@ -68,7 +69,7 @@ async function agentNode(
   state: RecipeAgentStateType,
 ): Promise<Partial<RecipeAgentStateType>> {
   const tools = createRecipeTools(state.userId);
-  const baseLLM = createLLM({ temperature: 0.7 });
+  const baseLLM = createLLM();
   const llm = baseLLM.bindTools!(tools);
 
   const messagesWithSystem = [
@@ -107,6 +108,7 @@ export interface RecipeAgentInput {
   message: string;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
   userId: string;
+  mode?: AIMode;
 }
 
 export interface RecipeAgentOutput {
@@ -189,12 +191,18 @@ export type StreamEvent =
 /**
  * Streams the recipe agent response
  * Returns an async generator that yields StreamEvent objects
+ *
+ * @param input.mode - "fast" uses gpt-5-mini for quick responses,
+ *                     "smarter" uses gpt-5.2 with more tokens for detailed responses
  */
 export async function* streamRecipeAgent(
   input: RecipeAgentInput,
 ): AsyncGenerator<StreamEvent, void, undefined> {
   const tools = createRecipeTools(input.userId);
-  const baseLLM = createLLM({ temperature: 0.7 });
+  const mode = input.mode ?? DEFAULT_AI_MODE;
+
+  // Configure LLM based on mode (model selection handled by createLLM)
+  const baseLLM = createLLM({ mode });
   const llm = baseLLM.bindTools!(tools);
 
   // Convert history to LangChain messages

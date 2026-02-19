@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { type AIMode, DEFAULT_AI_MODE } from "~/lib/ai-types";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "tool";
@@ -39,13 +40,20 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   remove_recipes_from_group: "Removing recipes from group",
 };
 
+export interface SendMessageOptions {
+  message: string;
+  threadId?: string | null;
+  mode?: AIMode;
+}
+
 interface UseAIChatStreamReturn {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
-  sendMessage: (message: string, threadId?: string | null) => Promise<void>;
+  sendMessage: (options: SendMessageOptions) => Promise<void>;
   clearMessages: () => void;
   setMessages: (messages: ChatMessage[]) => void;
+  interrupt: () => void;
 }
 
 export function useAIChatStream(): UseAIChatStreamReturn {
@@ -54,7 +62,8 @@ export function useAIChatStream(): UseAIChatStreamReturn {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const sendMessage = async (message: string, threadId?: string | null) => {
+  const sendMessage = async (options: SendMessageOptions) => {
+    const { message, threadId, mode = DEFAULT_AI_MODE } = options;
     if (!message.trim() || isLoading) return;
 
     setError(null);
@@ -82,7 +91,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
       const response = await fetch("/api/ai/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, threadId }),
+        body: JSON.stringify({ message, history, threadId, mode }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -209,6 +218,10 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     setError(null);
   };
 
+  const interrupt = () => {
+    abortControllerRef.current?.abort();
+  };
+
   return {
     messages,
     isLoading,
@@ -216,5 +229,6 @@ export function useAIChatStream(): UseAIChatStreamReturn {
     sendMessage,
     clearMessages,
     setMessages,
+    interrupt,
   };
 }

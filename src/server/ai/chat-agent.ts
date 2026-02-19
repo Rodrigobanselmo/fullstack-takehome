@@ -28,7 +28,7 @@ const SYSTEM_PROMPT = `You are a helpful assistant. You help users with their qu
  * Chat node - processes the user message and generates a response
  */
 async function chatNode(state: ChatStateType): Promise<Partial<ChatStateType>> {
-  const llm = createLLM({ temperature: 0.7 });
+  const llm = createLLM();
 
   const messagesWithSystem = [
     new SystemMessage(SYSTEM_PROMPT),

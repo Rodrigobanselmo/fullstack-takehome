@@ -6,12 +6,16 @@ import { NetworkStatus } from "@apollo/client";
 import {
   X,
   History,
-  Sparkles,
   HelpCircle,
   MessageSquare,
   Plus,
   User,
   Loader2,
+  Paperclip,
+  Mic,
+  ArrowUp,
+  ChevronDown,
+  Square,
 } from "lucide-react";
 import {
   useAIChat,
@@ -19,6 +23,7 @@ import {
   PANEL_MAX_WIDTH,
 } from "../context/ai-chat-context";
 import { useAIChatStream, type ChatMessage } from "../hooks/use-ai-chat-stream";
+import { type AIMode, AI_MODE_LABELS, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import { useQueryAIThreadMessages } from "../api/ai-thread.queries";
 import { useCreateAIThreadMutation } from "../api/ai-thread.mutations";
 import {
@@ -41,6 +46,8 @@ export function AIChatSidebar() {
   } = useAIChat();
 
   const [showHistory, setShowHistory] = useState(false);
+  const [aiMode, setAiMode] = useState<AIMode>(DEFAULT_AI_MODE);
+  const [showModeDropdown, setShowModeDropdown] = useState(false);
 
   const {
     data: messagesData,
@@ -56,11 +63,14 @@ export function AIChatSidebar() {
     sendMessage,
     clearMessages,
     setMessages,
+    interrupt,
   } = useAIChatStream();
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [hasInput, setHasInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const modeDropdownRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
   const shouldScrollOnNextUpdate = useRef(false);
   const pendingScrollAction = useRef<
@@ -95,6 +105,26 @@ export function AIChatSidebar() {
     prevThreadIdRef.current = currentThreadId;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentThreadId]);
+
+  // Close mode dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modeDropdownRef.current &&
+        !modeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowModeDropdown(false);
+      }
+    };
+
+    if (showModeDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showModeDropdown]);
 
   // Sync messages from GraphQL when data arrives
   // Sync on: initial load (empty state) or pagination (isLoadingMoreRef)
@@ -258,6 +288,12 @@ export function AIChatSidebar() {
 
     const messageText = input.value;
     input.value = "";
+    setHasInput(false);
+
+    // Reset textarea height after clearing
+    if (input) {
+      input.style.height = "auto";
+    }
 
     // Scroll to bottom when user sends a message
     shouldScrollOnNextUpdate.current = true;
@@ -274,13 +310,32 @@ export function AIChatSidebar() {
       }
     }
 
-    void sendMessage(messageText, threadIdToUse);
+    void sendMessage({ message: messageText, threadId: threadIdToUse, mode: aiMode });
+  };
+
+  // Handle Enter to submit, Shift+Enter for new line
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void handleSubmit(e);
+    }
+  };
+
+  // Auto-resize textarea as user types
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+    setHasInput(textarea.value.trim().length > 0);
   };
 
   const handleSuggestionClick = (text: string) => {
     if (inputRef.current) {
       inputRef.current.value = text;
       inputRef.current.focus();
+      // Auto-resize after setting value
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 150)}px`;
     }
   };
 
@@ -513,9 +568,26 @@ export function AIChatSidebar() {
                     {/* Message Content */}
                     {isStreaming ? (
                       <div className={styles.loadingSkeleton}>
-                        <div className={styles.skeletonLine} />
-                        <div className={styles.skeletonLine} />
-                        <div className={styles.skeletonLineShort} />
+                        <div className={styles.skeletonRow}>
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                        </div>
+                        <div className={styles.skeletonRow}>
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                        </div>
+                        <div className={styles.skeletonRow}>
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                          <div className={styles.skeletonWord} />
+                        </div>
                       </div>
                     ) : (
                       <div
@@ -533,6 +605,37 @@ export function AIChatSidebar() {
               );
             })
           )}
+          {/* AI Thinking indicator - show when loading and AI hasn't started streaming yet */}
+          {isLoading &&
+            streamMessages.length > 0 &&
+            streamMessages.at(-1)?.role === "user" && (
+              <div className={styles.messageWrapper}>
+                <div className={styles.messageHeader}>
+                  <Image
+                    src="/icons/ai.svg"
+                    alt="AI"
+                    width={20}
+                    height={20}
+                    className={styles.aiAvatar}
+                  />
+                  <span className={styles.messageTime}>now</span>
+                </div>
+                <div className={styles.loadingSkeleton}>
+                  <div className={styles.skeletonRow}>
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                  </div>
+                  <div className={styles.skeletonRow}>
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                    <div className={styles.skeletonWord} />
+                  </div>
+                </div>
+              </div>
+            )}
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -543,21 +646,98 @@ export function AIChatSidebar() {
       {/* Input */}
       <form className={styles.inputContainer} onSubmit={handleSubmit}>
         <div className={styles.inputWrapper}>
-          <Sparkles size={18} className={styles.suggestionIcon} />
-          <input
-            ref={inputRef}
-            type="text"
-            className={styles.input}
-            placeholder="Ask AI..."
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            className={styles.sendButton}
-            disabled={isLoading}
-          >
-            {isLoading ? "..." : "Send"}
-          </button>
+          {/* Top row: textarea */}
+          <div className={styles.inputTop}>
+            <textarea
+              ref={inputRef}
+              className={styles.input}
+              placeholder="Enter a prompt..."
+              disabled={isLoading}
+              rows={1}
+              onKeyDown={handleKeyDown}
+              onChange={handleInputChange}
+            />
+          </div>
+          {/* Bottom row: actions */}
+          <div className={styles.inputBottom}>
+            <div className={styles.inputLeftActions}>
+              <button
+                type="button"
+                className={styles.inputActionButton}
+                title="Attach file"
+                disabled={isLoading}
+              >
+                <Paperclip size={18} />
+              </button>
+            </div>
+            <div className={styles.inputRightActions}>
+              {/* Mode dropdown */}
+              <div className={styles.modeDropdownContainer} ref={modeDropdownRef}>
+                <button
+                  type="button"
+                  className={styles.modeDropdownButton}
+                  onClick={() => setShowModeDropdown(!showModeDropdown)}
+                  disabled={isLoading}
+                >
+                  {AI_MODE_LABELS[aiMode]}
+                  <ChevronDown size={14} />
+                </button>
+                {showModeDropdown && (
+                  <div className={styles.modeDropdownMenu}>
+                    <button
+                      type="button"
+                      className={`${styles.modeDropdownItem} ${aiMode === "fast" ? styles.modeDropdownItemActive : ""}`}
+                      onClick={() => {
+                        setAiMode("fast");
+                        setShowModeDropdown(false);
+                      }}
+                    >
+                      {AI_MODE_LABELS.fast}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.modeDropdownItem} ${aiMode === "smarter" ? styles.modeDropdownItemActive : ""}`}
+                      onClick={() => {
+                        setAiMode("smarter");
+                        setShowModeDropdown(false);
+                      }}
+                    >
+                      {AI_MODE_LABELS.smarter}
+                    </button>
+                  </div>
+                )}
+              </div>
+              {/* Microphone button */}
+              <button
+                type="button"
+                className={styles.inputActionButton}
+                title="Voice input"
+                disabled={isLoading}
+              >
+                <Mic size={18} />
+              </button>
+              {/* Submit/Interrupt button */}
+              {isLoading ? (
+                <button
+                  type="button"
+                  className={`${styles.submitButton} ${styles.submitButtonInterrupt}`}
+                  onClick={interrupt}
+                  title="Stop generating"
+                >
+                  <Square size={14} />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className={styles.submitButton}
+                  disabled={!hasInput}
+                  title="Send message"
+                >
+                  <ArrowUp size={18} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </form>
     </aside>

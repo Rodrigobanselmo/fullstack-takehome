@@ -15,8 +15,7 @@ const adapter = new PrismaPg(pool);
 const createPrismaClient = () =>
   new PrismaClient({
     adapter,
-    log:
-      env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
 const globalForPrisma = globalThis as unknown as {
