@@ -25,8 +25,14 @@ import {
 import { useAIChatStream, type ChatMessage } from "../hooks/use-ai-chat-stream";
 import { usePageContext } from "../hooks/use-page-context";
 import { type AIMode, AI_MODE_LABELS, DEFAULT_AI_MODE } from "~/lib/ai-types";
-import { useQueryAIThreadMessages } from "../api/ai-thread.queries";
-import { useCreateAIThreadMutation } from "../api/ai-thread.mutations";
+import {
+  useQueryAIThreadMessages,
+  useQueryAIThread,
+} from "../api/ai-thread.queries";
+import {
+  useCreateAIThreadMutation,
+  useUpdateAIThreadMutation,
+} from "../api/ai-thread.mutations";
 import {
   formatRelativeTime,
   formatFullDateTime,
@@ -49,13 +55,20 @@ export function AIChatSidebar() {
   const [showHistory, setShowHistory] = useState(false);
   const [aiMode, setAiMode] = useState<AIMode>(DEFAULT_AI_MODE);
   const [showModeDropdown, setShowModeDropdown] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitleValue, setEditTitleValue] = useState("");
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const {
     data: messagesData,
     fetchMore,
     networkStatus,
   } = useQueryAIThreadMessages(currentThreadId);
+  const { data: threadData } = useQueryAIThread(currentThreadId);
   const [createThread] = useCreateAIThreadMutation();
+  const [updateThread] = useUpdateAIThreadMutation();
+
+  const currentThreadTitle = threadData?.aiThread?.title ?? "Untitled chat";
 
   const {
     messages: streamMessages,
@@ -129,6 +142,14 @@ export function AIChatSidebar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showModeDropdown]);
+
+  // Focus title input when editing starts
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle]);
 
   // Sync messages from GraphQL when data arrives
   // Sync on: initial load (empty state) or pagination (isLoadingMoreRef)
@@ -271,13 +292,10 @@ export function AIChatSidebar() {
     }
   }, [isOpen]);
 
-  const handleCreateThread = async () => {
-    const result = await createThread({
-      variables: { input: { title: "New Chat" } },
-    });
-    if (result.data?.createAIThread) {
-      setCurrentThreadId(result.data.createAIThread.id);
-    }
+  const handleCreateThread = () => {
+    // Just go to "new chat" state - no thread is created until a message is sent
+    setCurrentThreadId(null);
+    clearMessages();
   };
 
   const handleSelectThread = (threadId: string) => {
@@ -410,7 +428,54 @@ export function AIChatSidebar() {
           <button className={styles.iconButton} onClick={close} title="Close">
             <X size={18} />
           </button>
-          <h2 className={styles.headerTitle}>Untitled chat</h2>
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              className={styles.headerTitleInput}
+              value={editTitleValue}
+              onChange={(e) => setEditTitleValue(e.target.value)}
+              onBlur={() => {
+                setIsEditingTitle(false);
+                if (
+                  editTitleValue.trim() &&
+                  editTitleValue.trim() !== currentThreadTitle &&
+                  currentThreadId
+                ) {
+                  void updateThread({
+                    variables: {
+                      input: {
+                        threadId: currentThreadId,
+                        title: editTitleValue.trim(),
+                      },
+                    },
+                  });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  titleInputRef.current?.blur();
+                } else if (e.key === "Escape") {
+                  setEditTitleValue(currentThreadTitle);
+                  setIsEditingTitle(false);
+                }
+              }}
+            />
+          ) : (
+            <h2
+              className={styles.headerTitle}
+              onClick={() => {
+                if (currentThreadId) {
+                  setEditTitleValue(currentThreadTitle);
+                  setIsEditingTitle(true);
+                }
+              }}
+              style={{ cursor: currentThreadId ? "text" : "default" }}
+            >
+              {currentThreadTitle}
+            </h2>
+          )}
         </div>
         <div className={styles.headerActions}>
           <button

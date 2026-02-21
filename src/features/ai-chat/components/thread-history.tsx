@@ -6,6 +6,8 @@ import { NetworkStatus } from "@apollo/client";
 import { useQueryAIThreads, type AIThread } from "../api/ai-thread.queries";
 import { useDeleteAIThreadMutation } from "../api/ai-thread.mutations";
 import { formatRelativeTime, getDateLabel } from "../utils/format-time";
+import { useModal } from "~/components/ui/modal/modal-context";
+import { ConfirmDialog } from "~/components/ui/modal/confirm-dialog";
 import styles from "./thread-history.module.css";
 
 interface ThreadHistoryProps {
@@ -45,7 +47,9 @@ export function ThreadHistory({
 }: ThreadHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { openModal, closeModal } = useModal();
 
   // Debounce search input
   useEffect(() => {
@@ -63,6 +67,7 @@ export function ThreadHistory({
   const [deleteThread] = useDeleteAIThreadMutation();
 
   const isLoadingMore = networkStatus === NetworkStatus.fetchMore;
+  // Empty threads (lastMessageAt === null) are filtered out at the database level
   const threads = data?.aiThreads.edges.map((e) => e.node) ?? [];
   const hasNextPage = data?.aiThreads.pageInfo.hasNextPage ?? false;
   const endCursor = data?.aiThreads.pageInfo.endCursor ?? null;
@@ -101,9 +106,32 @@ export function ThreadHistory({
     }
   }, [handleLoadMore]);
 
-  const handleDelete = async (threadId: string, e: React.MouseEvent) => {
+  const handleDelete = (
+    threadId: string,
+    threadTitle: string,
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
-    await deleteThread({ variables: { id: threadId } });
+    const modalId = openModal(
+      <ConfirmDialog
+        title="Delete Chat"
+        message={`Are you sure you want to delete "${threadTitle}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={async () => {
+          setIsDeleting(true);
+          try {
+            await deleteThread({ variables: { id: threadId } });
+            closeModal(modalId);
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => closeModal(modalId)}
+      />,
+    );
   };
 
   const handleSelectThread = (threadId: string) => {
@@ -158,7 +186,7 @@ export function ThreadHistory({
                     thread={thread}
                     isActive={thread.id === currentThreadId}
                     onSelect={() => handleSelectThread(thread.id)}
-                    onDelete={(e) => handleDelete(thread.id, e)}
+                    onDelete={(e) => handleDelete(thread.id, thread.title, e)}
                   />
                 ))}
               </div>
@@ -180,7 +208,12 @@ interface ThreadItemProps {
   onDelete: (e: React.MouseEvent) => void;
 }
 
-function ThreadItem({ thread, isActive, onSelect, onDelete }: ThreadItemProps) {
+function ThreadItem({
+  thread,
+  isActive,
+  onSelect,
+  onDelete,
+}: ThreadItemProps) {
   const date = new Date(thread.updatedAt);
 
   return (
@@ -197,7 +230,7 @@ function ThreadItem({ thread, isActive, onSelect, onDelete }: ThreadItemProps) {
         onClick={onDelete}
         title="Delete chat"
       >
-        <Trash2 size={18} />
+        <Trash2 size={16} />
       </button>
     </div>
   );

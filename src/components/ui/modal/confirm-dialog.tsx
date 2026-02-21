@@ -1,3 +1,4 @@
+import { Trash2, AlertTriangle, Info } from "lucide-react";
 import Button from "../button/button";
 import styles from "./modal.module.css";
 
@@ -14,10 +15,10 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-const variantIcons: Record<ConfirmVariant, string> = {
-  danger: "🗑️",
-  warning: "⚠️",
-  info: "ℹ️",
+const variantIcons: Record<ConfirmVariant, React.ReactNode> = {
+  danger: <Trash2 size={28} />,
+  warning: <AlertTriangle size={28} />,
+  info: <Info size={28} />,
 };
 
 const variantIconStyles: Record<ConfirmVariant, string> = {

@@ -62,14 +62,15 @@ model users {
 
 // AI Chat Threads - stores conversation threads with AI assistant
 model ai_threads {
-    id        String        @id @default(cuid())
-    title     String        @default("New Chat")
-    userId    String        @map("user_id")
-    createdAt DateTime      @default(now()) @map("created_at")
-    updatedAt DateTime      @updatedAt @map("updated_at")
-    deletedAt DateTime?     @map("deleted_at")
-    user      users         @relation(fields: [userId], references: [id])
-    messages  ai_messages[]
+    id            String        @id @default(cuid())
+    title         String        @default("New Chat")
+    userId        String        @map("user_id")
+    lastMessageAt DateTime?     @map("last_message_at") // null = empty thread
+    createdAt     DateTime      @default(now()) @map("created_at")
+    updatedAt     DateTime      @updatedAt @map("updated_at")
+    deletedAt     DateTime?     @map("deleted_at")
+    user          users         @relation(fields: [userId], references: [id])
+    messages      ai_messages[]
 
     @@index([userId], map: "ai_threads_user_id_idx")
     @@index([createdAt], map: "ai_threads_created_at_idx")

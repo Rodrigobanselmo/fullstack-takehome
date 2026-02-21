@@ -75,7 +75,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className={styles.logoContainer}>
         <Image
-          src="/icons/logo.svg"
+          src={resolvedTheme === "dark" ? "/icons/logo-dark.svg" : "/icons/logo.svg"}
           alt="Logo"
           width={40}
           height={40}

@@ -87,14 +87,16 @@ class PrismaAIThreadRepository {
   ): Promise<AIThreadConnection> {
     const { userId, first = 20, after, search } = options;
 
-    // Build where clause
+    // Build where clause - exclude empty threads (lastMessageAt is null)
     const where: {
       userId: string;
       deletedAt: null;
+      lastMessageAt: { not: null };
       title?: { contains: string; mode: "insensitive" };
     } = {
       userId,
       deletedAt: null,
+      lastMessageAt: { not: null },
     };
 
     // Add search filter if provided
@@ -163,24 +165,31 @@ class PrismaAIThreadRepository {
     return true;
   }
 
+  async getMessageCount(threadId: string): Promise<number> {
+    return prisma.ai_messages.count({
+      where: { threadId },
+    });
+  }
+
   async addMessage(
     threadId: string,
     role: "user" | "assistant",
     content: string,
   ): Promise<AIMessage> {
-    const message = await prisma.ai_messages.create({
-      data: {
-        threadId,
-        role: role as AIMessageRole,
-        content,
-      },
-    });
-
-    // Update thread's updatedAt
-    await prisma.ai_threads.update({
-      where: { id: threadId },
-      data: { updatedAt: new Date() },
-    });
+    const now = new Date();
+    const [message] = await prisma.$transaction([
+      prisma.ai_messages.create({
+        data: {
+          threadId,
+          role: role as AIMessageRole,
+          content,
+        },
+      }),
+      prisma.ai_threads.update({
+        where: { id: threadId },
+        data: { updatedAt: now, lastMessageAt: now },
+      }),
+    ]);
 
     return {
       ...message,
@@ -194,15 +203,22 @@ class PrismaAIThreadRepository {
     toolName: string,
     toolStatus: "running" | "success" | "error",
   ): Promise<AIMessage> {
-    const message = await prisma.ai_messages.create({
-      data: {
-        threadId,
-        role: "tool" as AIMessageRole,
-        content,
-        toolName,
-        toolStatus,
-      },
-    });
+    const now = new Date();
+    const [message] = await prisma.$transaction([
+      prisma.ai_messages.create({
+        data: {
+          threadId,
+          role: "tool" as AIMessageRole,
+          content,
+          toolName,
+          toolStatus,
+        },
+      }),
+      prisma.ai_threads.update({
+        where: { id: threadId },
+        data: { lastMessageAt: now },
+      }),
+    ]);
 
     return {
       ...message,

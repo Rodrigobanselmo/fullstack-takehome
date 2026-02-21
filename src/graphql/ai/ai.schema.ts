@@ -4,6 +4,7 @@ export const aiTypeDefs = gql`
   type AIThread {
     id: ID!
     title: String!
+    lastMessageAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
   }

@@ -491,6 +491,9 @@ async function main() {
       create: {
         id: `seed-thread-${i}`,
         title: `Thread ${i}`,
+        lastMessageAt: new Date(
+          emptyThreadsBaseTime.getTime() + i * 3600000,
+        ),
         userId: guestUser.id,
         createdAt: new Date(
           emptyThreadsBaseTime.getTime() + i * 3600000,
@@ -509,6 +512,7 @@ async function main() {
       id: "seed-thread-infinite-scroll",
       title: "Recipe Planning & Ingredient Discussion",
       userId: guestUser.id,
+      lastMessageAt: new Date(),
     },
   });
   console.log(`Created/updated AI thread: ${aiThread.title}`);

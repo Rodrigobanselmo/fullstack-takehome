@@ -6,6 +6,7 @@ import { gql, useQuery } from "@apollo/client";
 export interface AIThread {
   id: string;
   title: string;
+  lastMessageAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -80,6 +81,7 @@ export const AI_THREADS_QUERY = gql`
         node {
           id
           title
+          lastMessageAt
           createdAt
           updatedAt
         }
@@ -117,6 +119,25 @@ export const AI_THREAD_MESSAGES_QUERY = gql`
   }
 `;
 
+interface AIThreadQuery {
+  aiThread: AIThread | null;
+}
+
+interface AIThreadVariables {
+  id: string;
+}
+
+export const AI_THREAD_QUERY = gql`
+  query AIThread($id: ID!) {
+    aiThread(id: $id) {
+      id
+      title
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export function useQueryAIThreads(variables: AIThreadsVariables = {}) {
   return useQuery<AIThreadsQuery, AIThreadsVariables>(AI_THREADS_QUERY, {
     variables: {
@@ -125,6 +146,13 @@ export function useQueryAIThreads(variables: AIThreadsVariables = {}) {
       search: variables.search ?? null,
     },
     notifyOnNetworkStatusChange: true,
+  });
+}
+
+export function useQueryAIThread(threadId: string | null) {
+  return useQuery<AIThreadQuery, AIThreadVariables>(AI_THREAD_QUERY, {
+    variables: { id: threadId ?? "" },
+    skip: !threadId,
   });
 }
 

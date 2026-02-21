@@ -48,6 +48,7 @@ const CREATE_AI_THREAD_MUTATION = gql`
     createAIThread(input: $input) {
       id
       title
+      lastMessageAt
       createdAt
       updatedAt
     }
@@ -115,6 +116,7 @@ export function useDeleteAIThreadMutation() {
     DELETE_AI_THREAD_MUTATION,
     {
       refetchQueries: [{ query: AI_THREADS_QUERY }],
+      awaitRefetchQueries: true,
     },
   );
 }

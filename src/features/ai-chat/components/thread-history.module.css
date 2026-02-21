@@ -164,7 +164,7 @@
   border: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   transition: color 0.15s ease, background 0.15s ease;
   flex-shrink: 0;
 }
