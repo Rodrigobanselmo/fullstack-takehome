@@ -540,6 +540,120 @@
   cursor: not-allowed;
 }
 
+/* Microphone recording states */
+.micRecording {
+  color: var(--color-red) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  animation: pulse-recording 1.5s ease-in-out infinite;
+}
+
+.micRecording:hover:not(:disabled) {
+  color: var(--color-red) !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+.micTranscribing {
+  color: var(--color-primary) !important;
+  background: rgba(var(--color-primary-rgb), 0.1) !important;
+}
+
+.recordingDuration {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-red);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  animation: pulse-recording 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-recording {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Recording UI wrapper (ChatGPT style) */
+.recordingWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+  min-width: 0; /* Allow shrinking */
+}
+
+.waveformContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 0; /* Allow shrinking */
+  overflow: hidden;
+}
+
+.recordingCancelButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-gray-15);
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.recordingCancelButton:hover:not(:disabled) {
+  background: var(--color-gray-20);
+  color: var(--color-text-primary);
+}
+
+.recordingCancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recordingConfirmButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.recordingConfirmButton:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: scale(1.05);
+}
+
+.recordingConfirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transcribingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+}
+
 /* Mode dropdown */
 .modeDropdownContainer {
   position: relative;

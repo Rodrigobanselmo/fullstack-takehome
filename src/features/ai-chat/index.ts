@@ -9,6 +9,10 @@ export { AIChatSidebar } from "./components/ai-chat-sidebar";
 export { AIChatToggleButton } from "./components/ai-chat-toggle-button";
 export { useAIChatStream } from "./hooks/use-ai-chat-stream";
 export {
+  useAudioRecorder,
+  type RecordingState,
+} from "./hooks/use-audio-recorder";
+export {
   useQueryAIThreads,
   useQueryAIThreadMessages,
   AI_THREADS_QUERY,

@@ -16,6 +16,7 @@ import {
   ArrowUp,
   ChevronDown,
   Square,
+  Check,
 } from "lucide-react";
 import {
   useAIChat,
@@ -23,6 +24,7 @@ import {
   PANEL_MAX_WIDTH,
 } from "../context/ai-chat-context";
 import { useAIChatStream, type ChatMessage } from "../hooks/use-ai-chat-stream";
+import { useAudioRecorder } from "../hooks/use-audio-recorder";
 import { usePageContext } from "../hooks/use-page-context";
 import { type AIMode, AI_MODE_LABELS, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import {
@@ -40,6 +42,7 @@ import {
   shouldShowDateSeparator,
 } from "../utils/format-time";
 import { ThreadHistory } from "./thread-history";
+import { AudioWaveform } from "./audio-waveform";
 import styles from "./ai-chat-sidebar.module.css";
 
 export function AIChatSidebar() {
@@ -80,11 +83,24 @@ export function AIChatSidebar() {
     interrupt,
   } = useAIChatStream();
 
+  // Audio recording for voice input
+  const {
+    state: recordingState,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    waveformData,
+  } = useAudioRecorder();
+
   // Track current page context for AI context awareness
   const pageContext = usePageContext();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [hasInput, setHasInput] = useState(false);
+  const pendingTranscriptionRef = useRef<string | null>(null);
+  const cursorPositionRef = useRef<number>(0);
+  const savedInputValueRef = useRef<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const modeDropdownRef = useRef<HTMLDivElement>(null);
@@ -364,6 +380,84 @@ export function AIChatSidebar() {
       inputRef.current.style.height = "auto";
       inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 150)}px`;
     }
+  };
+
+  // Handle mic button click - start recording
+  const handleMicClick = async () => {
+    if (recordingState === "idle") {
+      // Save cursor position and input value before textarea gets unmounted
+      if (inputRef.current) {
+        savedInputValueRef.current = inputRef.current.value;
+        cursorPositionRef.current =
+          inputRef.current.selectionStart ?? inputRef.current.value.length;
+      }
+      await startRecording();
+    }
+  };
+
+  // Handle confirm recording - stop and transcribe
+  const handleConfirmRecording = async () => {
+    if (recordingState !== "recording") return;
+
+    const transcribedText = await stopRecording();
+    if (transcribedText) {
+      // Store the transcribed text to be applied when textarea is available
+      pendingTranscriptionRef.current = transcribedText;
+    }
+  };
+
+  // Apply pending transcription when textarea becomes available (after recording UI hides)
+  useEffect(() => {
+    if (recordingState === "idle" && inputRef.current) {
+      const textarea = inputRef.current;
+      const transcribedText = pendingTranscriptionRef.current;
+
+      // Use saved input value (textarea was unmounted during recording)
+      const savedValue = savedInputValueRef.current;
+      const cursorPos = Math.min(cursorPositionRef.current, savedValue.length);
+
+      if (transcribedText) {
+        // Insert transcribed text at cursor position (with space padding if needed)
+        pendingTranscriptionRef.current = null;
+
+        const before = savedValue.slice(0, cursorPos);
+        const after = savedValue.slice(cursorPos);
+        const needsSpaceBefore = before.length > 0 && !before.endsWith(" ");
+        const needsSpaceAfter = after.length > 0 && !after.startsWith(" ");
+
+        const insertText =
+          (needsSpaceBefore ? " " : "") +
+          transcribedText +
+          (needsSpaceAfter ? " " : "");
+
+        const newValue = before + insertText + after;
+        textarea.value = newValue;
+
+        // Move cursor to end of inserted text
+        const newCursorPos = cursorPos + insertText.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+
+        // Auto-resize after adding text
+        textarea.style.height = "auto";
+        textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+        setHasInput(newValue.trim().length > 0);
+
+        // Clear saved value
+        savedInputValueRef.current = "";
+      } else if (savedValue) {
+        // No transcription but we have saved value - restore it (e.g., after cancel)
+        textarea.value = savedValue;
+        textarea.setSelectionRange(cursorPos, cursorPos);
+        setHasInput(savedValue.trim().length > 0);
+        savedInputValueRef.current = "";
+      }
+    }
+  }, [recordingState]);
+
+  // Handle cancel recording
+  const handleCancelRecording = () => {
+    cancelRecording();
   };
 
   // Resize handle logic
@@ -715,105 +809,150 @@ export function AIChatSidebar() {
       </div>
 
       {/* Error */}
-      {error && <div className={styles.error}>{error}</div>}
+      {(error ?? recordingError) && (
+        <div className={styles.error}>{error ?? recordingError}</div>
+      )}
 
-      {/* Input */}
-      <form className={styles.inputContainer} onSubmit={handleSubmit}>
-        <div className={styles.inputWrapper}>
-          {/* Top row: textarea */}
-          <div className={styles.inputTop}>
-            <textarea
-              ref={inputRef}
-              className={styles.input}
-              placeholder="Enter a prompt..."
-              disabled={isLoading}
-              rows={1}
-              onKeyDown={handleKeyDown}
-              onChange={handleInputChange}
-            />
-          </div>
-          {/* Bottom row: actions */}
-          <div className={styles.inputBottom}>
-            <div className={styles.inputLeftActions}>
-              <button
-                type="button"
-                className={styles.inputActionButton}
-                title="Attach file"
-                disabled={isLoading}
-              >
-                <Paperclip size={18} />
-              </button>
-            </div>
-            <div className={styles.inputRightActions}>
-              {/* Mode dropdown */}
-              <div className={styles.modeDropdownContainer} ref={modeDropdownRef}>
-                <button
-                  type="button"
-                  className={styles.modeDropdownButton}
-                  onClick={() => setShowModeDropdown(!showModeDropdown)}
-                  disabled={isLoading}
-                >
-                  {AI_MODE_LABELS[aiMode]}
-                  <ChevronDown size={14} />
-                </button>
-                {showModeDropdown && (
-                  <div className={styles.modeDropdownMenu}>
-                    <button
-                      type="button"
-                      className={`${styles.modeDropdownItem} ${aiMode === "fast" ? styles.modeDropdownItemActive : ""}`}
-                      onClick={() => {
-                        setAiMode("fast");
-                        setShowModeDropdown(false);
-                      }}
-                    >
-                      {AI_MODE_LABELS.fast}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.modeDropdownItem} ${aiMode === "smarter" ? styles.modeDropdownItemActive : ""}`}
-                      onClick={() => {
-                        setAiMode("smarter");
-                        setShowModeDropdown(false);
-                      }}
-                    >
-                      {AI_MODE_LABELS.smarter}
-                    </button>
-                  </div>
-                )}
-              </div>
-              {/* Microphone button */}
-              <button
-                type="button"
-                className={styles.inputActionButton}
-                title="Voice input"
-                disabled={isLoading}
-              >
-                <Mic size={18} />
-              </button>
-              {/* Submit/Interrupt button */}
-              {isLoading ? (
-                <button
-                  type="button"
-                  className={`${styles.submitButton} ${styles.submitButtonInterrupt}`}
-                  onClick={interrupt}
-                  title="Stop generating"
-                >
-                  <Square size={14} />
-                </button>
+      {/* Input - Show recording UI or normal input */}
+      {recordingState === "recording" || recordingState === "transcribing" ? (
+        /* Recording UI - Only waveform and cancel/confirm buttons */
+        <div className={styles.inputContainer}>
+          <div className={styles.recordingWrapper}>
+            {/* Cancel button on the left */}
+            <button
+              type="button"
+              className={styles.recordingCancelButton}
+              onClick={handleCancelRecording}
+              disabled={recordingState === "transcribing"}
+              title="Cancel recording"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Center: Waveform visualization */}
+            <div className={styles.waveformContainer}>
+              {recordingState === "transcribing" ? (
+                <div className={styles.transcribingIndicator}>
+                  <Loader2 size={18} className={styles.loadingSpinner} />
+                  <span>Transcribing...</span>
+                </div>
               ) : (
-                <button
-                  type="submit"
-                  className={styles.submitButton}
-                  disabled={!hasInput}
-                  title="Send message"
-                >
-                  <ArrowUp size={18} />
-                </button>
+                <AudioWaveform data={waveformData} isRecording />
               )}
             </div>
+
+            {/* Confirm button on the right */}
+            <button
+              type="button"
+              className={styles.recordingConfirmButton}
+              onClick={handleConfirmRecording}
+              disabled={recordingState === "transcribing"}
+              title="Confirm and transcribe"
+            >
+              <Check size={18} />
+            </button>
           </div>
         </div>
-      </form>
+      ) : (
+        /* Normal input UI */
+        <form className={styles.inputContainer} onSubmit={handleSubmit}>
+          <div className={styles.inputWrapper}>
+            {/* Top row: textarea */}
+            <div className={styles.inputTop}>
+              <textarea
+                ref={inputRef}
+                className={styles.input}
+                placeholder="Enter a prompt..."
+                disabled={isLoading}
+                rows={1}
+                onKeyDown={handleKeyDown}
+                onChange={handleInputChange}
+              />
+            </div>
+            {/* Bottom row: actions */}
+            <div className={styles.inputBottom}>
+              <div className={styles.inputLeftActions}>
+                <button
+                  type="button"
+                  className={styles.inputActionButton}
+                  title="Attach file"
+                  disabled={isLoading}
+                >
+                  <Paperclip size={18} />
+                </button>
+              </div>
+              <div className={styles.inputRightActions}>
+                {/* Mode dropdown */}
+                <div className={styles.modeDropdownContainer} ref={modeDropdownRef}>
+                  <button
+                    type="button"
+                    className={styles.modeDropdownButton}
+                    onClick={() => setShowModeDropdown(!showModeDropdown)}
+                    disabled={isLoading}
+                  >
+                    {AI_MODE_LABELS[aiMode]}
+                    <ChevronDown size={14} />
+                  </button>
+                  {showModeDropdown && (
+                    <div className={styles.modeDropdownMenu}>
+                      <button
+                        type="button"
+                        className={`${styles.modeDropdownItem} ${aiMode === "fast" ? styles.modeDropdownItemActive : ""}`}
+                        onClick={() => {
+                          setAiMode("fast");
+                          setShowModeDropdown(false);
+                        }}
+                      >
+                        {AI_MODE_LABELS.fast}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.modeDropdownItem} ${aiMode === "smarter" ? styles.modeDropdownItemActive : ""}`}
+                        onClick={() => {
+                          setAiMode("smarter");
+                          setShowModeDropdown(false);
+                        }}
+                      >
+                        {AI_MODE_LABELS.smarter}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {/* Microphone button */}
+                <button
+                  type="button"
+                  className={styles.inputActionButton}
+                  title="Voice input"
+                  onClick={handleMicClick}
+                  disabled={isLoading}
+                >
+                  <Mic size={18} />
+                </button>
+                {/* Submit/Interrupt button */}
+                {isLoading ? (
+                  <button
+                    type="button"
+                    className={`${styles.submitButton} ${styles.submitButtonInterrupt}`}
+                    onClick={interrupt}
+                    title="Stop generating"
+                  >
+                    <Square size={14} />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={!hasInput}
+                    title="Send message"
+                  >
+                    <ArrowUp size={18} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      )}
     </aside>
   );
 }
