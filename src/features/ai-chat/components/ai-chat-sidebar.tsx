@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useLayoutEffect, useCallback, useState, type DragEvent } from "react";
 import Image from "next/image";
 import { NetworkStatus } from "@apollo/client";
 import {
@@ -17,14 +17,20 @@ import {
   ChevronDown,
   Square,
   Check,
+  Upload,
 } from "lucide-react";
 import {
   useAIChat,
   PANEL_MIN_WIDTH,
   PANEL_MAX_WIDTH,
 } from "../context/ai-chat-context";
-import { useAIChatStream, type ChatMessage } from "../hooks/use-ai-chat-stream";
+import {
+  useAIChatStream,
+  type ChatMessage,
+  type ChatMessageAttachment,
+} from "../hooks/use-ai-chat-stream";
 import { useAudioRecorder } from "../hooks/use-audio-recorder";
+import { useFileAttachments } from "../hooks/use-file-attachments";
 import { usePageContext } from "../hooks/use-page-context";
 import { type AIMode, AI_MODE_LABELS, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import {
@@ -43,6 +49,9 @@ import {
 } from "../utils/format-time";
 import { ThreadHistory } from "./thread-history";
 import { AudioWaveform } from "./audio-waveform";
+import { AttachmentPreview } from "./attachment-preview";
+import { MessageAttachments } from "./message-attachments";
+import { useToast } from "~/components/ui/toast";
 import styles from "./ai-chat-sidebar.module.css";
 
 export function AIChatSidebar() {
@@ -93,10 +102,28 @@ export function AIChatSidebar() {
     waveformData,
   } = useAudioRecorder();
 
+  // File attachments for multimodal input
+  const {
+    attachments,
+    isUploading,
+    addFiles,
+    removeAttachment,
+    clearAttachments,
+    getUploadedFileIds,
+  } = useFileAttachments();
+
   // Track current page context for AI context awareness
   const pageContext = usePageContext();
 
+  // Toast notifications
+  const toast = useToast();
+
+  // Drag and drop state
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const dragCounterRef = useRef(0);
+
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasInput, setHasInput] = useState(false);
   const pendingTranscriptionRef = useRef<string | null>(null);
   const cursorPositionRef = useRef<number>(0);
@@ -174,6 +201,18 @@ export function AIChatSidebar() {
     // Don't overwrite while streaming
     if (isLoading) return;
 
+    // Helper to map DB files to ChatMessageAttachment format
+    const mapFiles = (
+      files: { id: string; fileId: string; filename: string; mimeType: string; size: number; url: string | null }[]
+    ): ChatMessageAttachment[] => files.map((f) => ({
+      id: f.id,
+      fileId: f.fileId,
+      filename: f.filename,
+      mimeType: f.mimeType,
+      size: f.size,
+      url: f.url,
+    }));
+
     // If we're loading more (pagination), always sync to get the merged messages
     if (isLoadingMoreRef.current) {
       isLoadingMoreRef.current = false;
@@ -184,6 +223,7 @@ export function AIChatSidebar() {
           toolName: m.toolName ?? undefined,
           toolStatus: (m.toolStatus as "running" | "success" | "error") ?? undefined,
           timestamp: new Date(m.createdAt),
+          files: m.files ? mapFiles(m.files) : undefined,
         }));
         setMessages(mapped);
       }
@@ -201,6 +241,7 @@ export function AIChatSidebar() {
         toolName: m.toolName ?? undefined,
         toolStatus: (m.toolStatus as "running" | "success" | "error") ?? undefined,
         timestamp: new Date(m.createdAt),
+        files: m.files ? mapFiles(m.files) : undefined,
       }));
       setMessages(mapped);
     }
@@ -322,16 +363,20 @@ export function AIChatSidebar() {
   const handleSubmit = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
     const input = inputRef.current;
-    if (!input?.value.trim()) return;
+    if (!input?.value.trim() && attachments.length === 0) return;
 
-    const messageText = input.value;
-    input.value = "";
-    setHasInput(false);
-
-    // Reset textarea height after clearing
+    const messageText = input?.value || "";
     if (input) {
+      input.value = "";
       input.style.height = "auto";
     }
+    setHasInput(false);
+
+    // Get file IDs before clearing attachments
+    const fileIds = getUploadedFileIds();
+
+    // Clear attachments after getting IDs
+    clearAttachments();
 
     // Scroll to bottom when user sends a message
     shouldScrollOnNextUpdate.current = true;
@@ -353,6 +398,7 @@ export function AIChatSidebar() {
       threadId: threadIdToUse,
       mode: aiMode,
       pageContext,
+      fileIds: fileIds.length > 0 ? fileIds : undefined,
     });
   };
 
@@ -381,6 +427,74 @@ export function AIChatSidebar() {
       inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 150)}px`;
     }
   };
+
+  // Handle file attachment button click
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handle file selection
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const rejected = await addFiles(files);
+      if (rejected.length > 0) {
+        const fileNames = rejected.map((f) => f.filename).join(", ");
+        toast.error(
+          "Unsupported file type",
+          `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF.`,
+        );
+      }
+    }
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
+
+  // Drag and drop handlers for full chat area
+  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingOver(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDraggingOver(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDraggingOver(false);
+
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const rejected = await addFiles(files);
+        if (rejected.length > 0) {
+          const fileNames = rejected.map((f) => f.filename).join(", ");
+          toast.error(
+            "Unsupported file type",
+            `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF.`,
+          );
+        }
+      }
+    },
+    [addFiles, toast],
+  );
 
   // Handle mic button click - start recording
   const handleMicClick = async () => {
@@ -509,7 +623,21 @@ export function AIChatSidebar() {
     <aside
       className={`${styles.panel} ${!isOpen ? styles.panelClosed : ""}`}
       style={{ width: isOpen ? panelWidth : 0 }}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
+      {/* Drag and Drop Overlay */}
+      {isDraggingOver && (
+        <div className={styles.dropOverlay}>
+          <div className={styles.dropOverlayContent}>
+            <Upload size={48} strokeWidth={1.5} />
+            <span>Drop files here</span>
+          </div>
+        </div>
+      )}
+
       {/* Resize Handle */}
       <div
         ref={resizeHandleRef}
@@ -766,6 +894,10 @@ export function AIChatSidebar() {
                         }`}
                       >
                         {msg.content}
+                        {/* Render file attachments if present */}
+                        {msg.files && msg.files.length > 0 && (
+                          <MessageAttachments files={msg.files} />
+                        )}
                       </div>
                     )}
                   </div>
@@ -856,14 +988,28 @@ export function AIChatSidebar() {
       ) : (
         /* Normal input UI */
         <form className={styles.inputContainer} onSubmit={handleSubmit}>
+          {/* Attachment previews */}
+          <AttachmentPreview
+            attachments={attachments}
+            onRemove={removeAttachment}
+          />
           <div className={styles.inputWrapper}>
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,application/pdf"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
             {/* Top row: textarea */}
             <div className={styles.inputTop}>
               <textarea
                 ref={inputRef}
                 className={styles.input}
                 placeholder="Enter a prompt..."
-                disabled={isLoading}
+                disabled={isLoading || isUploading}
                 rows={1}
                 onKeyDown={handleKeyDown}
                 onChange={handleInputChange}
@@ -876,7 +1022,8 @@ export function AIChatSidebar() {
                   type="button"
                   className={styles.inputActionButton}
                   title="Attach file"
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
+                  onClick={handleAttachClick}
                 >
                   <Paperclip size={18} />
                 </button>
@@ -924,7 +1071,7 @@ export function AIChatSidebar() {
                   className={styles.inputActionButton}
                   title="Voice input"
                   onClick={handleMicClick}
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
                 >
                   <Mic size={18} />
                 </button>
@@ -938,11 +1085,20 @@ export function AIChatSidebar() {
                   >
                     <Square size={14} />
                   </button>
+                ) : isUploading ? (
+                  <button
+                    type="button"
+                    className={styles.submitButton}
+                    disabled
+                    title="Uploading files..."
+                  >
+                    <Loader2 size={18} className={styles.spinner} />
+                  </button>
                 ) : (
                   <button
                     type="submit"
                     className={styles.submitButton}
-                    disabled={!hasInput}
+                    disabled={!hasInput && attachments.length === 0}
                     title="Send message"
                   >
                     <ArrowUp size={18} />

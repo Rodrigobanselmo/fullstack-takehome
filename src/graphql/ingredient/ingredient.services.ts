@@ -14,7 +14,8 @@ import {
 } from "~/server/repositories/file.repository";
 import { withTransaction } from "~/server/database/transaction";
 import { env } from "~/config/env";
-import { generatePresignedPost } from "~/lib/s3";
+import { generatePresignedPost, validateImageFile } from "~/lib/s3";
+import { InvalidInputError } from "~/graphql/errors";
 import { Prisma } from "generated/prisma";
 import { formatToGQLConnection } from "~/lib/pagination";
 
@@ -176,6 +177,13 @@ export async function uploadIngredientImagePresigned({
 }> {
   // Verify ingredient exists and belongs to user
   await getIngredientById({ ingredientId, userId });
+
+  // Validate image file type
+  if (!validateImageFile(mimeType)) {
+    throw InvalidInputError(
+      "Only image files are allowed (JPEG, PNG, GIF, WebP)",
+    );
+  }
 
   // Generate presigned POST URL
   const presignedPost = await generatePresignedPost({

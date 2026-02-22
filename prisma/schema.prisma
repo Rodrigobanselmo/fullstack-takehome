@@ -79,17 +79,32 @@ model ai_threads {
 
 // AI Chat Messages - stores individual messages in AI threads
 model ai_messages {
-    id         String          @id @default(cuid())
-    threadId   String          @map("thread_id")
+    id         String             @id @default(cuid())
+    threadId   String             @map("thread_id")
     role       AIMessageRole
-    content    String          @db.Text
-    toolName   String?         @map("tool_name") // For tool messages: name of the tool
-    toolStatus String?         @map("tool_status") // For tool messages: running, success, error
-    createdAt  DateTime        @default(now()) @map("created_at")
-    thread     ai_threads      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    content    String             @db.Text
+    toolName   String?            @map("tool_name") // For tool messages: name of the tool
+    toolStatus String?            @map("tool_status") // For tool messages: running, success, error
+    createdAt  DateTime           @default(now()) @map("created_at")
+    thread     ai_threads         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    files      ai_message_files[]
 
     @@index([threadId], map: "ai_messages_thread_id_idx")
     @@index([createdAt], map: "ai_messages_created_at_idx")
+}
+
+// Join table for AI message attachments
+model ai_message_files {
+    id        String      @id @default(cuid())
+    messageId String      @map("message_id")
+    fileId    String      @map("file_id")
+    createdAt DateTime    @default(now()) @map("created_at")
+    message   ai_messages @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    file      files       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+    @@unique([messageId, fileId], map: "ai_message_files_message_id_file_id_unique")
+    @@index([messageId], map: "ai_message_files_message_id_idx")
+    @@index([fileId], map: "ai_message_files_file_id_idx")
 }
 
 model recipes {
@@ -213,6 +228,7 @@ model files {
     filename         String
     mimeType         String               @map("mime_type")
     size             Int
+    metadata         Json? // Additional metadata: width, height, duration, pageCount, thumbnailKey, etc.
     createdAt        DateTime             @default(now()) @map("created_at")
     updatedAt        DateTime             @default(now()) @map("updated_at")
     deletedAt        DateTime?            @map("deleted_at")
@@ -221,6 +237,7 @@ model files {
     recipeFiles      recipe_files[]
     recipeGroupFiles recipe_group_files[]
     ingredientFiles  ingredient_files[]
+    aiMessageFiles   ai_message_files[]
 
     @@index([uploaderId], map: "files_uploaded_by_idx")
     @@index([createdAt], map: "files_created_at_idx")

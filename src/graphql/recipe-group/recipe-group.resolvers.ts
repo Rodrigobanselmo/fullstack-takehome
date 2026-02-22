@@ -4,8 +4,6 @@ import type {
   MutationUpdateRecipeGroupArgs,
   MutationAddRecipesToGroupArgs,
   MutationRemoveRecipesFromGroupArgs,
-  MutationUploadRecipeGroupImageArgs,
-  MutationDeleteRecipeGroupImageArgs,
   QueryRecipeGroupArgs,
   Recipe,
 } from "generated/gql/graphql";
@@ -24,8 +22,6 @@ import {
   updateRecipeGroup,
   addRecipesToGroup,
   removeRecipesFromGroup,
-  uploadRecipeGroupImagePresigned,
-  deleteRecipeGroupImage as deleteRecipeGroupImageService,
 } from "./recipe-group.services";
 import type { RecipeGroupEntity } from "~/server/repositories/recipe-group.repository";
 import {
@@ -34,8 +30,6 @@ import {
   updateRecipeGroupArgsSchema,
   addRecipesToGroupInputSchema,
   removeRecipesFromGroupInputSchema,
-  generateRecipeGroupPresignedUrlInputSchema,
-  deleteRecipeGroupImageArgsSchema,
 } from "./recipe-group.validators";
 import type { FileEntity } from "~/server/repositories/file.repository";
 
@@ -207,75 +201,6 @@ export const recipeGroupResolvers = {
         userId: context.user!.id,
         input: validation.data,
       });
-    },
-
-    uploadRecipeGroupImage: async (
-      _: unknown,
-      args: MutationUploadRecipeGroupImageArgs,
-      context: GraphQLContext,
-    ) => {
-      const isUnauthorized = !canManageRecipeGroups(context.user);
-      if (isUnauthorized) {
-        throw UnauthorizedError();
-      }
-
-      if (!context.user) {
-        throw UnauthorizedError();
-      }
-
-      const validation = schemaValidation(
-        generateRecipeGroupPresignedUrlInputSchema,
-        args.input,
-      );
-      if (validation.success === false) {
-        throw InvalidInputError(validation.error);
-      }
-
-      const result = await uploadRecipeGroupImagePresigned({
-        groupId: validation.data.groupId,
-        userId: context.user.id,
-        filename: validation.data.filename,
-        mimeType: validation.data.mimeType,
-      });
-
-      return {
-        file: result.file,
-        presignedPost: {
-          url: result.presignedPost.url,
-          fields: JSON.stringify(result.presignedPost.fields),
-          key: result.presignedPost.key,
-        },
-      };
-    },
-
-    deleteRecipeGroupImage: async (
-      _: unknown,
-      args: MutationDeleteRecipeGroupImageArgs,
-      context: GraphQLContext,
-    ): Promise<boolean> => {
-      const isUnauthorized = !canManageRecipeGroups(context.user);
-      if (isUnauthorized) {
-        throw UnauthorizedError();
-      }
-
-      if (!context.user) {
-        throw UnauthorizedError();
-      }
-
-      const validation = schemaValidation(
-        deleteRecipeGroupImageArgsSchema,
-        args,
-      );
-      if (validation.success === false) {
-        throw InvalidInputError(validation.error);
-      }
-
-      await deleteRecipeGroupImageService({
-        groupId: validation.data.groupId,
-        userId: context.user.id,
-      });
-
-      return true;
     },
   },
 };

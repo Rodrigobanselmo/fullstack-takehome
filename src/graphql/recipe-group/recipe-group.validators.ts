@@ -30,13 +30,3 @@ export const removeRecipesFromGroupInputSchema = z.object({
   groupId: z.string().min(1, "Group ID is required"),
   recipeIds: z.array(z.string()).min(1, "At least one recipe ID is required"),
 });
-
-export const generateRecipeGroupPresignedUrlInputSchema = z.object({
-  groupId: z.string().min(1, "Group ID is required"),
-  filename: z.string().min(1, "Filename is required"),
-  mimeType: z.string().min(1, "MIME type is required"),
-});
-
-export const deleteRecipeGroupImageArgsSchema = z.object({
-  groupId: z.string().min(1, "Group ID is required"),
-});

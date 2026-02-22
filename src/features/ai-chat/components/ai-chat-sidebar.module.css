@@ -789,3 +789,44 @@
 .loadingSpinner {
   animation: spin 1s linear infinite;
 }
+
+/* Drag and Drop Overlay */
+.dropOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--color-primary-rgb, 99, 102, 241), 0.08);
+  backdrop-filter: blur(2px);
+  border: 2px dashed var(--color-primary);
+  border-radius: 12px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dropOverlayFadeIn 0.15s ease-out;
+}
+
+@keyframes dropOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dropOverlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.dropOverlayContent svg {
+  opacity: 0.8;
+}

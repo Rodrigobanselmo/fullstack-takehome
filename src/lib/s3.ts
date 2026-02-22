@@ -130,6 +130,9 @@ export interface PresignedPostResult {
 /**
  * Generate a presigned POST URL for direct client uploads
  * This allows clients to upload directly to S3 without going through the server
+ *
+ * Note: This is a low-level utility. File type validation should be done
+ * at the service layer before calling this function.
  */
 export async function generatePresignedPost({
   folder = "uploads",
@@ -142,11 +145,6 @@ export async function generatePresignedPost({
   mimeType: string;
   maxSizeMB?: number;
 }): Promise<PresignedPostResult> {
-  // Validate file type
-  if (!validateImageFile(mimeType)) {
-    throw new Error("Only image files are allowed (JPEG, PNG, GIF, WebP)");
-  }
-
   // Generate unique key
   const ext = filename.split(".").pop();
   const uniqueFilename = `${randomUUID()}.${ext}`;

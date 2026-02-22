@@ -25,6 +25,15 @@ export const aiTypeDefs = gql`
     totalCount: Int!
   }
 
+  type AIMessageAttachment {
+    id: ID!
+    fileId: ID!
+    filename: String!
+    mimeType: String!
+    size: Int!
+    url: String
+  }
+
   type AIMessage {
     id: ID!
     threadId: ID!
@@ -33,6 +42,7 @@ export const aiTypeDefs = gql`
     toolName: String
     toolStatus: String
     createdAt: DateTime!
+    files: [AIMessageAttachment!]!
   }
 
   type AIMessageEdge {

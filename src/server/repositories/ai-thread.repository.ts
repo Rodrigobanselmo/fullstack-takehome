@@ -9,6 +9,18 @@ export interface AIThread {
   updatedAt: Date;
 }
 
+export interface AIMessageAttachment {
+  id: string;
+  fileId: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  key: string;
+  bucket: string;
+  region: string;
+  metadata?: Record<string, unknown> | null;
+}
+
 export interface AIMessage {
   id: string;
   threadId: string;
@@ -17,6 +29,7 @@ export interface AIMessage {
   toolName?: string | null;
   toolStatus?: string | null;
   createdAt: Date;
+  attachments?: AIMessageAttachment[];
 }
 
 export interface AIThreadConnection {
@@ -175,25 +188,67 @@ class PrismaAIThreadRepository {
     threadId: string,
     role: "user" | "assistant",
     content: string,
+    fileIds?: string[],
   ): Promise<AIMessage> {
     const now = new Date();
-    const [message] = await prisma.$transaction([
-      prisma.ai_messages.create({
+
+    // Use transaction to create message and attach files atomically
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the message
+      // Create message with nested file attachments in one query
+      const messageWithFiles = await tx.ai_messages.create({
         data: {
           threadId,
           role: role as AIMessageRole,
           content,
+          // Nested create for file attachments
+          ...(fileIds && fileIds.length > 0
+            ? {
+                files: {
+                  create: fileIds.map((fileId) => ({
+                    fileId,
+                  })),
+                },
+              }
+            : {}),
         },
-      }),
-      prisma.ai_threads.update({
+        include: {
+          files: {
+            include: {
+              file: true,
+            },
+          },
+        },
+      });
+
+      // Update thread timestamps
+      await tx.ai_threads.update({
         where: { id: threadId },
         data: { updatedAt: now, lastMessageAt: now },
-      }),
-    ]);
+      });
+
+      return messageWithFiles;
+    });
 
     return {
-      ...message,
-      role: message.role as "user" | "assistant" | "tool",
+      id: result.id,
+      threadId: result.threadId,
+      role: result.role as "user" | "assistant" | "tool",
+      content: result.content,
+      toolName: result.toolName,
+      toolStatus: result.toolStatus,
+      createdAt: result.createdAt,
+      attachments: result.files.map((f) => ({
+        id: f.id,
+        fileId: f.file.id,
+        filename: f.file.filename,
+        mimeType: f.file.mimeType,
+        size: f.file.size,
+        key: f.file.key,
+        bucket: f.file.bucket,
+        region: f.file.region,
+        metadata: f.file.metadata as Record<string, unknown> | null,
+      })),
     };
   }
 
@@ -272,6 +327,13 @@ class PrismaAIThreadRepository {
         where: { threadId },
         orderBy: { createdAt: "desc" },
         take: first + 1,
+        include: {
+          files: {
+            include: {
+              file: true,
+            },
+          },
+        },
         ...(before && {
           cursor: { id: before },
           skip: 1, // Skip the cursor record itself
@@ -288,8 +350,24 @@ class PrismaAIThreadRepository {
     const edges = chronologicalMessages.map((m) => ({
       cursor: m.id,
       node: {
-        ...m,
+        id: m.id,
+        threadId: m.threadId,
         role: m.role as "user" | "assistant" | "tool",
+        content: m.content,
+        toolName: m.toolName,
+        toolStatus: m.toolStatus,
+        createdAt: m.createdAt,
+        attachments: m.files.map((f) => ({
+          id: f.id,
+          fileId: f.file.id,
+          filename: f.file.filename,
+          mimeType: f.file.mimeType,
+          size: f.file.size,
+          key: f.file.key,
+          bucket: f.file.bucket,
+          region: f.file.region,
+          metadata: f.file.metadata as Record<string, unknown> | null,
+        })),
       },
     }));
 
@@ -307,11 +385,18 @@ class PrismaAIThreadRepository {
 
   /**
    * Get messages for AI history (excludes tool messages since AI doesn't need them)
+   * Includes attachments for multimodal support
    */
   async getMessagesForAIHistory(
     threadId: string,
     limit = 20,
-  ): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+  ): Promise<
+    Array<{
+      role: "user" | "assistant";
+      content: string;
+      attachments?: AIMessageAttachment[];
+    }>
+  > {
     const messages = await prisma.ai_messages.findMany({
       where: {
         threadId,
@@ -319,15 +404,32 @@ class PrismaAIThreadRepository {
       },
       orderBy: { createdAt: "desc" },
       take: limit,
-      select: {
-        role: true,
-        content: true,
+      include: {
+        files: {
+          include: {
+            file: true,
+          },
+        },
       },
     });
 
     return messages.reverse().map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
+      attachments:
+        m.files.length > 0
+          ? m.files.map((f) => ({
+              id: f.id,
+              fileId: f.file.id,
+              filename: f.file.filename,
+              mimeType: f.file.mimeType,
+              size: f.file.size,
+              key: f.file.key,
+              bucket: f.file.bucket,
+              region: f.file.region,
+              metadata: f.file.metadata as Record<string, unknown> | null,
+            }))
+          : undefined,
     }));
   }
 }

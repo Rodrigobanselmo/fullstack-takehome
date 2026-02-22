@@ -32,17 +32,6 @@ export const recipeGroupTypeDefs = gql`
     recipeIds: [ID!]!
   }
 
-  type UploadRecipeGroupImageResult {
-    file: File!
-    presignedPost: PresignedPost!
-  }
-
-  input GenerateRecipeGroupPresignedUrlInput {
-    groupId: ID!
-    filename: String!
-    mimeType: String!
-  }
-
   type Query {
     recipeGroups: [RecipeGroup!]!
     recipeGroup(id: ID!): RecipeGroup
@@ -54,9 +43,5 @@ export const recipeGroupTypeDefs = gql`
     deleteRecipeGroup(id: ID!): ID!
     addRecipesToGroup(input: AddRecipesToGroupInput!): RecipeGroup!
     removeRecipesFromGroup(input: RemoveRecipesFromGroupInput!): RecipeGroup!
-    uploadRecipeGroupImage(
-      input: GenerateRecipeGroupPresignedUrlInput!
-    ): UploadRecipeGroupImageResult!
-    deleteRecipeGroupImage(groupId: ID!): Boolean!
   }
 `;

@@ -14,6 +14,8 @@ import {
   DEFAULT_AI_MODE,
   describePageContext,
 } from "~/lib/ai-types";
+import { getPresignedDownloadUrl } from "~/lib/s3";
+import type { AIMessageAttachment } from "~/server/repositories/ai-thread.repository";
 
 // System prompt for the recipe agent
 const RECIPE_SYSTEM_PROMPT = `You are a helpful recipe assistant. You help users manage their recipes, ingredients, and recipe groups (collections of recipes).
@@ -109,9 +111,24 @@ function createRecipeAgentGraph(userId: string) {
   return graph.compile();
 }
 
+/** Simplified attachment info for the agent input */
+export interface AgentAttachment {
+  key: string;
+  bucket: string;
+  region: string;
+  mimeType: string;
+  filename: string;
+}
+
 export interface RecipeAgentInput {
   message: string;
-  history?: Array<{ role: "user" | "assistant"; content: string }>;
+  history?: Array<{
+    role: "user" | "assistant";
+    content: string;
+    attachments?: AIMessageAttachment[];
+  }>;
+  /** Attachments for the current user message */
+  attachments?: AgentAttachment[];
   userId: string;
   mode?: AIMode;
   /** Context about which page/view the user is currently on */
@@ -121,6 +138,81 @@ export interface RecipeAgentInput {
 export interface RecipeAgentOutput {
   response: string;
   messages: Array<{ role: "user" | "assistant"; content: string }>;
+}
+
+/**
+ * Fetches a file from S3 and returns it as a base64 data URL
+ */
+async function fetchFileAsBase64DataUrl(
+  attachment: AgentAttachment,
+): Promise<string> {
+  const presignedUrl = await getPresignedDownloadUrl(
+    {
+      key: attachment.key,
+      bucket: attachment.bucket,
+      region: attachment.region,
+    },
+    3600, // 1 hour expiry
+  );
+
+  // Fetch the file content
+  const response = await fetch(presignedUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch file: ${response.statusText}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+  // Return as data URL
+  return `data:${attachment.mimeType};base64,${base64}`;
+}
+
+/**
+ * Creates a multimodal HumanMessage with text and file attachments
+ * Converts files to base64 data URLs as required by LangChain/LLMs
+ */
+async function createMultimodalHumanMessage(
+  text: string,
+  attachments?: AgentAttachment[],
+): Promise<HumanMessage> {
+  // If no attachments, return simple text message
+  if (!attachments || attachments.length === 0) {
+    return new HumanMessage(text);
+  }
+
+  // Build content array with text and media parts
+  const contentParts: Array<
+    | { type: "text"; text: string }
+    | { type: "image_url"; image_url: { url: string; detail?: string } }
+  > = [{ type: "text", text }];
+
+  for (const attachment of attachments) {
+    // Convert file to base64 data URL (required by LangChain/Gemini)
+    const dataUrl = await fetchFileAsBase64DataUrl(attachment);
+
+    // For images, use image_url content type (works with both Gemini and OpenAI)
+    if (attachment.mimeType.startsWith("image/")) {
+      contentParts.push({
+        type: "image_url",
+        image_url: { url: dataUrl, detail: "auto" },
+      });
+    }
+    // For other file types (video, audio, PDF), Gemini can handle them
+    // but OpenAI cannot. Include as image_url for Gemini compatibility.
+    else if (
+      attachment.mimeType.startsWith("video/") ||
+      attachment.mimeType.startsWith("audio/") ||
+      attachment.mimeType === "application/pdf"
+    ) {
+      contentParts.push({
+        type: "image_url",
+        image_url: { url: dataUrl },
+      });
+    }
+  }
+
+  return new HumanMessage({ content: contentParts });
 }
 
 /**
@@ -212,11 +304,27 @@ export async function* streamRecipeAgent(
   const baseLLM = createLLM({ mode });
   const llm = baseLLM.bindTools!(tools);
 
-  // Convert history to LangChain messages
-  const historyMessages: BaseMessage[] = (input.history ?? []).map((msg) =>
-    msg.role === "user"
-      ? new HumanMessage(msg.content)
-      : new AIMessage(msg.content),
+  // Convert history to LangChain messages (with multimodal support)
+  const historyMessages: BaseMessage[] = await Promise.all(
+    (input.history ?? []).map(async (msg) => {
+      if (msg.role === "assistant") {
+        return new AIMessage(msg.content);
+      }
+      // For user messages, check if they have attachments
+      if (msg.attachments && msg.attachments.length > 0) {
+        const attachmentsForMessage: AgentAttachment[] = msg.attachments.map(
+          (att) => ({
+            key: att.key,
+            bucket: att.bucket,
+            region: att.region,
+            mimeType: att.mimeType,
+            filename: att.filename,
+          }),
+        );
+        return createMultimodalHumanMessage(msg.content, attachmentsForMessage);
+      }
+      return new HumanMessage(msg.content);
+    }),
   );
 
   // Build system prompt with optional page context
@@ -234,10 +342,16 @@ export async function* streamRecipeAgent(
     }
   }
 
+  // Create the current user message (possibly multimodal)
+  const currentUserMessage = await createMultimodalHumanMessage(
+    input.message,
+    input.attachments,
+  );
+
   const messagesWithSystem = [
     new SystemMessage(systemPrompt),
     ...historyMessages,
-    new HumanMessage(input.message),
+    currentUserMessage,
   ];
 
   let currentMessages = messagesWithSystem;

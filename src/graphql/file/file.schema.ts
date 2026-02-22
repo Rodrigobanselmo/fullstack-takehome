@@ -28,6 +28,7 @@ export const fileTypeDefs = gql`
     RECIPE
     RECIPE_GROUP
     INGREDIENT
+    AI_CHAT
   }
 
   type PresignedPost {

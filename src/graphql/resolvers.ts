@@ -52,6 +52,8 @@ export const resolvers = {
   RecipeIngredient: recipeResolvers.RecipeIngredient,
   RecipeGroup: recipeGroupResolvers.RecipeGroup,
   Ingredient: ingredientResolvers.Ingredient,
+  AIMessage: aiResolvers.AIMessage,
+  AIMessageAttachment: aiResolvers.AIMessageAttachment,
   Mutation: {
     ...aiResolvers.Mutation,
     ...authResolvers.Mutation,

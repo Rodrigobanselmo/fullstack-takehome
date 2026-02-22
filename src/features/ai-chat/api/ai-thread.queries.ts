@@ -11,6 +11,15 @@ export interface AIThread {
   updatedAt: string;
 }
 
+export interface AIMessageAttachment {
+  id: string;
+  fileId: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  url: string | null;
+}
+
 export interface AIMessage {
   id: string;
   threadId: string;
@@ -19,6 +28,7 @@ export interface AIMessage {
   toolName?: string | null;
   toolStatus?: string | null;
   createdAt: string;
+  files: AIMessageAttachment[];
 }
 
 export interface AIMessageEdge {
@@ -108,6 +118,14 @@ export const AI_THREAD_MESSAGES_QUERY = gql`
           toolName
           toolStatus
           createdAt
+          files {
+            id
+            fileId
+            filename
+            mimeType
+            size
+            url
+          }
         }
       }
       pageInfo {

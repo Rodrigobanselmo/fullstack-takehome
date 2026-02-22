@@ -1,0 +1,110 @@
+.container {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  background: var(--color-surface-secondary);
+}
+
+.attachment {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  min-width: 64px;
+  max-width: 80px;
+}
+
+.thumbnail {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-secondary);
+}
+
+.thumbnailImage {
+  object-fit: cover;
+}
+
+.thumbnailIcon {
+  color: var(--color-text-muted);
+}
+
+.uploadingOverlay,
+.errorOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+}
+
+.uploadingOverlay {
+  color: white;
+}
+
+.errorOverlay {
+  color: var(--color-error);
+  background: rgba(255, 100, 100, 0.2);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.filename {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+.removeButton {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  color: var(--color-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.attachment:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  background: var(--color-error);
+}
+

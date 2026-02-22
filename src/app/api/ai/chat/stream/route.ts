@@ -3,7 +3,12 @@ import { getUserFromCookie } from "~/lib/auth";
 import { captureException } from "~/lib/error-reporting";
 import { type AIMode, type PageContext, DEFAULT_AI_MODE } from "~/lib/ai-types";
 import { streamRecipeAgent, type StreamEvent } from "~/server/ai";
-import { aiThreadRepository } from "~/server/repositories/ai-thread.repository";
+import {
+  aiThreadRepository,
+  type AIMessageAttachment,
+} from "~/server/repositories/ai-thread.repository";
+import { fileRepository } from "~/server/repositories/file.repository";
+import { env } from "~/config/env";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -11,6 +16,7 @@ export const dynamic = "force-dynamic";
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  attachments?: AIMessageAttachment[];
 }
 
 interface ChatRequestBody {
@@ -19,6 +25,8 @@ interface ChatRequestBody {
   threadId?: string;
   mode?: AIMode;
   pageContext?: PageContext;
+  /** File IDs to attach to the message */
+  fileIds?: string[];
 }
 
 export async function POST(req: NextRequest) {
@@ -42,7 +50,34 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // If threadId is provided, verify and save user message
+    // Fetch file details if fileIds are provided
+    let attachmentsForAgent:
+      | Array<{
+          key: string;
+          bucket: string;
+          region: string;
+          mimeType: string;
+          filename: string;
+        }>
+      | undefined;
+
+    if (body.fileIds && body.fileIds.length > 0) {
+      const files = await Promise.all(
+        body.fileIds.map((id) => fileRepository.findById({ fileId: id })),
+      );
+
+      attachmentsForAgent = files
+        .filter((f): f is NonNullable<typeof f> => f !== null)
+        .map((f) => ({
+          key: f.key,
+          bucket: f.bucket || env.AWS_S3_BUCKET,
+          region: f.region || env.AWS_REGION,
+          mimeType: f.mimeType,
+          filename: f.filename,
+        }));
+    }
+
+    // If threadId is provided, verify and save user message with attachments
     if (body.threadId) {
       const thread = await aiThreadRepository.findById(body.threadId, user.id);
       if (!thread) {
@@ -51,13 +86,19 @@ export async function POST(req: NextRequest) {
           headers: { "Content-Type": "application/json" },
         });
       }
-      await aiThreadRepository.addMessage(body.threadId, "user", body.message);
+      await aiThreadRepository.addMessage(
+        body.threadId,
+        "user",
+        body.message,
+        body.fileIds,
+      );
     }
 
     // Stream response using the recipe agent
     const agentStream = streamRecipeAgent({
       message: body.message,
       history: body.history,
+      attachments: attachmentsForAgent,
       userId: user.id,
       mode: body.mode ?? DEFAULT_AI_MODE,
       pageContext: body.pageContext,

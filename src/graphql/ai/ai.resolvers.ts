@@ -7,9 +7,11 @@ import {
   aiThreadRepository,
   type AIThread,
   type AIMessage,
+  type AIMessageAttachment,
   type AIThreadConnection,
   type AIMessageConnection,
 } from "~/server/repositories/ai-thread.repository";
+import { getPresignedDownloadUrl } from "~/lib/s3";
 
 // Inline validation schemas for better type inference
 const aiThreadIdSchema = z.object({
@@ -47,6 +49,35 @@ function formatZodError(error: z.ZodError): string {
 }
 
 export const aiResolvers = {
+  AIMessage: {
+    files: (parent: AIMessage) => {
+      // Transform 'attachments' from repository to 'files' for GraphQL
+      return parent.attachments ?? [];
+    },
+  },
+
+  AIMessageAttachment: {
+    url: async (parent: AIMessageAttachment): Promise<string | null> => {
+      try {
+        return await getPresignedDownloadUrl(
+          {
+            key: parent.key,
+            bucket: parent.bucket,
+            region: parent.region,
+          },
+          3600, // 1 hour expiry
+        );
+      } catch (error) {
+        console.error("Failed to generate presigned URL for AI attachment:", {
+          fileId: parent.fileId,
+          key: parent.key,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return null;
+      }
+    },
+  },
+
   Query: {
     aiThreads: async (
       _: unknown,

@@ -6,12 +6,16 @@ import {
   generatePresignedPost,
 } from "~/lib/s3";
 import {
+  validateAIChatFileType,
+  getAllAIChatSupportedTypes,
+} from "~/lib/ai-chat-file-types";
+import {
   fileRepository,
   type FileEntity,
 } from "~/server/repositories/file.repository";
 import { InvalidInputError } from "../errors";
 import { env } from "~/config/env";
-import { type FileUploadType } from "generated/gql/graphql";
+import { FileUploadType } from "generated/gql/graphql";
 
 export interface UploadFileParams {
   file: Buffer;
@@ -139,7 +143,50 @@ export async function uploadFilePresigned({
     key: string;
   };
 }> {
-  // Validate file type
+  // AI_CHAT has different file type validation (supports images, videos, audio, PDFs)
+  if (type === FileUploadType.AiChat) {
+    if (!validateAIChatFileType(mimeType)) {
+      const supportedTypes = getAllAIChatSupportedTypes().join(", ");
+      throw InvalidInputError(
+        `Unsupported file type: ${mimeType}. Supported: ${supportedTypes}`,
+      );
+    }
+
+    // Determine max size based on file type
+    let maxSizeMB = 20; // Default for images
+    if (mimeType.startsWith("video/")) {
+      maxSizeMB = 100; // Videos up to 100MB
+    } else if (mimeType.startsWith("audio/")) {
+      maxSizeMB = 25; // Audio up to 25MB
+    } else if (mimeType === "application/pdf") {
+      maxSizeMB = 50; // PDFs up to 50MB
+    }
+
+    // Use generic presignedPost with ai-chat folder
+    const presignedPost = await generatePresignedPost({
+      folder: "ai-chat",
+      filename,
+      mimeType,
+      maxSizeMB,
+    });
+
+    const file = await fileRepository.create({
+      key: presignedPost.key,
+      bucket: env.AWS_S3_BUCKET,
+      region: env.AWS_REGION,
+      filename,
+      mimeType,
+      size: 0,
+      uploaderId: userId,
+    });
+
+    return {
+      file,
+      presignedPost,
+    };
+  }
+
+  // Standard image validation for other types
   if (!validateImageFile(mimeType)) {
     throw InvalidInputError(
       "Only image files are allowed (JPEG, PNG, GIF, WebP)",

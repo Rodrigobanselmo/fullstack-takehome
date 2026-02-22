@@ -3,12 +3,22 @@
 import { useState, useRef } from "react";
 import { type AIMode, type PageContext, DEFAULT_AI_MODE } from "~/lib/ai-types";
 
+export interface ChatMessageAttachment {
+  id: string;
+  fileId: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  url: string | null;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant" | "tool";
   content: string;
   toolName?: string;
   toolStatus?: "running" | "success" | "error";
   timestamp: Date;
+  files?: ChatMessageAttachment[];
 }
 
 // Stream event types from the backend
@@ -45,6 +55,8 @@ export interface SendMessageOptions {
   threadId?: string | null;
   mode?: AIMode;
   pageContext?: PageContext;
+  /** File IDs to attach to the message */
+  fileIds?: string[];
 }
 
 interface UseAIChatStreamReturn {
@@ -64,7 +76,13 @@ export function useAIChatStream(): UseAIChatStreamReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = async (options: SendMessageOptions) => {
-    const { message, threadId, mode = DEFAULT_AI_MODE, pageContext } = options;
+    const {
+      message,
+      threadId,
+      mode = DEFAULT_AI_MODE,
+      pageContext,
+      fileIds,
+    } = options;
     if (!message.trim() || isLoading) return;
 
     setError(null);
@@ -92,7 +110,14 @@ export function useAIChatStream(): UseAIChatStreamReturn {
       const response = await fetch("/api/ai/chat/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, threadId, mode, pageContext }),
+        body: JSON.stringify({
+          message,
+          history,
+          threadId,
+          mode,
+          pageContext,
+          fileIds,
+        }),
         signal: abortControllerRef.current.signal,
       });
 

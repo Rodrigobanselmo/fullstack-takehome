@@ -110,6 +110,33 @@ class PrismaFileRepository {
       updatedAt: file.updatedAt,
     };
   }
+
+  async updateMetadata(
+    fileId: string,
+    metadata: Record<string, unknown>,
+  ): Promise<FileEntity> {
+    const db = getPrismaClient();
+    const file = await db.files.update({
+      where: { id: fileId },
+      data: {
+        metadata: metadata as object,
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      id: file.id,
+      key: file.key,
+      bucket: file.bucket,
+      region: file.region,
+      filename: file.filename,
+      mimeType: file.mimeType,
+      size: file.size,
+      uploaderId: file.uploaderId,
+      createdAt: file.createdAt,
+      updatedAt: file.updatedAt,
+    };
+  }
 }
 
 export const fileRepository = new PrismaFileRepository();
