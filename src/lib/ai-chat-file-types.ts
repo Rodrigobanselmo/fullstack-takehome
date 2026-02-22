@@ -4,6 +4,7 @@
  *
  * Gemini supports: images, videos, audio, PDFs, spreadsheets
  * OpenAI supports: images only
+ * Server-parsed: Excel, DOCX (converted to text before sending to LLM)
  */
 export const AI_CHAT_SUPPORTED_TYPES = {
   // Images (both Gemini and OpenAI)
@@ -41,9 +42,15 @@ export const AI_CHAT_SUPPORTED_TYPES = {
     "audio/m4a",
     "audio/x-m4a",
   ],
-  // Documents (Gemini only)
-  document: ["application/pdf"],
-  // Spreadsheets (CSV and Excel)
+  // Documents (PDF native, DOCX parsed server-side)
+  document: [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  // Plain text files
+  text: ["text/plain"],
+  // Spreadsheets (CSV native, Excel parsed server-side)
   spreadsheet: [
     "text/csv",
     "application/csv",

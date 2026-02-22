@@ -14,7 +14,7 @@ export interface PendingAttachment {
   filename: string;
   mimeType: string;
   size: number;
-  type: "image" | "video" | "audio" | "document" | "spreadsheet";
+  type: "image" | "video" | "audio" | "document" | "text" | "spreadsheet";
   previewUrl?: string; // Local blob URL for preview
   uploadStatus: "pending" | "uploading" | "complete" | "error";
   error?: string;
@@ -180,12 +180,13 @@ export function useFileAttachments() {
 
 function getFileType(
   mimeType: string,
-): "image" | "video" | "audio" | "document" | "spreadsheet" | null {
+): "image" | "video" | "audio" | "document" | "text" | "spreadsheet" | null {
   if (AI_CHAT_SUPPORTED_TYPES.image.includes(mimeType as never)) return "image";
   if (AI_CHAT_SUPPORTED_TYPES.video.includes(mimeType as never)) return "video";
   if (AI_CHAT_SUPPORTED_TYPES.audio.includes(mimeType as never)) return "audio";
   if (AI_CHAT_SUPPORTED_TYPES.document.includes(mimeType as never))
     return "document";
+  if (AI_CHAT_SUPPORTED_TYPES.text.includes(mimeType as never)) return "text";
   if (AI_CHAT_SUPPORTED_TYPES.spreadsheet.includes(mimeType as never))
     return "spreadsheet";
   return null;

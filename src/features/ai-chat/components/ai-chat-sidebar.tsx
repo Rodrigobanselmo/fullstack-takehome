@@ -451,7 +451,7 @@ export function AIChatSidebar() {
         const fileNames = rejected.map((f) => f.filename).join(", ");
         toast.error(
           "Unsupported file type",
-          `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, CSV, Excel.`,
+          `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, Word, TXT, CSV, Excel.`,
         );
       }
     }
@@ -497,7 +497,7 @@ export function AIChatSidebar() {
           const fileNames = rejected.map((f) => f.filename).join(", ");
           toast.error(
             "Unsupported file type",
-            `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, CSV, Excel.`,
+            `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, Word, TXT, CSV, Excel.`,
           );
         }
       }

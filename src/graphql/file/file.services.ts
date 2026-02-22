@@ -171,6 +171,14 @@ export async function uploadFilePresigned({
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     ) {
       maxSizeMB = 25; // Spreadsheets up to 25MB
+    } else if (
+      mimeType === "application/msword" ||
+      mimeType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      maxSizeMB = 25; // Word documents up to 25MB
+    } else if (mimeType === "text/plain") {
+      maxSizeMB = 10; // Text files up to 10MB
     }
 
     // Use generic presignedPost with ai-chat folder
