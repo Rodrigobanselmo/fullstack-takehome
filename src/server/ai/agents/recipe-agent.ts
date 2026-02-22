@@ -198,12 +198,17 @@ async function createMultimodalHumanMessage(
         image_url: { url: dataUrl, detail: "auto" },
       });
     }
-    // For other file types (video, audio, PDF), Gemini can handle them
+    // For other file types (video, audio, PDF, spreadsheets), Gemini can handle them
     // but OpenAI cannot. Include as image_url for Gemini compatibility.
     else if (
       attachment.mimeType.startsWith("video/") ||
       attachment.mimeType.startsWith("audio/") ||
-      attachment.mimeType === "application/pdf"
+      attachment.mimeType === "application/pdf" ||
+      attachment.mimeType === "text/csv" ||
+      attachment.mimeType === "application/csv" ||
+      attachment.mimeType === "application/vnd.ms-excel" ||
+      attachment.mimeType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     ) {
       contentParts.push({
         type: "image_url",

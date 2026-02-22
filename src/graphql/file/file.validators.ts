@@ -7,5 +7,6 @@ export const uploadFileInputSchema = z.object({
   filename: z.string().min(1, "Filename is required"),
   mimeType: z.string().min(1, "MIME type is required"),
   type: fileUploadTypeSchema,
+  size: z.number().int().positive().optional(),
 });
 

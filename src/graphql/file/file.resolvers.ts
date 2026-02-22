@@ -67,6 +67,7 @@ export const fileResolvers = {
         filename: validation.data.filename,
         mimeType: validation.data.mimeType,
         type: validation.data.type as FileUploadType,
+        size: validation.data.size,
       });
 
       return {

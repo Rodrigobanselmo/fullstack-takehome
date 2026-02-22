@@ -57,6 +57,8 @@ export interface SendMessageOptions {
   pageContext?: PageContext;
   /** File IDs to attach to the message */
   fileIds?: string[];
+  /** Attachment metadata for immediate display in UI */
+  attachments?: ChatMessageAttachment[];
 }
 
 interface UseAIChatStreamReturn {
@@ -82,17 +84,19 @@ export function useAIChatStream(): UseAIChatStreamReturn {
       mode = DEFAULT_AI_MODE,
       pageContext,
       fileIds,
+      attachments,
     } = options;
     if (!message.trim() || isLoading) return;
 
     setError(null);
     setIsLoading(true);
 
-    // Add user message
+    // Add user message with attachments for immediate display
     const userMessage: ChatMessage = {
       role: "user",
       content: message,
       timestamp: new Date(),
+      files: attachments,
     };
     setMessages((prev) => [...prev, userMessage]);
 

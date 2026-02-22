@@ -130,11 +130,14 @@ export async function uploadFilePresigned({
   filename,
   mimeType,
   type,
+  size,
 }: {
   userId: string;
   filename: string;
   mimeType: string;
   type: FileUploadType;
+  /** File size in bytes (optional, from client) */
+  size?: number;
 }): Promise<{
   file: FileEntity;
   presignedPost: {
@@ -160,6 +163,14 @@ export async function uploadFilePresigned({
       maxSizeMB = 25; // Audio up to 25MB
     } else if (mimeType === "application/pdf") {
       maxSizeMB = 50; // PDFs up to 50MB
+    } else if (
+      mimeType === "text/csv" ||
+      mimeType === "application/csv" ||
+      mimeType === "application/vnd.ms-excel" ||
+      mimeType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) {
+      maxSizeMB = 25; // Spreadsheets up to 25MB
     }
 
     // Use generic presignedPost with ai-chat folder
@@ -176,7 +187,7 @@ export async function uploadFilePresigned({
       region: env.AWS_REGION,
       filename,
       mimeType,
-      size: 0,
+      size: size ?? 0,
       uploaderId: userId,
     });
 

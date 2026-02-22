@@ -14,7 +14,7 @@ export interface PendingAttachment {
   filename: string;
   mimeType: string;
   size: number;
-  type: "image" | "video" | "audio" | "document";
+  type: "image" | "video" | "audio" | "document" | "spreadsheet";
   previewUrl?: string; // Local blob URL for preview
   uploadStatus: "pending" | "uploading" | "complete" | "error";
   error?: string;
@@ -78,6 +78,7 @@ export function useFileAttachments() {
                 filename: file.name,
                 mimeType: file.type,
                 type: FileUploadType.AiChat,
+                size: file.size,
               },
             },
           });
@@ -152,6 +153,20 @@ export function useFileAttachments() {
       .map((att) => att.id);
   }, [attachments]);
 
+  /** Get metadata for all successfully uploaded attachments */
+  const getUploadedAttachments = useCallback(() => {
+    return attachments
+      .filter((att) => att.uploadStatus === "complete" && att.id)
+      .map((att) => ({
+        id: att.id,
+        fileId: att.id,
+        filename: att.filename,
+        mimeType: att.mimeType,
+        size: att.size,
+        url: att.previewUrl ?? null,
+      }));
+  }, [attachments]);
+
   return {
     attachments,
     isUploading,
@@ -159,17 +174,20 @@ export function useFileAttachments() {
     removeAttachment,
     clearAttachments,
     getUploadedFileIds,
+    getUploadedAttachments,
   };
 }
 
 function getFileType(
   mimeType: string,
-): "image" | "video" | "audio" | "document" | null {
+): "image" | "video" | "audio" | "document" | "spreadsheet" | null {
   if (AI_CHAT_SUPPORTED_TYPES.image.includes(mimeType as never)) return "image";
   if (AI_CHAT_SUPPORTED_TYPES.video.includes(mimeType as never)) return "video";
   if (AI_CHAT_SUPPORTED_TYPES.audio.includes(mimeType as never)) return "audio";
   if (AI_CHAT_SUPPORTED_TYPES.document.includes(mimeType as never))
     return "document";
+  if (AI_CHAT_SUPPORTED_TYPES.spreadsheet.includes(mimeType as never))
+    return "spreadsheet";
   return null;
 }
 

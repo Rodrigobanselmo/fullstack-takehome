@@ -110,6 +110,7 @@ export function AIChatSidebar() {
     removeAttachment,
     clearAttachments,
     getUploadedFileIds,
+    getUploadedAttachments,
   } = useFileAttachments();
 
   // Track current page context for AI context awareness
@@ -142,6 +143,11 @@ export function AIChatSidebar() {
 
   // Pagination state
   const isLoadingMore = networkStatus === NetworkStatus.fetchMore;
+  // Detect initial loading state when switching threads
+  const isLoadingThread =
+    (networkStatus === NetworkStatus.loading ||
+      networkStatus === NetworkStatus.setVariables) &&
+    currentThreadId !== null;
   const dbMessages =
     messagesData?.aiThreadMessages.edges.map((e) => e.node) ?? [];
   const hasMoreMessages =
@@ -372,10 +378,11 @@ export function AIChatSidebar() {
     }
     setHasInput(false);
 
-    // Get file IDs before clearing attachments
+    // Get file IDs and metadata before clearing attachments
     const fileIds = getUploadedFileIds();
+    const attachmentMetadata = getUploadedAttachments();
 
-    // Clear attachments after getting IDs
+    // Clear attachments after getting data
     clearAttachments();
 
     // Scroll to bottom when user sends a message
@@ -399,6 +406,8 @@ export function AIChatSidebar() {
       mode: aiMode,
       pageContext,
       fileIds: fileIds.length > 0 ? fileIds : undefined,
+      attachments:
+        attachmentMetadata.length > 0 ? attachmentMetadata : undefined,
     });
   };
 
@@ -442,7 +451,7 @@ export function AIChatSidebar() {
         const fileNames = rejected.map((f) => f.filename).join(", ");
         toast.error(
           "Unsupported file type",
-          `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF.`,
+          `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, CSV, Excel.`,
         );
       }
     }
@@ -488,7 +497,7 @@ export function AIChatSidebar() {
           const fileNames = rejected.map((f) => f.filename).join(", ");
           toast.error(
             "Unsupported file type",
-            `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF.`,
+            `Could not upload: ${fileNames}. Supported: images, videos, audio, PDF, CSV, Excel.`,
           );
         }
       }
@@ -740,7 +749,33 @@ export function AIChatSidebar() {
               <span>Loading older messages...</span>
             </div>
           )}
-          {streamMessages.length === 0 ? (
+          {/* Loading indicator when switching threads */}
+          {isLoadingThread ? (
+            <div className={styles.threadLoading}>
+              <div className={styles.loadingSkeleton}>
+                <div className={styles.skeletonRow}>
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                </div>
+                <div className={styles.skeletonRow}>
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                </div>
+              </div>
+              <div
+                className={styles.loadingSkeleton}
+                style={{ marginTop: "1rem" }}
+              >
+                <div className={styles.skeletonRow}>
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                  <div className={styles.skeletonWord} />
+                </div>
+              </div>
+            </div>
+          ) : streamMessages.length === 0 ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyStateIcon}>
                 <Image

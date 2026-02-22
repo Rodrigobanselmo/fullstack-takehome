@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { FileText, X } from "lucide-react";
+import { FileText, FileSpreadsheet, X } from "lucide-react";
 import Image from "next/image";
 import { type ChatMessageAttachment } from "../hooks/use-ai-chat-stream";
 import styles from "./message-attachments.module.css";
@@ -27,6 +27,16 @@ function isPdfMimeType(mimeType: string): boolean {
   return mimeType === "application/pdf";
 }
 
+function isSpreadsheetMimeType(mimeType: string): boolean {
+  return (
+    mimeType === "text/csv" ||
+    mimeType === "application/csv" ||
+    mimeType === "application/vnd.ms-excel" ||
+    mimeType ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+}
+
 export function MessageAttachments({ files }: MessageAttachmentsProps) {
   const [previewFile, setPreviewFile] = useState<ChatMessageAttachment | null>(
     null,
@@ -50,6 +60,7 @@ export function MessageAttachments({ files }: MessageAttachmentsProps) {
         {files.map((file) => {
           const isImage = isImageMimeType(file.mimeType);
           const isPdf = isPdfMimeType(file.mimeType);
+          const isSpreadsheet = isSpreadsheetMimeType(file.mimeType);
 
           if (isImage && file.url) {
             return (
@@ -74,6 +85,9 @@ export function MessageAttachments({ files }: MessageAttachmentsProps) {
             );
           }
 
+          // Use appropriate icon based on file type
+          const DocumentIcon = isSpreadsheet ? FileSpreadsheet : FileText;
+
           return (
             <div
               key={file.id}
@@ -84,7 +98,7 @@ export function MessageAttachments({ files }: MessageAttachmentsProps) {
               onKeyDown={(e) => e.key === "Enter" && openPreview(file)}
               title={`Click to ${isPdf ? "view" : "download"} ${file.filename}`}
             >
-              <FileText size={24} className={styles.documentIcon} />
+              <DocumentIcon size={24} className={styles.documentIcon} />
               <div className={styles.documentInfo}>
                 <span className={styles.documentFilename}>{file.filename}</span>
                 <span className={styles.documentMeta}>

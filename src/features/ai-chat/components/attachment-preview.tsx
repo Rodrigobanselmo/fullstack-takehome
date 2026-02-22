@@ -1,6 +1,14 @@
 "use client";
 
-import { X, FileText, Music, Film, Loader2, AlertCircle } from "lucide-react";
+import {
+  X,
+  FileText,
+  Music,
+  Film,
+  Loader2,
+  AlertCircle,
+  FileSpreadsheet,
+} from "lucide-react";
 import Image from "next/image";
 import { type PendingAttachment } from "../hooks/use-file-attachments";
 import styles from "./attachment-preview.module.css";
@@ -33,6 +41,8 @@ export function AttachmentPreview({
               <Film size={24} className={styles.thumbnailIcon} />
             ) : att.type === "audio" ? (
               <Music size={24} className={styles.thumbnailIcon} />
+            ) : att.type === "spreadsheet" ? (
+              <FileSpreadsheet size={24} className={styles.thumbnailIcon} />
             ) : (
               <FileText size={24} className={styles.thumbnailIcon} />
             )}

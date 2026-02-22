@@ -2,7 +2,7 @@
  * Supported file types for AI chat multimodal messages
  * This file is safe to import on client or server
  *
- * Gemini supports: images, videos, audio, PDFs
+ * Gemini supports: images, videos, audio, PDFs, spreadsheets
  * OpenAI supports: images only
  */
 export const AI_CHAT_SUPPORTED_TYPES = {
@@ -43,6 +43,13 @@ export const AI_CHAT_SUPPORTED_TYPES = {
   ],
   // Documents (Gemini only)
   document: ["application/pdf"],
+  // Spreadsheets (CSV and Excel)
+  spreadsheet: [
+    "text/csv",
+    "application/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ],
 } as const;
 
 export type AIChatFileType = keyof typeof AI_CHAT_SUPPORTED_TYPES;

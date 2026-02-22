@@ -790,6 +790,14 @@
   animation: spin 1s linear infinite;
 }
 
+/* Loading state when switching threads */
+.threadLoading {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1rem;
+}
+
 /* Drag and Drop Overlay */
 .dropOverlay {
   position: absolute;

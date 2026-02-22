@@ -46,6 +46,8 @@ export const fileTypeDefs = gql`
     filename: String!
     mimeType: String!
     type: FileUploadType!
+    "File size in bytes (optional, for accurate file metadata)"
+    size: Int
   }
 
   extend type Mutation {
