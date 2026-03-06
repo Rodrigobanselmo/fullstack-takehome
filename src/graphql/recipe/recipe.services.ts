@@ -8,7 +8,11 @@ import {
   recipeRepository,
   type RecipeEntity,
 } from "~/server/repositories/recipe.repository";
+import { ingredientRepository } from "~/server/repositories/ingredient.repository";
 import { RecipeNotFoundError } from "./recipe.errors";
+import { generateRecipeImagePrompt } from "~/server/ai/recipe-image-prompt";
+import { generateAndUploadImage } from "~/server/ai/image-generation";
+import { env } from "~/config/env";
 
 export async function getRecipesByUserId({
   userId,
@@ -49,8 +53,22 @@ export async function createRecipe({
     });
   }
 
-  return withTransaction(async () => {
-    const recipe = await recipeRepository.create({
+  // Determine if we should auto-generate an image
+  const shouldAutoGenerateImage = !input.imageFileId && !!env.GOOGLE_API_KEY;
+
+  // Get ingredient names for prompt generation if auto-generating image
+  let ingredientNames: string[] = [];
+  if (shouldAutoGenerateImage && input.ingredients.length > 0) {
+    const ingredientIds = input.ingredients.map((i) => i.ingredientId);
+    ingredientNames = await ingredientRepository.findNamesByIds({
+      ingredientIds,
+      userId,
+    });
+  }
+
+  // Create the recipe in a transaction
+  const recipe = await withTransaction(async () => {
+    const newRecipe = await recipeRepository.create({
       name: input.name,
       servings: input.servings,
       userId,
@@ -68,16 +86,55 @@ export async function createRecipe({
       })),
     });
 
-    // Attach image if provided
+    // Attach image if provided by user
     if (input.imageFileId) {
       await recipeRepository.attachFileToRecipe({
-        recipeId: recipe.id,
+        recipeId: newRecipe.id,
         fileId: input.imageFileId,
       });
     }
 
-    return recipe;
+    return newRecipe;
   });
+
+  // Auto-generate image AFTER transaction completes (outside transaction)
+  if (shouldAutoGenerateImage) {
+    const prompt = generateRecipeImagePrompt({
+      recipeName: input.name,
+      ingredients: ingredientNames,
+      tags: input.tags ?? undefined,
+      servings: input.servings,
+      instructions: input.instructions ?? undefined,
+    });
+
+    console.log(
+      `[Recipe] Auto-generating image for recipe "${recipe.name}" with prompt: "${prompt.substring(0, 100)}..."`,
+    );
+
+    try {
+      const result = await generateAndUploadImage(
+        prompt,
+        userId,
+        "recipe-images",
+      );
+      if (result) {
+        await recipeRepository.attachFileToRecipe({
+          recipeId: recipe.id,
+          fileId: result.fileId,
+        });
+        console.log(
+          `[Recipe] Auto-generated image attached to recipe "${recipe.name}"`,
+        );
+      }
+    } catch (error) {
+      console.error(
+        `[Recipe] Failed to auto-generate image for recipe "${recipe.name}":`,
+        error,
+      );
+    }
+  }
+
+  return recipe;
 }
 
 export async function updateRecipe({
@@ -109,7 +166,8 @@ export async function updateRecipe({
       tags: input.tags ?? undefined,
       // Nullable fields: use "field in input" to distinguish null from undefined
       overallRating: "overallRating" in input ? input.overallRating : undefined,
-      prepTimeMinutes: "prepTimeMinutes" in input ? input.prepTimeMinutes : undefined,
+      prepTimeMinutes:
+        "prepTimeMinutes" in input ? input.prepTimeMinutes : undefined,
       instructions: "instructions" in input ? input.instructions : undefined,
       ingredients: input.ingredients?.map((ingredient) => ({
         ingredientId: ingredient.ingredientId,
@@ -163,5 +221,3 @@ export async function deleteRecipe({
   await recipeRepository.softDelete({ recipeId, userId });
   return true;
 }
-
-

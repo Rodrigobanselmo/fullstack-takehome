@@ -825,6 +825,10 @@ export function AIChatSidebar() {
 
               // Tool messages have special styling
               if (msg.role === "tool") {
+                const toolInfo = getToolDisplayInfo(
+                  msg.toolName || "",
+                  msg.toolArgs
+                );
                 return (
                   <div
                     key={index}

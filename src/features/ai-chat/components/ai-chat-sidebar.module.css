@@ -9,7 +9,9 @@
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
   z-index: 50;
   /* Needed for absolute positioned children (thread history overlay) */
   overflow: hidden;
@@ -108,7 +110,9 @@
   cursor: pointer;
   color: var(--color-text-secondary);
   border-radius: 6px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .iconButton:hover {
@@ -221,8 +225,6 @@
   gap: 0.5rem;
 }
 
-
-
 /* Message Header */
 .messageHeader {
   display: flex;
@@ -234,8 +236,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--color-primary);
-  color: white;
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,30 +300,45 @@
 
 .skeletonWord {
   height: 14px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 0%,
-    #f5f5f5 50%,
-    #e0e0e0 100%
-  );
+  background: linear-gradient(90deg, #e0e0e0 0%, #f5f5f5 50%, #e0e0e0 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
 /* Varying widths to look like words */
-.skeletonWord:nth-child(1) { width: 60px; }
-.skeletonWord:nth-child(2) { width: 40px; }
-.skeletonWord:nth-child(3) { width: 80px; }
-.skeletonWord:nth-child(4) { width: 100px; }
-.skeletonWord:nth-child(5) { width: 55px; }
-.skeletonWord:nth-child(6) { width: 70px; }
-.skeletonWord:nth-child(7) { width: 45px; }
-.skeletonWord:nth-child(8) { width: 90px; }
+.skeletonWord:nth-child(1) {
+  width: 60px;
+}
+.skeletonWord:nth-child(2) {
+  width: 40px;
+}
+.skeletonWord:nth-child(3) {
+  width: 80px;
+}
+.skeletonWord:nth-child(4) {
+  width: 100px;
+}
+.skeletonWord:nth-child(5) {
+  width: 55px;
+}
+.skeletonWord:nth-child(6) {
+  width: 70px;
+}
+.skeletonWord:nth-child(7) {
+  width: 45px;
+}
+.skeletonWord:nth-child(8) {
+  width: 90px;
+}
 
 /* Stagger animation for each word */
-.skeletonRow:nth-child(2) .skeletonWord { animation-delay: 0.1s; }
-.skeletonRow:nth-child(3) .skeletonWord { animation-delay: 0.2s; }
+.skeletonRow:nth-child(2) .skeletonWord {
+  animation-delay: 0.1s;
+}
+.skeletonRow:nth-child(3) .skeletonWord {
+  animation-delay: 0.2s;
+}
 
 @keyframes shimmer {
   0% {
@@ -427,7 +444,9 @@
   text-align: left;
   font-size: 0.875rem;
   color: var(--color-text-primary);
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .suggestionButton:hover {
@@ -440,8 +459,6 @@
   height: 20px;
   color: var(--color-text-secondary);
 }
-
-
 
 /* Input */
 .inputContainer {
@@ -527,7 +544,9 @@
   cursor: pointer;
   color: var(--color-text-tertiary);
   border-radius: 8px;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .inputActionButton:hover:not(:disabled) {
@@ -671,7 +690,9 @@
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .modeDropdownButton:hover:not(:disabled) {

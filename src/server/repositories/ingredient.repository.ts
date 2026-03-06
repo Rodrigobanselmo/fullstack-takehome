@@ -151,6 +151,32 @@ class PrismaIngredientRepository {
     };
   }
 
+  /**
+   * Find ingredients by multiple IDs.
+   * Returns only the names for use in prompt generation.
+   */
+  async findNamesByIds({
+    ingredientIds,
+    userId,
+  }: {
+    ingredientIds: string[];
+    userId: string;
+  }): Promise<string[]> {
+    if (ingredientIds.length === 0) return [];
+
+    const db = getPrismaClient();
+    const ingredients = await db.ingredients.findMany({
+      where: {
+        id: { in: ingredientIds },
+        OR: [{ userId: null }, { userId }],
+        deletedAt: null,
+      },
+      select: { name: true },
+    });
+
+    return ingredients.map((i) => i.name);
+  }
+
   async create(data: CreateIngredientData): Promise<IngredientEntity> {
     const db = getPrismaClient();
 

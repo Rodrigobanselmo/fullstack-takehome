@@ -1,6 +1,71 @@
-import { tool } from "@langchain/core/tools";
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { tool, type StructuredToolInterface } from "@langchain/core/tools";
 import { z } from "zod";
 import { IngredientCategory } from "generated/gql/graphql";
+
+/**
+ * Wraps a tool with global error handling so the AI can always recover from errors.
+ * Instead of throwing, it returns a JSON error message that the AI can interpret.
+ */
+function withErrorHandling<T extends StructuredToolInterface>(
+  wrappedTool: T,
+): T {
+  const originalInvoke = wrappedTool.invoke.bind(wrappedTool);
+
+  wrappedTool.invoke = async (
+    input: Parameters<T["invoke"]>[0],
+    config?: Parameters<T["invoke"]>[1],
+  ) => {
+    try {
+      return await originalInvoke(input, config);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error(`[Tool Error] ${wrappedTool.name}: ${errorMessage}`);
+
+      // Return a structured error that the AI can understand and act upon
+      return JSON.stringify(
+        {
+          error: true,
+          toolName: wrappedTool.name,
+          message: errorMessage,
+          suggestion: getErrorSuggestion(wrappedTool.name, errorMessage),
+        },
+        null,
+        2,
+      );
+    }
+  };
+
+  return wrappedTool;
+}
+
+/**
+ * Provides helpful suggestions based on the error and tool name
+ */
+function getErrorSuggestion(toolName: string, errorMessage: string): string {
+  // Duplicate key errors
+  if (
+    errorMessage.includes("duplicate key") ||
+    errorMessage.includes("23505")
+  ) {
+    if (toolName.includes("ingredient")) {
+      return "This ingredient already exists. Use search_similar_ingredients to find it instead.";
+    }
+    if (toolName.includes("recipe")) {
+      return "A recipe with this name may already exist. Try listing recipes first.";
+    }
+    return "This item already exists. Try searching for it instead of creating.";
+  }
+
+  // Not found errors
+  if (errorMessage.includes("not found") || errorMessage.includes("NotFound")) {
+    return "The requested item was not found. Make sure the ID is correct or list available items first.";
+  }
+
+  // Generic suggestion
+  return "Check the input parameters and try again, or use a different approach.";
+}
 
 // Import services
 import {
@@ -560,8 +625,9 @@ export function createRecipeTools(userId: string) {
     },
   );
 
-  // Return all tools
-  return [
+  // Return all tools wrapped with error handling
+  // This ensures the AI can always recover from errors instead of crashing
+  const allTools = [
     // Recipe tools
     listRecipesTool,
     getRecipeTool,
@@ -583,4 +649,6 @@ export function createRecipeTools(userId: string) {
     updateRecipeGroupTool,
     deleteRecipeGroupTool,
   ];
+
+  return allTools.map((t) => withErrorHandling(t));
 }
