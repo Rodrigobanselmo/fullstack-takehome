@@ -836,6 +836,17 @@ export function AIChatSidebar() {
                 prevMsg?.timestamp ?? null
               );
 
+              // Agent messages show which agent is handling the request
+              if (msg.role === "agent") {
+                return (
+                  <div key={index} className={styles.agentMessage}>
+                    <span className={styles.agentBadge}>
+                      Recipe Agent
+                    </span>
+                  </div>
+                );
+              }
+
               // Tool messages have special styling
               if (msg.role === "tool") {
                 // Use toolDescription for display, fallback to content

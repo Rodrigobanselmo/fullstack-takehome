@@ -13,12 +13,14 @@ export interface ChatMessageAttachment {
 }
 
 export interface ChatMessage {
-  role: "user" | "assistant" | "tool";
+  role: "user" | "assistant" | "tool" | "agent";
   content: string;
   toolName?: string;
   toolStatus?: "running" | "success" | "error";
   /** LLM-generated description of the tool action (for display) */
   toolDescription?: string;
+  /** Agent name for agent messages */
+  agentName?: string;
   timestamp: Date;
   files?: ChatMessageAttachment[];
 }
@@ -33,6 +35,8 @@ type StreamEvent =
       description: string;
     }
   | { type: "tool_end"; tool: string; result: string; success: boolean }
+  | { type: "agent_start"; agent: string; description: string }
+  | { type: "agent_end"; agent: string; success: boolean }
   | { type: "error"; message: string };
 
 export interface SendMessageOptions {
@@ -136,7 +140,21 @@ export function useAIChatStream(): UseAIChatStreamReturn {
             try {
               const event = JSON.parse(data) as StreamEvent;
 
-              if (event.type === "tool_start") {
+              if (event.type === "agent_start") {
+                // Add agent indicator message
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: "agent",
+                    content: event.description,
+                    agentName: event.agent,
+                    timestamp: new Date(),
+                  },
+                ]);
+              } else if (event.type === "agent_end") {
+                // Agent finished - we don't need to show anything special
+                // The agent's work is already visible through tools and content
+              } else if (event.type === "tool_start") {
                 // Use LLM-generated description directly (no mapping needed)
                 const displayName = event.description;
                 setMessages((prev) => [

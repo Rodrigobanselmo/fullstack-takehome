@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { getUserFromCookie } from "~/lib/auth";
 import { captureException } from "~/lib/error-reporting";
 import { type AIMode, type PageContext, DEFAULT_AI_MODE } from "~/lib/ai-types";
-import { streamRecipeAgent, type StreamEvent } from "~/server/ai";
+import { streamSupervisorAgent, type StreamEvent } from "~/server/ai";
 import {
   aiThreadRepository,
   type AIMessageAttachment,
@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Stream response using the recipe agent
-    const agentStream = streamRecipeAgent({
+    // Stream response using the supervisor agent
+    const agentStream = streamSupervisorAgent({
       message: body.message,
       history: body.history,
       attachments: attachmentsForAgent,

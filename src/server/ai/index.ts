@@ -10,8 +10,14 @@ export {
   streamRecipeAgent,
   type RecipeAgentInput,
   type RecipeAgentOutput,
-  type StreamEvent,
 } from "./agents/recipe-agent";
+export {
+  streamSupervisorAgent,
+  type SupervisorInput,
+  type StreamEvent,
+  type AgentType,
+  AGENT_METADATA,
+} from "./agents/supervisor-agent";
 // Re-export AIMode from shared types
 export {
   type AIMode,
