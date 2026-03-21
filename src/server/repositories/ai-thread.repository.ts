@@ -28,6 +28,7 @@ export interface AIMessage {
   content: string;
   toolName?: string | null;
   toolStatus?: string | null;
+  toolDescription?: string | null;
   createdAt: Date;
   attachments?: AIMessageAttachment[];
 }
@@ -257,6 +258,7 @@ class PrismaAIThreadRepository {
     content: string,
     toolName: string,
     toolStatus: "running" | "success" | "error",
+    toolDescription?: string,
   ): Promise<AIMessage> {
     const now = new Date();
     const [message] = await prisma.$transaction([
@@ -267,6 +269,7 @@ class PrismaAIThreadRepository {
           content,
           toolName,
           toolStatus,
+          toolDescription,
         },
       }),
       prisma.ai_threads.update({
@@ -356,6 +359,7 @@ class PrismaAIThreadRepository {
         content: m.content,
         toolName: m.toolName,
         toolStatus: m.toolStatus,
+        toolDescription: m.toolDescription,
         createdAt: m.createdAt,
         attachments: m.files.map((f) => ({
           id: f.id,

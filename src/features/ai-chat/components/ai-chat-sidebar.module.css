@@ -65,6 +65,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .headerTitle {
@@ -72,6 +75,17 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text-primary);
+  /* Limit to 2 lines with ellipsis */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.4;
+  max-height: calc(1.4em * 2); /* 2 lines */
+  flex: 1;
+  min-width: 0;
 }
 
 .headerTitleInput {
@@ -86,6 +100,13 @@
   font-family: inherit;
   width: 100%;
   min-width: 0;
+  /* Allow expansion to show all content when editing */
+  line-height: 1.4;
+  overflow-y: auto;
+  resize: none;
+  word-break: break-word;
+  flex: 1;
+  max-height: 150px; /* Limit to reasonable height */
 }
 
 .headerActions {
@@ -283,6 +304,110 @@
   padding: 0;
 }
 
+/* Markdown content styling inside assistant messages */
+.messageAssistant p {
+  margin: 0 0 0.5em;
+}
+
+.messageAssistant p:last-child {
+  margin-bottom: 0;
+}
+
+.messageAssistant ul,
+.messageAssistant ol {
+  margin: 0.25em 0 0.5em;
+  padding-left: 1.25em;
+}
+
+.messageAssistant li {
+  margin-bottom: 0.15em;
+}
+
+.messageAssistant code {
+  background: var(--color-background-secondary, rgba(0, 0, 0, 0.06));
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, monospace;
+}
+
+.messageAssistant pre {
+  background: var(--color-background-secondary, rgba(0, 0, 0, 0.06));
+  padding: 0.75em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.messageAssistant pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+.messageAssistant strong {
+  font-weight: 600;
+}
+
+.messageAssistant h1,
+.messageAssistant h2,
+.messageAssistant h3,
+.messageAssistant h4 {
+  margin: 0.75em 0 0.25em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.messageAssistant h1 {
+  font-size: 1.15em;
+}
+
+.messageAssistant h2 {
+  font-size: 1.05em;
+}
+
+.messageAssistant h3,
+.messageAssistant h4 {
+  font-size: 1em;
+}
+
+.messageAssistant blockquote {
+  border-left: 3px solid var(--color-border, #ddd);
+  margin: 0.5em 0;
+  padding: 0.25em 0.75em;
+  color: var(--color-text-secondary, #666);
+}
+
+.messageAssistant table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+  width: 100%;
+}
+
+.messageAssistant th,
+.messageAssistant td {
+  border: 1px solid var(--color-border, #ddd);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+
+.messageAssistant th {
+  background: var(--color-background-secondary, rgba(0, 0, 0, 0.04));
+  font-weight: 600;
+}
+
+.messageAssistant a {
+  color: var(--color-primary, #2563eb);
+  text-decoration: underline;
+}
+
+.messageAssistant hr {
+  border: none;
+  border-top: 1px solid var(--color-border, #ddd);
+  margin: 0.75em 0;
+}
+
 /* Loading Skeleton */
 .loadingSkeleton {
   display: flex;
@@ -346,6 +471,39 @@
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+/* AI Thinking Indicator */
+.thinkingIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.thinkingDot {
+  width: 4px;
+  height: 4px;
+  background: var(--color-text-primary);
+  border-radius: 50%;
+  animation: fade 1.4s ease-in-out infinite;
+}
+
+.thinkingDot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinkingDot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes fade {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
   }
 }
 

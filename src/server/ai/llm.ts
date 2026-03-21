@@ -8,11 +8,11 @@ export type LLMProvider = "openai" | "gemini";
 
 /** OpenAI model variants */
 export type OpenAIModel =
-  | "gpt-5-mini"    // Fast, cheaper version of GPT-5
-  | "gpt-5.2"       // Best for coding and agentic tasks
-  | "gpt-5.2-pro"   // Smartest and most precise
-  | "gpt-4.1-mini"  // Legacy fast model
-  | "o4-mini";      // Reasoning model
+  | "gpt-5-mini" // Fast, cheaper version of GPT-5
+  | "gpt-5.2" // Best for coding and agentic tasks
+  | "gpt-5.2-pro" // Smartest and most precise
+  | "gpt-4.1-mini" // Legacy fast model
+  | "o4-mini"; // Reasoning model
 
 /** Gemini model variants */
 export type GeminiModel = "gemini-2.5-flash" | "gemini-2.5-pro";
@@ -31,9 +31,24 @@ interface LLMConfig {
 const DEFAULT_PROVIDER: LLMProvider = "gemini";
 
 /** Model configuration based on AI mode */
-const MODE_CONFIG: Record<AIMode, { openaiModel: OpenAIModel; geminiModel: GeminiModel; maxOutputTokens: number }> = {
-  fast: { openaiModel: "gpt-5-mini", geminiModel: "gemini-2.5-flash", maxOutputTokens: 2000 },
-  smarter: { openaiModel: "gpt-5.2", geminiModel: "gemini-2.5-pro", maxOutputTokens: 4000 },
+const MODE_CONFIG: Record<
+  AIMode,
+  {
+    openaiModel: OpenAIModel;
+    geminiModel: GeminiModel;
+    maxOutputTokens: number;
+  }
+> = {
+  fast: {
+    openaiModel: "gpt-5-mini",
+    geminiModel: "gemini-2.5-flash",
+    maxOutputTokens: 2000,
+  },
+  smarter: {
+    openaiModel: "gpt-5.2",
+    geminiModel: "gemini-2.5-pro",
+    maxOutputTokens: 4000,
+  },
 };
 
 /**
@@ -81,6 +96,7 @@ export function createLLM(config: LLMConfig = {}): BaseChatModel {
         model: modeConfig.geminiModel,
         ...(temperature !== undefined && { temperature }),
         maxOutputTokens: finalMaxOutputTokens,
+        streaming: true,
       };
       console.log(
         `[LLM] Creating Gemini instance - Mode: ${mode}, Model: ${geminiConfig.model}, MaxTokens: ${geminiConfig.maxOutputTokens}${temperature !== undefined ? `, Temperature: ${temperature}` : ""}`,

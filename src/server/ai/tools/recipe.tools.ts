@@ -4,6 +4,22 @@ import { z } from "zod";
 import { IngredientCategory } from "generated/gql/graphql";
 
 /**
+ * Schema field that instructs the LLM to provide a user-friendly description
+ * of what it's doing with this tool call. This enables dynamic, contextual,
+ * and multi-language action descriptions without frontend mapping.
+ */
+const actionDescriptionField = z
+  .string()
+  .describe(
+    "IMPORTANT: Write a brief, user-friendly description of what you are doing. " +
+      "MUST be in the SAME LANGUAGE the user is chatting in (detect from conversation history). " +
+      "Be specific and contextual. " +
+      "Examples: Portuguese: 'Criando receita de bolo de chocolate', 'Buscando ingrediente tomate'. " +
+      "English: 'Creating chocolate cake recipe', 'Searching for tomato'. " +
+      "Spanish: 'Creando receta de pastel de chocolate'.",
+  );
+
+/**
  * Wraps a tool with global error handling so the AI can always recover from errors.
  * Instead of throwing, it returns a JSON error message that the AI can interpret.
  */
@@ -108,7 +124,9 @@ export function createRecipeTools(userId: string) {
       name: "list_recipes",
       description:
         "List all recipes for the current user. Returns an array of recipes with their id, name, servings, tags, rating, and prep time.",
-      schema: z.object({}),
+      schema: z.object({
+        _actionDescription: actionDescriptionField,
+      }),
     },
   );
 
@@ -125,6 +143,7 @@ export function createRecipeTools(userId: string) {
       name: "get_recipe",
       description: "Get a specific recipe by its ID",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         recipeId: z.string().describe("The ID of the recipe to retrieve"),
       }),
     },
@@ -174,6 +193,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Create a new recipe and add it to a recipe group. IMPORTANT: Before calling this, use search_similar_ingredients to find existing ingredient IDs, or create_ingredient_with_embedding to create new ones. You must specify a groupId to add the recipe to.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         name: z.string().describe("Name of the recipe"),
         servings: z.number().describe("Number of servings"),
         groupId: z
@@ -248,6 +268,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Update an existing recipe. All fields are optional. Use groupIds to set which groups this recipe belongs to (replaces all current group associations). IMPORTANT: If updating ingredients, use search_similar_ingredients first to find ingredient IDs.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         recipeId: z.string().describe("The ID of the recipe to update"),
         name: z.string().optional().describe("New name for the recipe"),
         servings: z.number().optional().describe("New number of servings"),
@@ -288,6 +309,7 @@ export function createRecipeTools(userId: string) {
       name: "delete_recipe",
       description: "Delete a recipe by its ID",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         recipeId: z.string().describe("The ID of the recipe to delete"),
       }),
     },
@@ -317,6 +339,7 @@ export function createRecipeTools(userId: string) {
       description:
         "List ingredients for the current user with pagination. Returns ingredients with their id, name, description, category, default unit, and price info. Use 'after' cursor for pagination.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         first: z
           .number()
           .optional()
@@ -344,6 +367,7 @@ export function createRecipeTools(userId: string) {
       name: "get_ingredient",
       description: "Get a specific ingredient by its ID",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         ingredientId: z
           .string()
           .describe("The ID of the ingredient to retrieve"),
@@ -380,6 +404,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Create a new ingredient. This creates a user-specific ingredient.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         name: z.string().describe("Name of the ingredient"),
         description: z
           .string()
@@ -444,6 +469,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Update an existing ingredient. All fields are optional. Note: If updating a system ingredient, a user-specific copy will be created automatically.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         ingredientId: z.string().describe("The ID of the ingredient to update"),
         name: z.string().optional().describe("New name for the ingredient"),
         description: z.string().optional().describe("New description"),
@@ -473,6 +499,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Delete an ingredient by its ID. Note: System ingredients cannot be deleted.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         ingredientId: z.string().describe("The ID of the ingredient to delete"),
       }),
     },
@@ -489,7 +516,9 @@ export function createRecipeTools(userId: string) {
       name: "list_recipe_groups",
       description:
         "List all recipe groups for the current user. Recipe groups are collections of recipes.",
-      schema: z.object({}),
+      schema: z.object({
+        _actionDescription: actionDescriptionField,
+      }),
     },
   );
 
@@ -506,6 +535,7 @@ export function createRecipeTools(userId: string) {
       name: "get_recipe_group",
       description: "Get a specific recipe group by its ID",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         groupId: z.string().describe("The ID of the recipe group to retrieve"),
       }),
     },
@@ -523,6 +553,7 @@ export function createRecipeTools(userId: string) {
       name: "create_recipe_group",
       description: "Create a new recipe group (collection of recipes)",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         name: z.string().describe("Name of the recipe group"),
         description: z.string().optional().describe("Description of the group"),
         recipeIds: z
@@ -550,6 +581,7 @@ export function createRecipeTools(userId: string) {
       name: "update_recipe_group",
       description: "Update an existing recipe group. All fields are optional.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         groupId: z.string().describe("The ID of the recipe group to update"),
         name: z.string().optional().describe("New name for the group"),
         description: z.string().optional().describe("New description"),
@@ -570,6 +602,7 @@ export function createRecipeTools(userId: string) {
       name: "delete_recipe_group",
       description: "Delete a recipe group by its ID",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         groupId: z.string().describe("The ID of the recipe group to delete"),
       }),
     },
@@ -614,6 +647,7 @@ export function createRecipeTools(userId: string) {
       description:
         "Search for existing ingredients by name using vector similarity. Returns the most similar ingredients. Use this BEFORE creating a recipe to find ingredient IDs. If no good match is found, use create_ingredient to create a new ingredient.",
       schema: z.object({
+        _actionDescription: actionDescriptionField,
         ingredientName: z
           .string()
           .describe("The ingredient name to search for"),

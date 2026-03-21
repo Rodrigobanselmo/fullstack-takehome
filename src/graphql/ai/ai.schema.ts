@@ -41,6 +41,7 @@ export const aiTypeDefs = gql`
     content: String!
     toolName: String
     toolStatus: String
+    toolDescription: String
     createdAt: DateTime!
     files: [AIMessageAttachment!]!
   }
@@ -83,7 +84,11 @@ export const aiTypeDefs = gql`
   extend type Query {
     aiThreads(first: Int, after: String, search: String): AIThreadConnection!
     aiThread(id: ID!): AIThread
-    aiThreadMessages(threadId: ID!, first: Int, before: String): AIMessageConnection!
+    aiThreadMessages(
+      threadId: ID!
+      first: Int
+      before: String
+    ): AIMessageConnection!
   }
 
   extend type Mutation {

@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, useLayoutEffect, useCallback, useState, type DragEvent } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { NetworkStatus } from "@apollo/client";
 import {
   X,
@@ -69,7 +71,7 @@ export function AIChatSidebar() {
   const [showModeDropdown, setShowModeDropdown] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitleValue, setEditTitleValue] = useState("");
-  const titleInputRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     data: messagesData,
@@ -192,11 +194,15 @@ export function AIChatSidebar() {
     };
   }, [showModeDropdown]);
 
-  // Focus title input when editing starts
+  // Focus title input when editing starts and auto-resize
   useEffect(() => {
     if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus();
-      titleInputRef.current.select();
+      const textarea = titleInputRef.current;
+      textarea.focus();
+      textarea.select();
+      // Auto-resize to fit content
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
     }
   }, [isEditingTitle]);
 
@@ -246,6 +252,7 @@ export function AIChatSidebar() {
         content: m.content,
         toolName: m.toolName ?? undefined,
         toolStatus: (m.toolStatus as "running" | "success" | "error") ?? undefined,
+        toolDescription: m.toolDescription ?? undefined,
         timestamp: new Date(m.createdAt),
         files: m.files ? mapFiles(m.files) : undefined,
       }));
@@ -660,12 +667,17 @@ export function AIChatSidebar() {
             <X size={18} />
           </button>
           {isEditingTitle ? (
-            <input
+            <textarea
               ref={titleInputRef}
-              type="text"
               className={styles.headerTitleInput}
               value={editTitleValue}
-              onChange={(e) => setEditTitleValue(e.target.value)}
+              onChange={(e) => {
+                setEditTitleValue(e.target.value);
+                // Auto-resize as user types
+                const textarea = e.target;
+                textarea.style.height = "auto";
+                textarea.style.height = `${Math.min(textarea.scrollHeight, 150)}px`;
+              }}
               onBlur={() => {
                 setIsEditingTitle(false);
                 if (
@@ -692,6 +704,7 @@ export function AIChatSidebar() {
                   setIsEditingTitle(false);
                 }
               }}
+              rows={1}
             />
           ) : (
             <h2
@@ -825,10 +838,15 @@ export function AIChatSidebar() {
 
               // Tool messages have special styling
               if (msg.role === "tool") {
-                const toolInfo = getToolDisplayInfo(
-                  msg.toolName || "",
-                  msg.toolArgs
-                );
+                // Use toolDescription for display, fallback to content
+                const displayContent = msg.toolDescription
+                  ? msg.toolStatus === "success"
+                    ? `✓ ${msg.toolDescription}`
+                    : msg.toolStatus === "error"
+                      ? `✗ ${msg.toolDescription}`
+                      : msg.toolDescription
+                  : msg.content;
+
                 return (
                   <div
                     key={index}
@@ -843,7 +861,7 @@ export function AIChatSidebar() {
                     {msg.toolStatus === "running" && (
                       <span className={styles.toolSpinner}>⏳</span>
                     )}
-                    {msg.content}
+                    {displayContent}
                   </div>
                 );
               }
@@ -932,7 +950,13 @@ export function AIChatSidebar() {
                             : styles.messageAssistant
                         }`}
                       >
-                        {msg.content}
+                        {isUser ? (
+                          msg.content
+                        ) : (
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        )}
                         {/* Render file attachments if present */}
                         {msg.files && msg.files.length > 0 && (
                           <MessageAttachments files={msg.files} />
@@ -944,37 +968,50 @@ export function AIChatSidebar() {
               );
             })
           )}
-          {/* AI Thinking indicator - show when loading and AI hasn't started streaming yet */}
+          {/* AI Thinking indicator - show when loading and AI hasn't started streaming text yet */}
           {isLoading &&
             streamMessages.length > 0 &&
-            streamMessages.at(-1)?.role === "user" && (
-              <div className={styles.messageWrapper}>
-                <div className={styles.messageHeader}>
-                  <Image
-                    src="/icons/ai.svg"
-                    alt="AI"
-                    width={20}
-                    height={20}
-                    className={styles.aiAvatar}
-                  />
-                  <span className={styles.messageTime}>now</span>
-                </div>
-                <div className={styles.loadingSkeleton}>
-                  <div className={styles.skeletonRow}>
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
+            (() => {
+              const lastMsg = streamMessages.at(-1);
+              // Show indicator when:
+              // 1. Last message is from user (waiting for AI to start)
+              // 2. Last message is a tool (running or completed, waiting for next step)
+              // Don't show when assistant is streaming text (last msg is assistant with content)
+              if (lastMsg?.role === "user") {
+                // After user message: show full header with AI icon
+                return (
+                  <div className={styles.messageWrapper}>
+                    <div className={styles.messageHeader}>
+                      <Image
+                        src="/icons/ai.svg"
+                        alt="AI"
+                        width={20}
+                        height={20}
+                        className={styles.aiAvatar}
+                      />
+                      <span className={styles.messageTime}>now</span>
+                    </div>
+                    <div className={`${styles.message} ${styles.messageAssistant}`}>
+                      <span className={styles.thinkingIndicator}>
+                        <span className={styles.thinkingDot} />
+                        <span className={styles.thinkingDot} />
+                        <span className={styles.thinkingDot} />
+                      </span>
+                    </div>
                   </div>
-                  <div className={styles.skeletonRow}>
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
-                    <div className={styles.skeletonWord} />
+                );
+              } else if (lastMsg?.role === "tool") {
+                // After tool: just show dots without header
+                return (
+                  <div className={styles.thinkingIndicator}>
+                    <span className={styles.thinkingDot} />
+                    <span className={styles.thinkingDot} />
+                    <span className={styles.thinkingDot} />
                   </div>
-                </div>
-              </div>
-            )}
+                );
+              }
+              return null;
+            })()}
           <div ref={messagesEndRef} />
         </div>
       </div>

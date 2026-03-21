@@ -22,6 +22,8 @@ import mammoth from "mammoth";
 // System prompt for the recipe agent
 const RECIPE_SYSTEM_PROMPT = `You are a helpful recipe assistant. You help users manage their recipes, ingredients, and recipe groups (collections of recipes).
 
+IMPORTANT: Always respond in the SAME LANGUAGE the user is using. Detect the language from the conversation and match it.
+
 You have access to tools that allow you to:
 - List, create, update, and delete recipes
 - List, create, update, and delete ingredients
@@ -425,7 +427,12 @@ export async function invokeRecipeAgent(
 // Event types for streaming
 export type StreamEvent =
   | { type: "content"; content: string }
-  | { type: "tool_start"; tool: string; args: Record<string, unknown> }
+  | {
+      type: "tool_start";
+      tool: string;
+      args: Record<string, unknown>;
+      description: string;
+    }
   | { type: "tool_end"; tool: string; result: string; success: boolean }
   | { type: "error"; message: string };
 
@@ -516,11 +523,17 @@ export async function* streamRecipeAgent(
       for (const toolCall of response.tool_calls) {
         const tool = tools.find((t) => t.name === toolCall.name);
         if (tool) {
-          // Emit tool start event
+          const args = toolCall.args as Record<string, unknown>;
+          // Extract _actionDescription from args (LLM-generated, contextual, multi-language)
+          const description =
+            (args._actionDescription as string | undefined) ?? toolCall.name;
+
+          // Emit tool start event with LLM-generated description
           yield {
             type: "tool_start",
             tool: toolCall.name,
-            args: toolCall.args as Record<string, unknown>,
+            args,
+            description,
           };
 
           try {

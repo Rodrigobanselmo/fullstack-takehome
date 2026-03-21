@@ -27,6 +27,7 @@ export interface AIMessage {
   content: string;
   toolName?: string | null;
   toolStatus?: string | null;
+  toolDescription?: string | null;
   createdAt: string;
   files: AIMessageAttachment[];
 }
@@ -117,6 +118,7 @@ export const AI_THREAD_MESSAGES_QUERY = gql`
           content
           toolName
           toolStatus
+          toolDescription
           createdAt
           files {
             id

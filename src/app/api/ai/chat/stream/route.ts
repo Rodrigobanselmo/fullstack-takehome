@@ -122,21 +122,21 @@ export async function POST(req: NextRequest) {
             // Save tool messages to database if threadId provided
             if (body.threadId) {
               if (event.type === "tool_start") {
-                // Save tool start message
+                // Save tool start message using LLM-generated description
                 const toolMsg = await aiThreadRepository.addToolMessage(
                   body.threadId,
-                  `${event.tool}...`,
+                  event.description,
                   event.tool,
                   "running",
+                  event.description, // Save description for persistence
                 );
                 toolMessageIds.set(event.tool, toolMsg.id);
               } else if (event.type === "tool_end") {
                 // Update tool message with final status
                 const messageId = toolMessageIds.get(event.tool);
                 if (messageId) {
-                  const content = event.success
-                    ? `✓ ${event.tool}`
-                    : `✗ ${event.tool}: ${event.result}`;
+                  // For success, just mark as done (the description is already in the message)
+                  const content = event.success ? `✓` : `✗ ${event.result}`;
                   await aiThreadRepository.updateToolMessage(
                     messageId,
                     content,

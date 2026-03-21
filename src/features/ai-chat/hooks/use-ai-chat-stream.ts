@@ -17,6 +17,8 @@ export interface ChatMessage {
   content: string;
   toolName?: string;
   toolStatus?: "running" | "success" | "error";
+  /** LLM-generated description of the tool action (for display) */
+  toolDescription?: string;
   timestamp: Date;
   files?: ChatMessageAttachment[];
 }
@@ -24,31 +26,14 @@ export interface ChatMessage {
 // Stream event types from the backend
 type StreamEvent =
   | { type: "content"; content: string }
-  | { type: "tool_start"; tool: string; args: Record<string, unknown> }
+  | {
+      type: "tool_start";
+      tool: string;
+      args: Record<string, unknown>;
+      description: string;
+    }
   | { type: "tool_end"; tool: string; result: string; success: boolean }
   | { type: "error"; message: string };
-
-// Human-readable tool names
-const TOOL_DISPLAY_NAMES: Record<string, string> = {
-  list_recipes: "Listing recipes",
-  get_recipe: "Getting recipe details",
-  create_recipe: "Creating recipe",
-  update_recipe: "Updating recipe",
-  delete_recipe: "Deleting recipe",
-  list_ingredients: "Listing ingredients",
-  get_ingredient: "Getting ingredient details",
-  create_ingredient: "Creating ingredient",
-  update_ingredient: "Updating ingredient",
-  delete_ingredient: "Deleting ingredient",
-  search_similar_ingredients: "Searching for similar ingredients",
-  list_recipe_groups: "Listing recipe groups",
-  get_recipe_group: "Getting recipe group",
-  create_recipe_group: "Creating recipe group",
-  update_recipe_group: "Updating recipe group",
-  delete_recipe_group: "Deleting recipe group",
-  add_recipes_to_group: "Adding recipes to group",
-  remove_recipes_from_group: "Removing recipes from group",
-};
 
 export interface SendMessageOptions {
   message: string;
@@ -152,23 +137,21 @@ export function useAIChatStream(): UseAIChatStreamReturn {
               const event = JSON.parse(data) as StreamEvent;
 
               if (event.type === "tool_start") {
-                // Add tool status message
-                const displayName =
-                  TOOL_DISPLAY_NAMES[event.tool] || event.tool;
+                // Use LLM-generated description directly (no mapping needed)
+                const displayName = event.description;
                 setMessages((prev) => [
                   ...prev,
                   {
                     role: "tool",
-                    content: `${displayName}...`,
+                    content: displayName,
                     toolName: event.tool,
                     toolStatus: "running",
+                    toolDescription: displayName,
                     timestamp: new Date(),
                   },
                 ]);
               } else if (event.type === "tool_end") {
-                // Update tool status message
-                const displayName =
-                  TOOL_DISPLAY_NAMES[event.tool] || event.tool;
+                // Update tool status message using stored description
                 setMessages((prev) => {
                   const updated = [...prev];
                   // Find the last tool message with this tool name
@@ -179,6 +162,8 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                       msg.toolName === event.tool &&
                       msg.toolStatus === "running"
                     ) {
+                      // Use the stored toolDescription from tool_start
+                      const displayName = msg.toolDescription ?? event.tool;
                       updated[i] = {
                         role: "tool",
                         content: event.success
@@ -186,6 +171,7 @@ export function useAIChatStream(): UseAIChatStreamReturn {
                           : `✗ ${displayName}: ${event.result}`,
                         toolName: msg.toolName,
                         toolStatus: event.success ? "success" : "error",
+                        toolDescription: msg.toolDescription,
                         timestamp: msg.timestamp,
                       };
                       break;
